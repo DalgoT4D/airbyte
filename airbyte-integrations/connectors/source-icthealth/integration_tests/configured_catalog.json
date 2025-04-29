@@ -1,0 +1,642 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "ClinicEncounterData",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "age": {
+                            "type": [
+                                "null",
+                                "number"
+                            ]
+                        },
+                        "mrno": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "plan": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "unit": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "doctor": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "gender": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "queueno": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "visitid": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "mobileno": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "assocmpny": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "invoiceno": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "billstatus": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "department": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "createddate": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "encounterid": {
+                            "type": [
+                                "number"
+                            ]
+                        },
+                        "patientname": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "sponsorname": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "updateddate": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "appointmenttype": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "reginvcreateddate": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "endconsultationtime": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "queuegenerationtime": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "startconsultationtime": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "consultationrequestdate": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "source_defined_primary_key": [
+                    [
+                        "encounterid"
+                    ]
+                ],
+                "is_resumable": true
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        },
+        {
+            "stream": {
+                "name": "RegisteredPatient",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "additionalProperties": true,
+                    "type": "object",
+                    "required": [
+                        "id"
+                    ],
+                    "properties": {
+                        "age": {
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        },
+                        "asguardiancountry": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "asguardianrphone": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "diagnosis": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "dob": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "email": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fatheraddress": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fatherage": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fathercity": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fathercountry": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fatherdist": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fathername": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fatherphone": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fatherpin": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "fatherstate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "gender": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardianage": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardiancity": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardiandist": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardianname": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardianpin": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardianraddress": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardianrelation": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "guardianrstate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "id": {
+                            "type": "number"
+                        },
+                        "identity_type": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "inserteddate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "isprocessed": {
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        },
+                        "mobileno": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "motheraddress": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "motherage": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "mothercity": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "mothercountry": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "motherdist": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "mothername": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "motherphone": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "motherpin": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "motherstate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "mrno": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "pat_idn_no": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "patient_income": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "patientname": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "plan_name": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "registrationtype": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "service_center_name": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "title": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "updateddate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "username": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "source_defined_primary_key": [
+                    [
+                        "id"
+                    ]
+                ],
+                "is_resumable": true
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        },
+        {
+            "stream": {
+                "name": "AppointmentDetails",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "additionalProperties": true,
+                    "type": "object",
+                    "required": [
+                        "eventid"
+                    ],
+                    "properties": {
+                        "address": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "age": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "cancelreason": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "city": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "consultant": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "createdby": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "createddate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "department": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "dob": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "eventid": {
+                            "type": "number"
+                        },
+                        "eventstatus": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "eventvalidfrom": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "eventvalidto": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "gender": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "isprocessed": {
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        },
+                        "mobileno": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "mrno": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "patientname": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "roomno": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "slotendtime": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "slotstarttime": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "unit": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "updateddate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "source_defined_primary_key": [
+                    [
+                        "eventid"
+                    ]
+                ],
+                "is_resumable": true
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        }
+    ]
+}
