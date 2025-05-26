@@ -178,6 +178,23 @@ class LocationType(CommcareStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "administrative": {"type": ["boolean", "null"]},
+                "code": {"type": ["string", "null"]},
+                "domain": {"type": ["string", "null"]},
+                "id": {"type": ["string"]},
+                "name": {"type": ["string", "null"]},
+                "parent": {"type": ["string", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "shares_cases": {"type": ["boolean", "null"]},
+                "view_descendants": {"type": ["boolean", "null"]},
+            },
+        }
+
     def path(
         self,
         stream_state: Mapping[str, Any] = None,
@@ -224,6 +241,27 @@ class Location(CommcareStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "created_at": {"type": ["string", "null"]},
+                "domain": {"type": ["string", "null"]},
+                "external_id": {"type": ["string", "null"]},
+                "id": {"type": ["string"]},
+                "last_modified": {"type": ["string", "null"]},
+                "location_data": {"type": ["object", "null"]},
+                "location_id": {"type": ["string", "null"]},
+                "location_type": {"type": ["string", "null"]},
+                "longitude": {"type": ["string", "null"]},
+                "name": {"type": ["string", "null"]},
+                "parent": {"type": ["string", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "resource_uri": {"type": ["site_code", "null"]},
+            },
+        }
 
     def path(
         self,
@@ -475,24 +513,66 @@ class Form(IncrementalStream):
 class SourceCommcare(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = TokenAuthenticator(config["api_key"], auth_method="ApiKey")
+            # top level required fields
+            project_space = config["project_space"]
+            api_key = config["api_key"]
+
+            auth = TokenAuthenticator(api_key, auth_method="ApiKey")
             args = {
                 "authenticator": auth,
             }
-            form_fields_to_exclude = config.get("form_fields_to_exclude", [])
-            next(
-                Application(
-                    **{
-                        **args,
-                        "app_id": config["app_id"],
-                        "form_fields_to_exclude": form_fields_to_exclude,
-                        "project_space": config["project_space"],
-                    }
-                ).read_records(SyncMode.full_refresh)
-            )
-            return True, None
+
+            if config["config_data"]["config_data_type"] == "application":
+                try:
+                    form_fields_to_exclude = config.get("form_fields_to_exclude", [])
+                    next(
+                        Application(
+                            **{
+                                **args,
+                                "app_id": config["config_data"]["app_id"],
+                                "form_fields_to_exclude": form_fields_to_exclude,
+                                "project_space": project_space,
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                except Exception as error:
+                    return False, " Invalid apikey, project_space or app_id : " + str(
+                        error
+                    )
+
+                return True, None
+
+            elif config["config_data"]["config_data_type"] == "organization":
+                if config["config_data"].get("location_type", False):
+                    next(
+                        LocationType(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                elif config["config_data"].get("location", False):
+                    next(
+                        Location(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                else:
+                    return (
+                        False,
+                        "Invalid configuration: either 'location_type' or 'location' must be set to True in config_data",
+                    )
+
+                return True, None
+
         except Exception as error:
-            return False, " Invalid apikey, project_space or app_id : " + str(error)
+            return False, str(error)
 
     def base_schema(self):
         return {
@@ -510,29 +590,59 @@ class SourceCommcare(AbstractSource):
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
         auth = TokenAuthenticator(config["api_key"], auth_method="ApiKey")
         args = {
             "authenticator": auth,
         }
-        form_fields_to_exclude = config.get("form_fields_to_exclude", [])
-        appdata = Application(
-            **{
-                **args,
-                "app_id": config["app_id"],
-                "form_fields_to_exclude": form_fields_to_exclude,
-                "project_space": config["project_space"],
-            }
-        ).read_records(sync_mode=SyncMode.full_refresh)
+        streams = []
 
-        # Generate streams for forms, one per xmlns and one stream for cases.
-        streams = self.generate_streams(args, config, appdata)
+        if config["config_data"]["config_data_type"] == "application":
+            form_fields_to_exclude = config["config_data"].get(
+                "form_fields_to_exclude", []
+            )
+            appdata = Application(
+                **{
+                    **args,
+                    "app_id": config["config_data"]["app_id"],
+                    "form_fields_to_exclude": form_fields_to_exclude,
+                    "project_space": config["project_space"],
+                }
+            ).read_records(sync_mode=SyncMode.full_refresh)
+
+            # Generate streams for forms, one per xmlns and one stream for cases.
+            streams = self.generate_application_streams(args, config, appdata)
+
+        elif config["config_data"]["config_data_type"] == "organization":
+            if config["config_data"].get("location_type", False):
+                streams.append(
+                    LocationType(
+                        **{
+                            **args,
+                            "project_space": config["project_space"],
+                            "form_fields_to_exclude": {},
+                        }
+                    )
+                )
+
+            if config["config_data"].get("location", False):
+                streams.append(
+                    Location(
+                        **{
+                            **args,
+                            "project_space": config["project_space"],
+                            "form_fields_to_exclude": {},
+                        }
+                    )
+                )
+
         return streams
 
-    def generate_streams(self, args, config, appdata):
-        form_fields_to_exclude = config.get("form_fields_to_exclude", [])
+    def generate_application_streams(self, args, config, appdata):
+        form_fields_to_exclude = config["config_data"].get("form_fields_to_exclude", [])
         form_args = {
-            "app_id": config["app_id"],
-            "start_date": config["start_date"],
+            "app_id": config["config_data"]["app_id"],
+            "start_date": config["config_data"]["start_date"],
             "form_fields_to_exclude": form_fields_to_exclude,
             "project_space": config["project_space"],
             **args,
@@ -566,40 +676,21 @@ class SourceCommcare(AbstractSource):
                 name=k,
                 xmlns=key,
                 schema=self.base_schema(),
-                include_archived=config.get("include_archived", False),
+                include_archived=config["config_data"].get("include_archived", False),
                 **form_args,
             )
             streams.append(stream)
 
         stream = Case(
-            start_date=config["start_date"],
+            start_date=config["config_data"]["start_date"],
             schema=self.base_schema(),
-            app_id=config["app_id"],
-            import_all_cases=config.get("import_all_cases", False),
+            app_id=config["config_data"]["app_id"],
+            import_all_cases=config["config_data"].get("import_all_cases", False),
             project_space=config["project_space"],
             form_fields_to_exclude=form_fields_to_exclude,
             **args,
         )
 
         streams.append(stream)
-
-        # add streams for location and location_type
-        if config.get("organization_structure", False):
-            streams.append(
-                LocationType(
-                    **{
-                        **args,
-                        "project_space": config["project_space"],
-                    }
-                )
-            )
-            streams.append(
-                Location(
-                    **{
-                        **args,
-                        "project_space": config["project_space"],
-                    }
-                )
-            )
 
         return streams
