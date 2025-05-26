@@ -54,3 +54,9 @@ connectionSpecification:
       description: Import cases from all applications
       default: false
       order: 5
+    organization_structure:
+      type: boolean
+      title: Import all location types and locations
+      description: Import all location types and locations
+      default: false
+      order: 6

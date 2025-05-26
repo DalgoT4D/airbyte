@@ -172,6 +172,100 @@ class Application(CommcareStream):
         yield response.json()
 
 
+class LocationType(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "location_type"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
+class Location(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "location"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
 class IncrementalStream(CommcareStream, CheckpointMixin):
     cursor_field = "indexed_on"
     _cursor_value = None
@@ -488,5 +582,24 @@ class SourceCommcare(AbstractSource):
         )
 
         streams.append(stream)
+
+        # add streams for location and location_type
+        if config.get("organization_structure", False):
+            streams.append(
+                LocationType(
+                    **{
+                        **args,
+                        "project_space": config["project_space"],
+                    }
+                )
+            )
+            streams.append(
+                Location(
+                    **{
+                        **args,
+                        "project_space": config["project_space"],
+                    }
+                )
+            )
 
         return streams
