@@ -186,7 +186,7 @@ class LocationType(CommcareStream):
                 "administrative": {"type": ["boolean", "null"]},
                 "code": {"type": ["string", "null"]},
                 "domain": {"type": ["string", "null"]},
-                "id": {"type": ["string"]},
+                "id": {"type": ["integer"]},
                 "name": {"type": ["string", "null"]},
                 "parent": {"type": ["string", "null"]},
                 "resource_uri": {"type": ["string", "null"]},
@@ -250,7 +250,7 @@ class Location(CommcareStream):
                 "created_at": {"type": ["string", "null"]},
                 "domain": {"type": ["string", "null"]},
                 "external_id": {"type": ["string", "null"]},
-                "id": {"type": ["string"]},
+                "id": {"type": ["integer"]},
                 "last_modified": {"type": ["string", "null"]},
                 "location_data": {"type": ["object", "null"]},
                 "location_id": {"type": ["string", "null"]},
@@ -259,7 +259,7 @@ class Location(CommcareStream):
                 "name": {"type": ["string", "null"]},
                 "parent": {"type": ["string", "null"]},
                 "resource_uri": {"type": ["string", "null"]},
-                "resource_uri": {"type": ["site_code", "null"]},
+                "site_code": {"type": ["string", "null"]},
             },
         }
 
