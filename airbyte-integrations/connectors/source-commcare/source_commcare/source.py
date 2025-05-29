@@ -756,27 +756,23 @@ class SourceCommcare(AbstractSource):
             streams = self.generate_application_streams(args, config, appdata)
 
         elif config["config_data"]["config_data_type"] == "organization":
-            if config["config_data"].get("location_type", False):
-                streams.append(
-                    LocationType(
-                        **{
-                            **args,
-                            "project_space": config["project_space"],
-                            "form_fields_to_exclude": {},
-                        }
+            org_level_streams_registry = {
+                "location_type": LocationType,
+                "location": Location,
+                "lookup_table": LookupTable,
+                "lookup_table_item": LookupTableRows,
+            }
+            for stream_name, cls in org_level_streams_registry.items():
+                if config["config_data"].get(stream_name, False):
+                    streams.append(
+                        cls(
+                            **{
+                                **args,
+                                "project_space": config["project_space"],
+                                "form_fields_to_exclude": {},
+                            }
+                        )
                     )
-                )
-
-            if config["config_data"].get("location", False):
-                streams.append(
-                    Location(
-                        **{
-                            **args,
-                            "project_space": config["project_space"],
-                            "form_fields_to_exclude": {},
-                        }
-                    )
-                )
 
         return streams
 
