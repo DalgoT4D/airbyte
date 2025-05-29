@@ -378,7 +378,7 @@ class LookupTableRows(CommcareStream):
             "properties": {
                 "id": {"type": ["string"]},
                 "data_type_id": {"type": ["string"]},
-                "fields": {"type": ["array", "null"]},
+                "fields": {"type": ["object", "null"]},
                 "item_attributes": {"type": ["object", "null"]},
                 "resource_uri": {"type": ["string", "null"]},
                 "sort_key": {"type": ["integer"]},
