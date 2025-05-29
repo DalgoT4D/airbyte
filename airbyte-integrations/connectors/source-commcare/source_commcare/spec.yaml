@@ -76,8 +76,8 @@ connectionSpecification:
             - config_data_type
             - location_type
             - location
-            - lookup_tables
-            - lookup_table_rows
+            - lookup_table
+            - lookup_table_item
           properties:
             config_data_type:
               type: string
