@@ -76,6 +76,8 @@ connectionSpecification:
             - config_data_type
             - location_type
             - location
+            - lookup_tables
+            - lookup_table_rows
           properties:
             config_data_type:
               type: string
@@ -92,3 +94,16 @@ connectionSpecification:
               description: Import all locations of the organization
               default: false
               order: 7
+            lookup_table:
+              type: boolean
+              title: Import all lookup tables of the organization
+              description: Import all lookup tables of the organization
+              default: false
+              order: 8
+            lookup_table_item:
+              type: boolean
+              title: Import all lookup table rows of the organization
+              description: Import all lookup table rows of the organization
+              default: false
+              order: 9
+            

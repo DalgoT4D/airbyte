@@ -304,6 +304,128 @@ class Location(CommcareStream):
         return None
 
 
+class LookupTable(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "id": {"type": ["string"]},
+                "fields": {"type": ["array", "null"]},
+                "is_global": {"type": ["boolean", "null"]},
+                "item_attributes": {"type": ["array", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "tag": {"type": ["string", "null"]},
+            },
+        }
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "lookup_table"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
+class LookupTableRows(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "id": {"type": ["string"]},
+                "data_type_id": {"type": ["string"]},
+                "fields": {"type": ["array", "null"]},
+                "item_attributes": {"type": ["object", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "sort_key": {"type": ["integer"]},
+            },
+        }
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "lookup_table_item"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
 class IncrementalStream(CommcareStream, CheckpointMixin):
     cursor_field = "indexed_on"
     _cursor_value = None
@@ -563,10 +685,30 @@ class SourceCommcare(AbstractSource):
                             }
                         ).read_records(SyncMode.full_refresh)
                     )
+                elif config["config_data"].get("lookup_table", False):
+                    next(
+                        LookupTable(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                elif config["config_data"].get("lookup_table_item", False):
+                    next(
+                        LookupTableRows(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
                 else:
                     return (
                         False,
-                        "Invalid configuration: either 'location_type' or 'location' must be set to True in config_data",
+                        "Invalid configuration: none of the organization streams are selected.",
                     )
 
                 return True, None
