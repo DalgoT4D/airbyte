@@ -172,6 +172,260 @@ class Application(CommcareStream):
         yield response.json()
 
 
+class LocationType(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "administrative": {"type": ["boolean", "null"]},
+                "code": {"type": ["string", "null"]},
+                "domain": {"type": ["string", "null"]},
+                "id": {"type": ["integer"]},
+                "name": {"type": ["string", "null"]},
+                "parent": {"type": ["string", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "shares_cases": {"type": ["boolean", "null"]},
+                "view_descendants": {"type": ["boolean", "null"]},
+            },
+        }
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "location_type"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
+class Location(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "created_at": {"type": ["string", "null"]},
+                "domain": {"type": ["string", "null"]},
+                "external_id": {"type": ["string", "null"]},
+                "id": {"type": ["integer"]},
+                "last_modified": {"type": ["string", "null"]},
+                "location_data": {"type": ["object", "null"]},
+                "location_id": {"type": ["string", "null"]},
+                "location_type": {"type": ["string", "null"]},
+                "longitude": {"type": ["string", "null"]},
+                "name": {"type": ["string", "null"]},
+                "parent": {"type": ["string", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "site_code": {"type": ["string", "null"]},
+            },
+        }
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "location"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
+class LookupTable(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "id": {"type": ["string"]},
+                "fields": {"type": ["array", "null"]},
+                "is_global": {"type": ["boolean", "null"]},
+                "item_attributes": {"type": ["array", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "tag": {"type": ["string", "null"]},
+            },
+        }
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "lookup_table"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
+class LookupTableRows(CommcareStream):
+    primary_key = "id"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_json_schema(self):
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "id": {"type": ["string"]},
+                "data_type_id": {"type": ["string"]},
+                "fields": {"type": ["object", "null"]},
+                "item_attributes": {"type": ["object", "null"]},
+                "resource_uri": {"type": ["string", "null"]},
+                "sort_key": {"type": ["integer"]},
+            },
+        }
+
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "lookup_table_item"
+
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
+        try:
+            # Server returns status 500 when there are no more rows.
+            # raise an error if server returns an error
+            response.raise_for_status()
+            meta = response.json()["meta"]
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": 200, "offset": 0}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
+        for o in iter(response.json()["objects"]):
+            yield o
+        return None
+
+
 class IncrementalStream(CommcareStream, CheckpointMixin):
     cursor_field = "indexed_on"
     _cursor_value = None
@@ -381,24 +635,86 @@ class Form(IncrementalStream):
 class SourceCommcare(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = TokenAuthenticator(config["api_key"], auth_method="ApiKey")
+            # top level required fields
+            project_space = config["project_space"]
+            api_key = config["api_key"]
+
+            auth = TokenAuthenticator(api_key, auth_method="ApiKey")
             args = {
                 "authenticator": auth,
             }
-            form_fields_to_exclude = config.get("form_fields_to_exclude", [])
-            next(
-                Application(
-                    **{
-                        **args,
-                        "app_id": config["app_id"],
-                        "form_fields_to_exclude": form_fields_to_exclude,
-                        "project_space": config["project_space"],
-                    }
-                ).read_records(SyncMode.full_refresh)
-            )
-            return True, None
+
+            if config["config_data"]["config_data_type"] == "application":
+                try:
+                    form_fields_to_exclude = config.get("form_fields_to_exclude", [])
+                    next(
+                        Application(
+                            **{
+                                **args,
+                                "app_id": config["config_data"]["app_id"],
+                                "form_fields_to_exclude": form_fields_to_exclude,
+                                "project_space": project_space,
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                except Exception as error:
+                    return False, " Invalid apikey, project_space or app_id : " + str(
+                        error
+                    )
+
+                return True, None
+
+            elif config["config_data"]["config_data_type"] == "organization":
+                if config["config_data"].get("location_type", False):
+                    next(
+                        LocationType(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                elif config["config_data"].get("location", False):
+                    next(
+                        Location(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                elif config["config_data"].get("lookup_table", False):
+                    next(
+                        LookupTable(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                elif config["config_data"].get("lookup_table_item", False):
+                    next(
+                        LookupTableRows(
+                            **{
+                                **args,
+                                "project_space": project_space,
+                                "form_fields_to_exclude": {},
+                            }
+                        ).read_records(SyncMode.full_refresh)
+                    )
+                else:
+                    return (
+                        False,
+                        "Invalid configuration: none of the organization streams are selected.",
+                    )
+
+                return True, None
+
         except Exception as error:
-            return False, " Invalid apikey, project_space or app_id : " + str(error)
+            return False, str(error)
 
     def base_schema(self):
         return {
@@ -416,29 +732,55 @@ class SourceCommcare(AbstractSource):
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
         auth = TokenAuthenticator(config["api_key"], auth_method="ApiKey")
         args = {
             "authenticator": auth,
         }
-        form_fields_to_exclude = config.get("form_fields_to_exclude", [])
-        appdata = Application(
-            **{
-                **args,
-                "app_id": config["app_id"],
-                "form_fields_to_exclude": form_fields_to_exclude,
-                "project_space": config["project_space"],
-            }
-        ).read_records(sync_mode=SyncMode.full_refresh)
+        streams = []
 
-        # Generate streams for forms, one per xmlns and one stream for cases.
-        streams = self.generate_streams(args, config, appdata)
+        if config["config_data"]["config_data_type"] == "application":
+            form_fields_to_exclude = config["config_data"].get(
+                "form_fields_to_exclude", []
+            )
+            appdata = Application(
+                **{
+                    **args,
+                    "app_id": config["config_data"]["app_id"],
+                    "form_fields_to_exclude": form_fields_to_exclude,
+                    "project_space": config["project_space"],
+                }
+            ).read_records(sync_mode=SyncMode.full_refresh)
+
+            # Generate streams for forms, one per xmlns and one stream for cases.
+            streams = self.generate_application_streams(args, config, appdata)
+
+        elif config["config_data"]["config_data_type"] == "organization":
+            org_level_streams_registry = {
+                "location_type": LocationType,
+                "location": Location,
+                "lookup_table": LookupTable,
+                "lookup_table_item": LookupTableRows,
+            }
+            for stream_name, cls in org_level_streams_registry.items():
+                if config["config_data"].get(stream_name, False):
+                    streams.append(
+                        cls(
+                            **{
+                                **args,
+                                "project_space": config["project_space"],
+                                "form_fields_to_exclude": {},
+                            }
+                        )
+                    )
+
         return streams
 
-    def generate_streams(self, args, config, appdata):
-        form_fields_to_exclude = config.get("form_fields_to_exclude", [])
+    def generate_application_streams(self, args, config, appdata):
+        form_fields_to_exclude = config["config_data"].get("form_fields_to_exclude", [])
         form_args = {
-            "app_id": config["app_id"],
-            "start_date": config["start_date"],
+            "app_id": config["config_data"]["app_id"],
+            "start_date": config["config_data"]["start_date"],
             "form_fields_to_exclude": form_fields_to_exclude,
             "project_space": config["project_space"],
             **args,
@@ -472,16 +814,16 @@ class SourceCommcare(AbstractSource):
                 name=k,
                 xmlns=key,
                 schema=self.base_schema(),
-                include_archived=config.get("include_archived", False),
+                include_archived=config["config_data"].get("include_archived", False),
                 **form_args,
             )
             streams.append(stream)
 
         stream = Case(
-            start_date=config["start_date"],
+            start_date=config["config_data"]["start_date"],
             schema=self.base_schema(),
-            app_id=config["app_id"],
-            import_all_cases=config.get("import_all_cases", False),
+            app_id=config["config_data"]["app_id"],
+            import_all_cases=config["config_data"].get("import_all_cases", False),
             project_space=config["project_space"],
             form_fields_to_exclude=form_fields_to_exclude,
             **args,

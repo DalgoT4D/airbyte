@@ -5,9 +5,8 @@ connectionSpecification:
   type: object
   required:
     - api_key
-    - app_id
-    - start_date
     - project_space
+    - config_data
   properties:
     api_key:
       type: string
@@ -22,35 +21,89 @@ connectionSpecification:
       description: >-
         Project Space for commcare
       order: 1
-    app_id:
-      type: string
-      title: Application ID
+    config_data:
+      title: Configuration Data
+      type: object
       description: >-
-        The Application ID we are interested in
-      airbyte_secret: true
-      order: 2
-    start_date:
-      type: string
-      title: Start date for extracting records
-      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-      default: "2022-10-01T00:00:00Z"
-      description: >-
-        UTC date and time in the format 2017-01-25T00:00:00Z. Only records after this date will be replicated.
-      order: 3
-    form_fields_to_exclude:
-      type: array
-      title: Form Fields to be Excluded
-      description: Forms field which you don't want to pull
-      order: 4
-    include_archived:
-      type: boolean
-      title: Include Archived Forms
-      description: Include archived forms in the replication
-      default: false
-      order: 5
-    import_all_cases:
-      type: boolean
-      title: Import cases from all applications
-      description: Import cases from all applications
-      default: false
-      order: 5
+        Configuration data for the Commcare source.
+        This includes options for pulling application level or organization level data.
+      oneOf:
+        - title: Pull application level data
+          type: object
+          required:
+            - config_data_type
+            - app_id
+            - start_date
+          properties:
+            config_data_type:
+              type: string
+              const: "application"
+            app_id:
+              type: string
+              title: Application ID
+              description: >-
+                The Application ID we are interested in
+              airbyte_secret: true
+              order: 2
+            start_date:
+              type: string
+              title: Start date for extracting records
+              pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+              default: "2022-10-01T00:00:00Z"
+              description: >-
+                UTC date and time in the format 2017-01-25T00:00:00Z. Only records after this date will be replicated.
+              order: 3
+            form_fields_to_exclude:
+              type: array
+              title: Form Fields to be Excluded
+              description: Forms field which you don't want to pull
+              order: 4
+            include_archived:
+              type: boolean
+              title: Include Archived Forms
+              description: Include archived forms in the replication
+              default: false
+              order: 5
+            import_all_cases:
+              type: boolean
+              title: Import cases from all applications
+              description: Import cases from all applications
+              default: false
+              order: 6
+        - title: Pull organization level data
+          type: object
+          required:
+            - config_data_type
+            - location_type
+            - location
+            - lookup_table
+            - lookup_table_item
+          properties:
+            config_data_type:
+              type: string
+              const: organization
+            location_type:
+              type: boolean
+              title: Import all location types of the organization
+              description: Import all location types of the organization
+              default: false
+              order: 6
+            location:
+              type: boolean
+              title: Import all locations of the organization
+              description: Import all locations of the organization
+              default: false
+              order: 7
+            lookup_table:
+              type: boolean
+              title: Import all lookup tables of the organization
+              description: Import all lookup tables of the organization
+              default: false
+              order: 8
+            lookup_table_item:
+              type: boolean
+              title: Import all lookup table rows of the organization
+              description: Import all lookup table rows of the organization
+              default: false
+              order: 9
+            
