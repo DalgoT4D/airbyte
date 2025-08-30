@@ -75,7 +75,7 @@ class KoboToolStream(HttpStream, CheckpointMixin, ABC):
     @property
     def name(self) -> str:
         """Return the english substring as stream name. If not found return form uid"""
-        regex = re.compile("[^a-zA-Z ]")
+        regex = re.compile("[^a-zA-Z0-9 ]")
         s = regex.sub("", getattr(self, 'stream_name', 'kobotoolstream'))
         s = s.strip()
         return s if len(s) > 0 else self.form_id
