@@ -17,6 +17,18 @@ definitions:
       password: "{{config['password']}}"
       idp_base: "{{config['url_base']}}"
 
+  requester_with_query:
+    type: HttpRequester
+    url_base: "{{config['url_base']}}/api"
+    http_method: "GET"
+    request_parameters:
+      "{{ config['query_param'].split('=')[0] if config.get('query_param') and '=' in config['query_param'] else '' }}": "{{ config['query_param'].split('=', 1)[1] if config.get('query_param') and '=' in config['query_param'] else '' }}"
+    authenticator:
+      class_name: source_avni.components.CustomAuthenticator
+      username: "{{config['username']}}"
+      password: "{{config['password']}}"
+      idp_base: "{{config['url_base']}}"
+
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -36,6 +48,26 @@ definitions:
         field_name: "page"
     requester:
       $ref: "#/definitions/requester"
+
+  retriever_with_query:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester_with_query"
 
   incremental_base:
     type: DatetimeBasedCursor
@@ -59,8 +91,13 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
+  base_stream_with_query:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever_with_query"
+
   subjects_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/base_stream_with_query"
     name: "subjects"
     primary_key: "ID"
     incremental_sync:
@@ -68,7 +105,7 @@ definitions:
     transformations:
       $ref: "#/definitions/transformations_base"
     $parameters:
-      path: "{{ '/subjects?' + config['query_param'] if config['query_param'] else '/subjects'}}"
+      path: "/subjects"
 
   program_encounters_stream:
     $ref: "#/definitions/base_stream"
@@ -93,7 +130,7 @@ definitions:
       path: "/programEnrolments"
 
   encounters_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/base_stream_with_query"
     name: "encounters"
     primary_key: "ID"
     incremental_sync:
@@ -101,7 +138,7 @@ definitions:
     transformations:
       $ref: "#/definitions/transformations_base"
     $parameters:
-      path: "{{ '/encounters?' + config['query_param'] if config['query_param'] else '/encounters'}}"
+      path: "/encounters"
 
   approval_status_stream:
     $ref: "#/definitions/base_stream"
