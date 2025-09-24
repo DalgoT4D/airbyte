@@ -68,7 +68,7 @@ definitions:
     transformations:
       $ref: "#/definitions/transformations_base"
     $parameters:
-      path: "/subjects?{{config['query_param'] | default('')}}"
+      path: "{{ '/subjects?' + config['query_param'] if config['query_param'] else '/subjects'}}"
 
   program_encounters_stream:
     $ref: "#/definitions/base_stream"
@@ -101,7 +101,7 @@ definitions:
     transformations:
       $ref: "#/definitions/transformations_base"
     $parameters:
-      path: "/encounters"
+      path: "{{ '/encounters?' + config['query_param'] if config['query_param'] else '/encounters'}}"
 
   approval_status_stream:
     $ref: "#/definitions/base_stream"
@@ -181,4 +181,4 @@ spec:
         title: Query Parameter
         order: 5
         examples:
-          - "key1=value1&key2=value2"
+          - "key1=value1&key2=value2&key3=value3"
