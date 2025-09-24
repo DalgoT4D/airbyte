@@ -214,8 +214,8 @@ spec:
           - "2000-10-31T01:30:00.000Z"
       query_param:
         type: string
-        description: Additional query parameter to be sent with the request
+        description: Additional query parameter to be sent with the request (Only one key-value pair separated by '=' is allowed)
         title: Query Parameter
         order: 5
         examples:
-          - "key1=value1&key2=value2&key3=value3"
+          - "key1=value1"
