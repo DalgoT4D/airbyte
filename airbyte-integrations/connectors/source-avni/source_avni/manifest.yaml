@@ -175,3 +175,10 @@ spec:
         order: 4
         examples:
           - "2000-10-31T01:30:00.000Z"
+      query_param:
+        type: string
+        description: Additional query parameter to be sent with the request
+        title: Query Parameter
+        order: 5
+        examples:
+          - "subjectTypeName=Village"
