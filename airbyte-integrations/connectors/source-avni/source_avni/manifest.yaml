@@ -68,7 +68,7 @@ definitions:
     transformations:
       $ref: "#/definitions/transformations_base"
     $parameters:
-      path: "/subjects"
+      path: "/subjects?{{config['query_param'] | default('')}}"
 
   program_encounters_stream:
     $ref: "#/definitions/base_stream"
@@ -181,4 +181,4 @@ spec:
         title: Query Parameter
         order: 5
         examples:
-          - "subjectTypeName=Village"
+          - "key1=value1&key2=value2"
