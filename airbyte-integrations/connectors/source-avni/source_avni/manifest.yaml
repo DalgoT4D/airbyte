@@ -17,6 +17,30 @@ definitions:
       password: "{{config['password']}}"
       idp_base: "{{config['url_base']}}"
 
+  subjects_requester_with_query:
+    type: HttpRequester
+    url_base: "{{config['url_base']}}/api"
+    http_method: "GET"
+    request_parameters:
+      "{{ config['subjects_query_param'].split('=')[0] if config.get('subjects_query_param') and '=' in config['subjects_query_param'] else '' }}": "{{ config['subjects_query_param'].split('=', 1)[1] if config.get('subjects_query_param') and '=' in config['subjects_query_param'] else '' }}"
+    authenticator:
+      class_name: source_avni.components.CustomAuthenticator
+      username: "{{config['username']}}"
+      password: "{{config['password']}}"
+      idp_base: "{{config['url_base']}}"
+
+  enrollments_requester_with_query:
+    type: HttpRequester
+    url_base: "{{config['url_base']}}/api"
+    http_method: "GET"
+    request_parameters:
+      "{{ config['enrollments_query_param'].split('=')[0] if config.get('enrollments_query_param') and '=' in config['enrollments_query_param'] else '' }}": "{{ config['enrollments_query_param'].split('=', 1)[1] if config.get('enrollments_query_param') and '=' in config['enrollments_query_param'] else '' }}"
+    authenticator:
+      class_name: source_avni.components.CustomAuthenticator
+      username: "{{config['username']}}"
+      password: "{{config['password']}}"
+      idp_base: "{{config['url_base']}}"
+
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -36,6 +60,46 @@ definitions:
         field_name: "page"
     requester:
       $ref: "#/definitions/requester"
+
+  subjects_retriever_with_query:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/subjects_requester_with_query"
+
+  enrollments_retriever_with_query:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/enrollments_requester_with_query"
 
   incremental_base:
     type: DatetimeBasedCursor
@@ -59,8 +123,18 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
+  subjects_base_stream_with_query:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/subjects_retriever_with_query"
+
+  enrollments_base_stream_with_query:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/enrollments_retriever_with_query"
+
   subjects_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/subjects_base_stream_with_query"
     name: "subjects"
     primary_key: "ID"
     incremental_sync:
@@ -93,7 +167,7 @@ definitions:
       path: "/programEnrolments"
 
   encounters_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/enrollments_base_stream_with_query"
     name: "encounters"
     primary_key: "ID"
     incremental_sync:
@@ -175,3 +249,17 @@ spec:
         order: 4
         examples:
           - "2000-10-31T01:30:00.000Z"
+      subjects_query_param:
+        type: string
+        description: Additional filter (query) parameter to be sent with the request for subjects stream (Only one key-value pair separated by '=' is allowed)
+        title: Subjects filter parameter
+        order: 5
+        examples:
+          - "key1=value1"
+      enrollments_query_param:
+        type: string
+        description: Additional filter (query) parameter to be sent with the request for enrollments stream (Only one key-value pair separated by '=' is allowed)
+        title: Enrollments filter parameter
+        order: 6
+        examples:
+          - "key1=value1"
