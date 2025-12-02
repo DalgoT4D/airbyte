@@ -1,0 +1,9 @@
+{
+  "client_id": "1000.invalid_client_id",
+  "client_secret": "invalid_client_secret",
+  "client_refresh_token": "1000.invalid_refresh_token",
+  "account_owner_name": "nonexistent@company.com",
+  "app_link_name": "nonexistent_app",
+  "base_accounts_url": "accounts.zoho.com",
+  "base_url": "www.zohoapis.com"
+}

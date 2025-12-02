@@ -1,0 +1,23 @@
+connector_image: airbyte/source-zoho-creator:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_zoho_creator/spec.yaml"
+  connection:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "exception"
+  discovery:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+  basic_read:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+        timeout_seconds: 3600
+  incremental:
+    tests:
+      - config_path: "integration_tests/sample_config.json"
+        timeout_seconds: 3600

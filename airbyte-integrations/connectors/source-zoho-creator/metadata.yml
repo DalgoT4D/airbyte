@@ -1,0 +1,12 @@
+data:
+  connectorType: source
+  definitionId:  # Generate new UUID
+  dockerImageTag: 
+  dockerRepository: 
+  githubIssueLabel: 
+  icon: icon.svg
+  license: MIT
+  name: Zoho Creator
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-creator
+metadataSpecVersion: "1.0"
