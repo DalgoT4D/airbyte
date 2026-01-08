@@ -1,5 +1,5 @@
 documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-creator
-connection_specification:
+connectionSpecification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
 
@@ -17,7 +17,7 @@ connection_specification:
         type: string
         order: 0
         title: Client ID
-        description: The client ID that was generated when you registered the client application on Zoho API Console. https://www.zoho.com/creator/help/api/v2.1/register-client.html
+        description: The client ID that was generated when you registered the client application on Zoho API Console. (https://www.zoho.com/creator/help/api/v2.1/register-client.html)
         examples:
         - "1000.abc123def456"
         airbyte_secret: true
@@ -26,7 +26,7 @@ connection_specification:
         type: string
         order: 1
         title: Client secret
-        description: The client secret that was generated when you registered the client application on Zoho API Console. https://www.zoho.com/creator/help/api/v2.1/register-client.html
+        description: The client secret that was generated when you registered the client application on Zoho API Console. (https://www.zoho.com/creator/help/api/v2.1/register-client.html)
         examples:
         - "ghi789jkl012mno"
         airbyte_secret: true
@@ -35,14 +35,14 @@ connection_specification:
         type: string
         order: 2
         title: Refresh token
-        description: The refresh token that will be required to refresh the requesting user's access token. https://www.zoho.com/creator/help/api/v2.1/generate-token.html
+        description: The refresh token that will be required to refresh the requesting user's access token. Must have minimum scopes- ZohoCreator.report.READ, ZohoCreator.meta.application.READ. (https://www.zoho.com/creator/help/api/v2.1/generate-token.html)
         airbyte_secret: true
         examples:
         - "1000.abcdef123456789ghi"
 
       account_owner_name:
         type: string
-        description: the username of the Zoho Creator account's owner. You can get it from the Zoho Creator App's URL. https://www.zoho.com/creator/help/api/v2.1/get-records.html
+        description: the username of the Zoho Creator account's owner. You can get it from the Zoho Creator App's URL. (https://www.zoho.com/creator/help/api/v2.1/get-records.html)
         order: 3
         title: Account Owner Username
         examples:
@@ -50,7 +50,7 @@ connection_specification:
 
       app_link_name:
         type: string
-        description: the link name of the target application. You can get it from the Zoho Creator App's URL. https://www.zoho.com/creator/help/api/v2.1/get-records.html
+        description: the link name of the target application. You can get it from the Zoho Creator App's URL. (https://www.zoho.com/creator/help/api/v2.1/get-records.html)
         order: 4
         title: App Link Name
         examples:
@@ -58,7 +58,7 @@ connection_specification:
 
       base_accounts_url:
         type: string
-        description: The base URL of your Zoho Account. For example, it's accounts.zoho.com, if your account belongs to Zoho's US DC. 
+        description: The base URL of your Zoho Account. For example, it's accounts.zoho.com, if your account belongs to Zoho's US DC. (https://accounts.zoho.com/oauth/serverinfo)
         order: 5
         title: Base Accounts Url
         examples:
@@ -66,9 +66,9 @@ connection_specification:
 
       base_url:
         type: string
-        description: the base URL of your Zoho Creator account.  For example, it's www.zohoapis.com if your account belongs to Zoho's US DC.
+        description: the base API URL of your Zoho Creator account.  For example, it's www.zohoapis.com if your account belongs to Zoho's US DC. (https://help.zoho.com/portal/en/kb/creator/developer-guide/others/url-patterns/articles/know-your-creator-account-s-base-url)
         order: 6
-        title: Base Url
+        title: Base API Url
         examples:
         - "www.zohoapis.com"
 

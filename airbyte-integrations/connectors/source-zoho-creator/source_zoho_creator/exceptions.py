@@ -12,6 +12,11 @@ class ZohoCreatorAPIError(Exception):
 
     pass
 
+class ZohoCreatorAuthError(ZohoCreatorAPIError):
+    """Exception for authentication errors."""
+
+    pass
+
 
 class ZohoCreatorConfigError(Exception):
     """Exception for configuration errors."""

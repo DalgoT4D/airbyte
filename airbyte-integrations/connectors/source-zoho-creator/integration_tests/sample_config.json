@@ -1,9 +1,9 @@
 {
-  "client_id": "1000.SP2XJVHTJD17Q6GSJWKC1HYPR19EZC",
-  "client_secret": "9fe4e3b383783e10e4fe8ca5c08ceb66b31e044bc1",
-  "client_refresh_token": "1000.b960fa303fc208c19ef398e47f0ae003.8e96a31ea39a2938658c68ca13fb8a7d",
-  "account_owner_name": "bhumivolunteering",
-  "app_link_name": "skill-ed",
-  "base_accounts_url": "accounts.zoho.in",
-  "base_url": "www.zohoapis.in"
+  "client_id": "your_client_id",
+  "client_secret": "your_client_secret",
+  "client_refresh_token": "your_client_refresh_token",
+  "account_owner_name": "your_account_owner_name",
+  "app_link_name": "your_app_link_name",
+  "base_accounts_url": "your_base_accounts_url",
+  "base_url": "your_base_url"
 }

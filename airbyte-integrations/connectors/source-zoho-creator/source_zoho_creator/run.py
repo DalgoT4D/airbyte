@@ -5,6 +5,7 @@
 
 import sys
 import traceback
+import json
 from datetime import datetime
 from typing import List
 
@@ -15,18 +16,13 @@ from source_zoho_creator import SourceZohoCreator
 
 
 def _get_source(args: List[str]):
-    catalog_path = AirbyteEntrypoint.extract_catalog(args)
-    config_path = AirbyteEntrypoint.extract_config(args)
-    state_path = AirbyteEntrypoint.extract_state(args)
     try:
-        return SourceZohoCreator(
-            SourceZohoCreator.read_catalog(catalog_path) if catalog_path else None,
-            SourceZohoCreator.read_config(config_path) if config_path else None,
-            SourceZohoCreator.read_state(state_path) if state_path else None,
-        )
+        # AbstractSource is instantiated without arguments
+        return SourceZohoCreator()
     except Exception as error:
-        print(
-            AirbyteMessage(
+        # Use model_dump_json() for Pydantic v2 or json() for older versions
+        try:
+            error_msg = AirbyteMessage(
                 type=Type.TRACE,
                 trace=AirbyteTraceMessage(
                     type=TraceType.ERROR,
@@ -36,14 +32,23 @@ def _get_source(args: List[str]):
                         stack_trace=traceback.format_exc(),
                     ),
                 ),
-            ).json()
-        )
+            )
+            # Try model_dump_json() first (Pydantic v2), fall back to json() (Pydantic v1)
+            if hasattr(error_msg, 'model_dump_json'):
+                print(error_msg.model_dump_json())
+            else:
+                print(error_msg.json())
+        except Exception as serialization_error:
+            # Fallback: just print the error message
+            print(json.dumps({"type": "TRACE", "trace": {"type": "ERROR", "error": {"message": str(error)}}}))
         return None
 
 
 def run():
     init_uncaught_exception_handler(logger)
     _args = sys.argv[1:]
+    
     source = _get_source(_args)
+    
     if source:
         launch(source, _args)

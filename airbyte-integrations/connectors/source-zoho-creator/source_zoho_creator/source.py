@@ -5,8 +5,8 @@
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.sources import Source
+from airbyte_cdk.models import AirbyteMessage, AirbyteCatalog, SyncMode
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
@@ -16,25 +16,12 @@ from .streams import ReportDataStream
 logger = logging.getLogger("airbyte")
 
 
-class SourceZohoCreator(Source):
+class SourceZohoCreator(AbstractSource):
     """
     Zoho Creator source connector implementation.
     
     This connector uses the Zoho Creator Data API to extract records from Zoho Creator applications.
     """
-
-    def __init__(self, config: Mapping[str, Any]) -> None:
-        """Initialize the Zoho Creator source with configuration."""
-        super().__init__()
-        # Store raw config and convenient attributes for later use
-        self.config: Mapping[str, Any] = config
-        self.client_id: str = config.get("client_id", "")
-        self.client_secret: str = config.get("client_secret", "")
-        self.client_refresh_token: str = config.get("client_refresh_token", "")
-        self.account_owner_name: str = config.get("account_owner_name", "")
-        self.app_link_name: Optional[str] = config.get("app_link_name")
-        self.base_accounts_url: str = config.get("base_accounts_url", "")
-        self.base_url: str = config.get("base_url", "")
     
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[str]]:
         """
@@ -76,23 +63,6 @@ class SourceZohoCreator(Source):
             error_msg = f"Unexpected error during connection check: {str(e)}"
             logger.error(error_msg)
             return False, error_msg
-        
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> ConfiguredAirbyteCatalog:
-        """
-        Discover available streams from Zoho Creator.
-        
-        Args:
-            logger: Logger instance
-            config: Configuration dictionary containing API credentials
-            
-        Returns:
-            ConfiguredAirbyteCatalog with discovered streams
-        """
-        # TODO: Implement stream discovery
-        # Should fetch available applications and forms from Zoho Creator API
-        streams = self.streams(config)
-        catalog = ConfiguredAirbyteCatalog([])
-        return catalog
 
     def streams(self, config: Mapping[str, Any]) -> List:
 
@@ -106,7 +76,7 @@ class SourceZohoCreator(Source):
             client_secret=config["client_secret"],
             client_refresh_token=config["client_refresh_token"],
             account_owner_name=config["account_owner_name"],
-            app_link_name=config.get("app_link_name"),
+            app_link_name=config["app_link_name"],
             base_accounts_url=config["base_accounts_url"],
             base_url=config["base_url"],
         )
@@ -116,6 +86,7 @@ class SourceZohoCreator(Source):
         # Fetch reports for this application
         try:
             reports = api.get_application_reports()
+            logger.info(f"Successfully fetched all report names for application {api.app_link_name}")
         except Exception as e:
             logger.error(f"Failed to fetch reports: {e}")
             reports = []
@@ -138,24 +109,3 @@ class SourceZohoCreator(Source):
 
         return stream_instances
 
-    def read(
-        self,
-        logger: logging.Logger,
-        config: Mapping[str, Any],
-        catalog: ConfiguredAirbyteCatalog,
-        state: Optional[MutableMapping[str, Any]] = None,
-    ) -> Iterator[AirbyteMessage]:
-        """
-        Read data from Zoho Creator streams.
-        
-        Args:
-            logger: Logger instance
-            config: Configuration dictionary
-            catalog: Catalog of streams to sync
-            state: Current state for incremental syncs
-            
-        Yields:
-            AirbyteMessage instances
-        """
-        # TODO: Implement data reading logic
-        yield from []

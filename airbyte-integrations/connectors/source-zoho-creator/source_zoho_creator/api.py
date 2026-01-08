@@ -3,21 +3,16 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Optional, Tuple
+import time
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 import requests
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
+from .exceptions import ZohoCreatorAPIError, ZohoCreatorAuthError
+
 logger = logging.getLogger("airbyte")
 
-class ZohoCreatorAPIError(Exception):
-    """Base exception for Zoho Creator API errors."""
-    pass
-
-
-class ZohoCreatorAuthError(ZohoCreatorAPIError):
-    """Exception for authentication errors."""
-    pass
 
 class ZohoCreatorAPI:
     """
@@ -75,10 +70,11 @@ class ZohoCreatorAPI:
         Raises:
             ZohoCreatorAuthError: If token refresh fails
         """
-        # Check if cached access token is still valid (within 1 hour buffer)
+
+        # if cached access token is still valid, then return it
         if self._access_token and self._token_expires_at:
-            if time.time() < self._token_expires_at:
-                return self._access_token
+         if time.time() < self._token_expires_at:
+            return self._access_token
         
         # if access token is expired or not present, then get new token
         token_endpoint = self._get_token_endpoint()
@@ -103,10 +99,9 @@ class ZohoCreatorAPI:
             
             self._access_token = data["access_token"]
             
-            # Cache expiry (3600 seconds = 1 hour)
+            # Cache expiry set using expires_in field in response
             if "expires_in" in data:
-                import time
-                expires_in = data.get("expires_in")
+                expires_in = data.get("expires_in") - 60 #60 seconds buffer to ensure race condition is not hit
                 if isinstance(expires_in, str):
                     expires_in = int(expires_in)
                 self._token_expires_at = time.time() + expires_in
@@ -140,20 +135,19 @@ class ZohoCreatorAPI:
             Tuple of (success: bool, error_message: Optional[str])
         """
         try:
-            # Try to refresh token
+            # Get access token
             access_token = self.get_access_token()
             logger.info("Successfully obtained access token")
             
             # Try to make a test API call
             headers = {
-                "Authorization": f"Bearer {access_token}",
-                "User-Agent": "Airbyte",
+                "Authorization": f"Bearer {access_token}"
             }
             
-            # Test endpoint: get application forms
             url = self._get_metadata_endpoint()
             response = requests.get(url, headers=headers, timeout=10)
             
+            # Check if the response is successful
             if response.status_code == 200:
                 logger.info("Configuration validation successful")
                 return True, None
@@ -188,7 +182,7 @@ class ZohoCreatorAPI:
             return False, error_msg
 
     def get_application_reports(self) -> List[dict]:
-        """Get reports for given application using metadata API"""
+        """Get list of all reports for given application using metadata API"""
         reports: List[dict] = []
         try:
             url = self._get_metadata_endpoint()
@@ -201,15 +195,69 @@ class ZohoCreatorAPI:
             logger.error(f"Failed to fetch reports: {e}")
             return []
 
-    def get_report_schema(self, report_link_name: str) -> Mapping[str, Any]:
+    def get_report_data(self, report_link_name: str) -> List[dict]:
         """
-        Get the schema for a specific form.
+        Get the data for a specific report.
+        
+        Args:
+            report_link_name: Report link name
+        """
+        records = []
+        try:
+            url = self._get_data_endpoint(report_link_name)
+            headers = {"Authorization": f"Bearer {self.get_access_token()}"}
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                response_json = response.json()
+                records = response_json.get("data", [])
+        except Exception as e:
+            logger.error(f"Failed to fetch report data: {e}")
+    
+        return records
+
+    def get_report_schema(self, report_link_name: str) -> Optional[Mapping[str, Any]]:
+        """
+        Get the schema for a specific report by inferring from sample data.
+        
+        Since Zoho Creator Data API returns all fields as strings, we extract
+        field names from sample records and define all fields as string type.
         
         Args:
             report_link_name: Report link name
             
         Returns:
-            Report schema dictionary
+            Report schema dictionary with field names as keys and JSON Schema
+            property definitions as values
         """
-        # TODO: Implement schema retrieval
-        return {}
+        properties: Dict[str, Dict[str, Any]] = {}
+        
+        try:
+            # Fetch sample data (limit to first 20 records for efficiency)
+            sample_records = self.get_report_data(report_link_name)[:20]
+            
+            if sample_records:
+                # Extract all field names from sample records
+                for record in sample_records:
+                    for field_name, field_value in record.items():
+                        # Skip if already processed
+                        if field_name in properties:
+                            continue
+                        
+                        # Determine type based on value structure
+                        if isinstance(field_value, dict):
+                            properties[field_name] = {"type": "object", "additionalProperties": True}
+                        elif isinstance(field_value, list):
+                            properties[field_name] = {"type": "array", "items": {"type": "string"}}
+                        else:
+                            # All scalar values are strings in Zoho Creator API
+                            properties[field_name] = {"type": "string"}
+                
+                logger.debug(f"Generated schema for report {report_link_name} with {len(properties)} fields")
+            else:
+                logger.warning(f"No sample data found for report {report_link_name}, schema cannot be generated")
+            
+            return properties
+            
+        except Exception as e:
+            logger.error(f"Failed to generate schema for report {report_link_name}: {e}")
+            return {}
