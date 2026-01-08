@@ -1,0 +1,9 @@
+{
+  "client_id": "your_client_id",
+  "client_secret": "your_client_secret",
+  "client_refresh_token": "your_client_refresh_token",
+  "account_owner_name": "your_account_owner_name",
+  "app_link_name": "your_app_link_name",
+  "base_accounts_url": "your_base_accounts_url",
+  "base_url": "your_base_url"
+}

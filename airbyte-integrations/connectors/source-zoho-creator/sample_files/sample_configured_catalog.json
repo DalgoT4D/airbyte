@@ -1,0 +1,51 @@
+{
+  "streams": [
+    {
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": [
+        "Added_Time"
+      ],
+      "stream": {
+        "name": "All_Beneficiary_Details",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "ID": {
+              "type": "string"
+            },
+            "Added_Time": {
+              "type": "string"
+            },
+            "Gender1": {
+              "type": "string"
+            },
+            "Trainer_master": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "Employment_Status": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "Added_Time"
+        ],
+        "source_defined_primary_key": [
+          [
+            "ID"
+          ]
+        ],
+        "is_resumable": true
+      }
+    }
+  ]
+}

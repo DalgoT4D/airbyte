@@ -1,0 +1,125 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-creator
+connectionSpecification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - account_owner_name
+      - app_link_name
+      - base_accounts_url
+      - base_url
+
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        description: The client ID that was generated when you registered the client application on Zoho API Console. (https://www.zoho.com/creator/help/api/v2.1/register-client.html)
+        examples:
+        - "1000.abc123def456"
+        airbyte_secret: true
+
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        description: The client secret that was generated when you registered the client application on Zoho API Console. (https://www.zoho.com/creator/help/api/v2.1/register-client.html)
+        examples:
+        - "ghi789jkl012mno"
+        airbyte_secret: true
+
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        description: The refresh token that will be required to refresh the requesting user's access token. Must have minimum scopes- ZohoCreator.report.READ, ZohoCreator.meta.application.READ. (https://www.zoho.com/creator/help/api/v2.1/generate-token.html)
+        airbyte_secret: true
+        examples:
+        - "1000.abcdef123456789ghi"
+
+      account_owner_name:
+        type: string
+        description: the username of the Zoho Creator account's owner. You can get it from the Zoho Creator App's URL. (https://www.zoho.com/creator/help/api/v2.1/get-records.html)
+        order: 3
+        title: Account Owner Username
+        examples:
+        - "john.doe"
+
+      app_link_name:
+        type: string
+        description: the link name of the target application. You can get it from the Zoho Creator App's URL. (https://www.zoho.com/creator/help/api/v2.1/get-records.html)
+        order: 4
+        title: App Link Name
+        examples:
+        - "inventory_management"
+
+      base_accounts_url:
+        type: string
+        description: The base URL of your Zoho Account. For example, it's accounts.zoho.com, if your account belongs to Zoho's US DC. (https://accounts.zoho.com/oauth/serverinfo)
+        order: 5
+        title: Base Accounts Url
+        examples:
+        - "accounts.zoho.com"
+
+      base_url:
+        type: string
+        description: the base API URL of your Zoho Creator account.  For example, it's www.zohoapis.com if your account belongs to Zoho's US DC. (https://help.zoho.com/portal/en/kb/creator/developer-guide/others/url-patterns/articles/know-your-creator-account-s-base-url)
+        order: 6
+        title: Base API Url
+        examples:
+        - "www.zohoapis.com"
+
+# OAuth2 Configuration (for Airbyte Cloud)
+advanced_auth:
+  auth_flow_type: oauth2.0
+  predicate_key:
+    - auth_type
+  predicate_value: oauth2
+
+  oauth_config_specification:
+    # What user inputs before OAuth
+    oauth_user_input_from_connector_config_specification:
+      type: object
+      properties:
+        base_accounts_url:
+          type: string
+          path_in_connector_config:
+            - base_accounts_url
+        base_url:
+          type: string
+          path_in_connector_config:
+            - base_url
+
+    # OAuth server configuration
+    complete_oauth_server_input_specification:
+      type: object
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+
+    # What server outputs after OAuth
+    complete_oauth_server_output_specification:
+      type: object
+      properties:
+        client_id:
+          type: string
+          path_in_connector_config:
+            - client_id
+        client_secret:
+          type: string
+          path_in_connector_config:
+            - client_secret
+
+    # What user gets after OAuth
+    complete_oauth_output_specification:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          path_in_connector_config:
+            - client_refresh_token

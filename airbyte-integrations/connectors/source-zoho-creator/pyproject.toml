@@ -1,0 +1,26 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-zoho-creator"
+version = "0.1.0"
+description = "Airbyte connector to pull data from Zoho Creator Applications, using Zoho Creator Data API"
+authors = ["Ritabrata Roy <royred88@gmail.com>"]
+license = "MIT License"
+readme = "README.md"
+
+[[tool.poetry.packages]]
+include = "source_zoho_creator"
+
+[tool.poetry.dependencies]
+python = "<3.14,>=3.10"
+airbyte-cdk = ">=7.5.0,<8.0.0"
+pytest = ">=9.0.1,<10.0.0"
+pyyaml = ">=6.0.3,<7.0.0"
+
+[tool.poetry.scripts]
+source-zoho-creator = "source_zoho_creator.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=9.0.1,<10.0.0"

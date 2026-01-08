@@ -1,0 +1,7 @@
+{
+  "run": {
+    "omit": [
+      "source_zoho_creator/run.py"
+    ]
+  }
+}
