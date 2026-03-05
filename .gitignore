@@ -13,6 +13,11 @@ out
 .kotlin
 **/gmon.out
 static_checker_reports/
+secrets/
+updated_configurations/
+.venv/ 
+sample-files/
+Dockerfile
 
 # Logs
 acceptance_tests_logs/
