@@ -9,8 +9,7 @@ connectionSpecification:
       - client_refresh_token
       - account_owner_name
       - app_link_name
-      - base_accounts_url
-      - base_url
+      - datacenter
 
     properties:
       client_id:
@@ -56,21 +55,20 @@ connectionSpecification:
         examples:
         - "inventory_management"
 
-      base_accounts_url:
+      datacenter:
         type: string
-        description: The base URL of your Zoho Account. For example, it's accounts.zoho.com, if your account belongs to Zoho's US DC. (https://accounts.zoho.com/oauth/serverinfo)
         order: 5
-        title: Base Accounts Url
+        title: Data Center
+        description: The Zoho data center your account belongs to. Select the region where your Zoho account was registered. (https://help.zoho.com/portal/en/kb/creator/developer-guide/others/url-patterns/articles/know-your-creator-account-s-base-url)
+        enum:
+          - "US"
+          - "EU"
+          - "IN"
+          - "AU"
+          - "CA"
+        default: "US"
         examples:
-        - "accounts.zoho.com"
-
-      base_url:
-        type: string
-        description: the base API URL of your Zoho Creator account.  For example, it's www.zohoapis.com if your account belongs to Zoho's US DC. (https://help.zoho.com/portal/en/kb/creator/developer-guide/others/url-patterns/articles/know-your-creator-account-s-base-url)
-        order: 6
-        title: Base API Url
-        examples:
-        - "www.zohoapis.com"
+        - "US"
 
 # OAuth2 Configuration (for Airbyte Cloud)
 advanced_auth:
@@ -84,14 +82,10 @@ advanced_auth:
     oauth_user_input_from_connector_config_specification:
       type: object
       properties:
-        base_accounts_url:
+        datacenter:
           type: string
           path_in_connector_config:
-            - base_accounts_url
-        base_url:
-          type: string
-          path_in_connector_config:
-            - base_url
+            - datacenter
 
     # OAuth server configuration
     complete_oauth_server_input_specification:

@@ -6,374 +6,295 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime
 
-from source_zoho_creator.streams import ZohoCreatorStream
+from source_zoho_creator.streams import ReportDataStream
+from source_zoho_creator.exceptions import ZohoCreatorAPIError
+
+
+def _make_stream(report_link_name="All_Products", base_url="www.zohoapis.com"):
+    """Create a ReportDataStream with a mock API."""
+    api = Mock()
+    api.base_url = base_url
+    api.account_owner_name = "john.doe"
+    api.app_link_name = "inventory_management"
+    api.get_authenticator.return_value = Mock()
+    api.get_report_schema.return_value = {
+        "ID": {"type": "string"},
+        "Added_Time": {"type": "string"},
+        "Modified_Time": {"type": "string"},
+    }
+    return ReportDataStream(api=api, report_link_name=report_link_name)
 
 
 @pytest.mark.unit
 class TestZohoCreatorStreamInitialization:
-    """Test suite for ZohoCreatorStream initialization."""
+    """Test suite for ReportDataStream initialization."""
 
-    def test_stream_initialization(self, config_valid_minimal, mock_logger):
+    def test_stream_initialization(self):
         """Test stream initializes with required parameters."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory_management",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        assert stream.api == api
-        assert stream.account_owner_name == "john.doe"
-        assert stream.app_link_name == "inventory_management"
-        assert stream.form_link_name == "products"
+        stream = _make_stream()
+
+        assert stream.report_link_name == "All_Products"
+        assert stream.api.account_owner_name == "john.doe"
+        assert stream.api.app_link_name == "inventory_management"
 
     def test_stream_name_property(self):
-        """Test stream name is set correctly."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        # Stream name should be derived from app_link_name and form_link_name
-        assert stream.name == "inventory_products"
+        """Test stream name equals the report link name."""
+        stream = _make_stream(report_link_name="My_Report")
+        assert stream.name == "My_Report"
+
+    def test_stream_primary_key(self):
+        """Test stream has correct primary key."""
+        stream = _make_stream()
+        assert stream.primary_key == "ID"
 
 
 @pytest.mark.unit
 class TestZohoCreatorStreamSchema:
-    """Test suite for stream schema handling."""
+    """Test suite for schema handling."""
 
     def test_get_json_schema_returns_dict(self):
-        """Test get_json_schema returns a dictionary."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
+        """Test get_json_schema returns a well-formed JSON Schema dict."""
+        stream = _make_stream()
         schema = stream.get_json_schema()
-        
-        assert isinstance(schema, dict)
-        assert "$schema" in schema or "type" in schema
 
-    def test_stream_primary_key(self):
-        """Test stream has correct primary key."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        # Primary key should be set (usually ID field)
-        assert hasattr(stream, "primary_key")
+        assert isinstance(schema, dict)
+        assert schema.get("type") == "object"
+        assert "properties" in schema
+
+    def test_get_json_schema_contains_inferred_fields(self):
+        """Test schema properties come from the API's schema method."""
+        stream = _make_stream()
+        schema = stream.get_json_schema()
+
+        assert "ID" in schema["properties"]
+        assert "Added_Time" in schema["properties"]
 
 
 @pytest.mark.unit
 class TestZohoCreatorStreamPagination:
-    """Test suite for pagination handling."""
+    """Test suite for record_cursor header-based pagination."""
 
-    def test_request_params_without_pagination_token(self):
-        """Test request_params method without pagination token."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        params = stream.request_params(
-            stream_state={},
-            stream_slice=None,
-            next_page_token=None
-        )
-        
-        assert isinstance(params, dict)
-
-    def test_request_params_with_pagination_token(self):
-        """Test request_params method with pagination token."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        params = stream.request_params(
-            stream_state={},
-            stream_slice=None,
-            next_page_token={"index": 100}
-        )
-        
-        assert isinstance(params, dict)
-
-    def test_next_page_token_with_more_records(self):
-        """Test next_page_token when more records exist."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        # Mock response indicating more records
+    def test_next_page_token_with_cursor_header(self):
+        """Test next_page_token extracts record_cursor from response headers."""
+        stream = _make_stream()
         response = Mock()
-        response.json.return_value = {
-            "code": 200,
-            "result": [
-                {"id": "1", "name": "Product 1"},
-                {"id": "2", "name": "Product 2"},
-            ],
-            "more_records": True,
-            "page_offset": 100
-        }
-        
-        token = stream.next_page_token(response)
-        
-        # Should return a token for next page
-        assert token is not None
+        response.headers = {"record_cursor": "abc123cursor"}
 
-    def test_next_page_token_no_more_records(self):
-        """Test next_page_token when no more records exist."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        # Mock response indicating no more records
-        response = Mock()
-        response.json.return_value = {
-            "code": 200,
-            "result": [
-                {"id": "1", "name": "Product 1"},
-            ],
-            "more_records": False
-        }
-        
         token = stream.next_page_token(response)
-        
-        # Should return None when no more records
+
+        assert token == {"record_cursor": "abc123cursor"}
+
+    def test_next_page_token_no_cursor_header(self):
+        """Test next_page_token returns None when no record_cursor header."""
+        stream = _make_stream()
+        response = Mock()
+        response.headers = {}
+
+        token = stream.next_page_token(response)
+
         assert token is None
+
+    def test_request_headers_with_pagination_token(self):
+        """Test request_headers includes record_cursor when paginating."""
+        stream = _make_stream()
+        headers = stream.request_headers(
+            stream_state={},
+            stream_slice=None,
+            next_page_token={"record_cursor": "abc123cursor"},
+        )
+
+        assert headers.get("record_cursor") == "abc123cursor"
+
+    def test_request_headers_without_pagination_token(self):
+        """Test request_headers has no record_cursor on first page."""
+        stream = _make_stream()
+        headers = stream.request_headers(
+            stream_state={},
+            stream_slice=None,
+            next_page_token=None,
+        )
+
+        assert "record_cursor" not in headers
+
+    def test_request_params_sets_max_records(self):
+        """Test request_params always includes max_records."""
+        stream = _make_stream()
+        params = stream.request_params(stream_state={}, stream_slice=None, next_page_token=None)
+
+        assert "max_records" in params
+        assert params["max_records"] == 1000
 
 
 @pytest.mark.unit
 class TestZohoCreatorStreamParsing:
     """Test suite for response parsing."""
 
-    def test_parse_response_extracts_records(self):
-        """Test parse_response extracts records from response."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
+    def test_parse_response_success_code_3000(self):
+        """Test parse_response yields records when API returns code 3000."""
+        stream = _make_stream()
         response = Mock()
         response.json.return_value = {
-            "code": 200,
-            "result": [
-                {"id": "1", "name": "Product 1"},
-                {"id": "2", "name": "Product 2"},
-            ]
+            "code": 3000,
+            "data": [
+                {"ID": "1", "Name": "Product A"},
+                {"ID": "2", "Name": "Product B"},
+            ],
         }
-        
-        records = list(stream.parse_response(response))
-        
-        assert len(records) == 2
-        assert records[0]["id"] == "1"
-        assert records[1]["id"] == "2"
 
-    def test_parse_response_empty_result(self):
-        """Test parse_response handles empty result."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        response = Mock()
-        response.json.return_value = {
-            "code": 200,
-            "result": []
-        }
-        
         records = list(stream.parse_response(response))
-        
-        assert len(records) == 0
+
+        assert len(records) == 2
+        assert records[0]["ID"] == "1"
+        assert records[1]["ID"] == "2"
+
+    def test_parse_response_empty_data(self):
+        """Test parse_response handles empty data array."""
+        stream = _make_stream()
+        response = Mock()
+        response.json.return_value = {"code": 3000, "data": []}
+
+        records = list(stream.parse_response(response))
+
+        assert records == []
+
+    def test_raise_on_http_errors_is_false(self):
+        """Test raise_on_http_errors is False so 404s reach parse_response."""
+        stream = _make_stream()
+        assert stream.raise_on_http_errors is False
+
+    def test_parse_response_non_3000_code_raises(self):
+        """Test parse_response raises ZohoCreatorAPIError on unknown non-3000 code."""
+        stream = _make_stream()
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = {"code": 3001, "message": "Some error"}
+
+        with pytest.raises(ZohoCreatorAPIError):
+            list(stream.parse_response(response))
+
+    def test_parse_response_http_404_code_3100_yields_empty(self):
+        """Test parse_response yields no records when Zoho returns HTTP 404 + code 3100.
+
+        Zoho returns HTTP 404 (not 200) for code 3100 "No records found for the given
+        criteria". Without raise_on_http_errors=False, the CDK would raise before
+        parse_response is reached, failing every incremental sync with no new data.
+        """
+        stream = _make_stream()
+        response = Mock()
+        response.status_code = 404
+        response.json.return_value = {
+            "code": 3100,
+            "message": "No records found for the given criteria.",
+        }
+
+        records = list(stream.parse_response(response))
+
+        assert records == []
+
+    @pytest.mark.parametrize("no_records_code", [3930, 3920, 3910])
+    def test_parse_response_other_no_records_codes_yield_empty(self, no_records_code):
+        """Test parse_response yields no records for other Zoho 'no data' codes (HTTP 200)."""
+        stream = _make_stream()
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = {
+            "code": no_records_code,
+            "message": "No data available.",
+        }
+
+        records = list(stream.parse_response(response))
+
+        assert records == []
+
+    def test_parse_response_non_200_non_3100_raises(self):
+        """Test parse_response raises ZohoCreatorAPIError for non-200 responses with unknown codes."""
+        stream = _make_stream()
+        response = Mock()
+        response.status_code = 500
+        response.json.return_value = {"code": 9999, "message": "Internal server error"}
+
+        with pytest.raises(ZohoCreatorAPIError):
+            list(stream.parse_response(response))
 
 
 @pytest.mark.unit
 class TestZohoCreatorStreamIncremental:
     """Test suite for incremental sync support."""
 
-    def test_cursor_field_exists(self):
-        """Test stream has cursor field for incremental sync."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        # Should have cursor_field for incremental sync
-        assert hasattr(stream, "cursor_field") or stream.cursor_field is None
+    def test_cursor_field_present_in_schema(self):
+        """Test cursor_field returns list when Added_Time is in schema."""
+        stream = _make_stream()
+        cf = stream.cursor_field
 
-    def test_get_updated_state(self):
-        """Test get_updated_state updates cursor."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
+        assert isinstance(cf, list)
+        assert "Added_Time" in cf
+
+    def test_cursor_field_empty_when_not_in_schema(self):
+        """Test cursor_field returns empty list when no cursor fields in schema."""
+        stream = _make_stream()
+        stream.api.get_report_schema.return_value = {"ID": {"type": "string"}}
+        stream._schema = None  # reset cache
+
+        cf = stream.cursor_field
+        assert cf == []
+
+    def test_get_updated_state_advances_cursor(self):
+        """Test get_updated_state picks the maximum cursor value."""
+        stream = _make_stream()
+        stream._configured_cursor_field = "Added_Time"
+
+        current_state = {"Added_Time": "01-Jan-2024 10:00:00"}
+        latest_record = {"Added_Time": "15-Jun-2024 12:00:00"}
+
+        updated = stream.get_updated_state(current_state, latest_record)
+
+        assert updated["Added_Time"] == "15-Jun-2024 12:00:00"
+
+    def test_get_updated_state_keeps_max(self):
+        """Test get_updated_state keeps existing state if it is more recent."""
+        stream = _make_stream()
+        stream._configured_cursor_field = "Added_Time"
+
+        current_state = {"Added_Time": "15-Jun-2024 12:00:00"}
+        latest_record = {"Added_Time": "01-Jan-2024 10:00:00"}
+
+        updated = stream.get_updated_state(current_state, latest_record)
+
+        assert updated["Added_Time"] == "15-Jun-2024 12:00:00"
+
+    def test_request_params_adds_criteria_when_state_exists(self):
+        """Test request_params adds criteria filter when stream state is set."""
+        stream = _make_stream()
+        stream._configured_cursor_field = "Added_Time"
+
+        params = stream.request_params(
+            stream_state={"Added_Time": "01-Jan-2024 10:00:00"},
+            stream_slice=None,
+            next_page_token=None,
         )
-        
-        if stream.cursor_field:
-            current_state = {}
-            latest_record = {"id": "1", stream.cursor_field: "2024-01-01T10:00:00Z"}
-            
-            updated_state = stream.get_updated_state(current_state, latest_record)
-            
-            assert updated_state is not None
+
+        assert "criteria" in params
+        assert "Added_Time" in params["criteria"]
 
 
 @pytest.mark.unit
-class TestZohoCreatorStreamErrorHandling:
-    """Test suite for error handling in streams."""
+class TestZohoCreatorStreamURLBase:
+    """Test suite for URL construction."""
 
-    def test_parse_response_handles_missing_result_key(self):
-        """Test parse_response handles response without result key."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        response = Mock()
-        response.json.return_value = {
-            "code": 200,
-            # Missing 'result' key
-        }
-        
-        # Should handle gracefully
-        records = list(stream.parse_response(response))
-        
-        # Should return empty list or handle error
-        assert isinstance(records, list)
+    def test_url_base_uses_api_base_url(self):
+        """Test url_base is constructed from the api's base_url."""
+        stream = _make_stream(base_url="www.zohoapis.eu")
 
-    def test_parse_response_handles_api_error(self):
-        """Test parse_response handles API error response."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        response = Mock()
-        response.json.return_value = {
-            "code": 404,
-            "message": "Form not found",
-        }
-        
-        # Should handle gracefully or raise appropriate error
-        try:
-            records = list(stream.parse_response(response))
-            # If no exception, should be empty or handle error
-            assert isinstance(records, list)
-        except Exception as e:
-            # Exception is acceptable
-            assert isinstance(e, Exception)
+        assert "www.zohoapis.eu" in stream.url_base
 
+    def test_url_base_ends_with_slash(self):
+        """Test url_base ends with / for correct urljoin behaviour."""
+        stream = _make_stream()
 
-@pytest.mark.unit
-class TestZohoCreatorStreamIntegration:
-    """Integration tests for stream functionality."""
+        assert stream.url_base.endswith("/")
 
-    def test_stream_read_with_mock_api(self):
-        """Test stream read with mock API."""
-        api = Mock()
-        api.get.return_value = Mock(
-            json=lambda: {
-                "code": 200,
-                "result": [
-                    {"id": "1", "name": "Product 1"},
-                    {"id": "2", "name": "Product 2"},
-                ],
-                "more_records": False
-            }
-        )
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        # Test that stream can read records
-        assert stream is not None
+    def test_path_returns_report_link_name(self):
+        """Test path() returns the report link name."""
+        stream = _make_stream(report_link_name="Custom_Report")
 
-    def test_stream_url_base_set(self):
-        """Test stream has correct URL base."""
-        api = Mock()
-        
-        stream = ZohoCreatorStream(
-            api=api,
-            account_owner_name="john.doe",
-            app_link_name="inventory",
-            form_link_name="products",
-            batch_size=100
-        )
-        
-        # Should have url_base property for HttpStream
-        assert hasattr(stream, "url_base") or hasattr(stream, "base_url")
+        assert stream.path() == "Custom_Report"

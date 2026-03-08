@@ -6,7 +6,7 @@ import datetime
 import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.models import ConfiguredAirbyteStream
+from airbyte_cdk.models import ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -20,7 +20,7 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
 
 from .api import ZohoCreatorAPI
-from .exceptions import ZohoCreatorAPIError
+from .exceptions import ZohoCreatorAPIError, ZohoCreatorAuthError
 
 logger = logging.getLogger("airbyte")
 
@@ -40,8 +40,8 @@ class ReportDataStream(HttpStream):
         # if HttpStream initialization accesses properties like 'name'
         self.api = api
         self.report_link_name = report_link_name
-        self._schema = None  # Cache for schema
         self._configured_cursor_field: Optional[str] = None
+        self._sync_mode: Optional[SyncMode] = None
         super().__init__(authenticator=api.get_authenticator())
 
     @property
@@ -80,6 +80,17 @@ class ReportDataStream(HttpStream):
         return "GET"
 
     @property
+    def raise_on_http_errors(self) -> bool:
+        """Disable CDK's automatic raise_for_status().
+
+        Zoho returns HTTP 404 (not 200) for code 3100 "no records found".
+        If we let the CDK raise on 4xx, parse_response is never reached and
+        every incremental sync with no new records fails. We handle all HTTP
+        error cases manually in parse_response instead.
+        """
+        return False
+
+    @property
     def cursor_field(self) -> str:
         """
         Return cursor field if 'Added_Time', 'Modified_Time' exists in schema, otherwise None.
@@ -87,13 +98,12 @@ class ReportDataStream(HttpStream):
         Returns None to disable incremental sync (full refresh only).
         """
 
-        if self._schema is None:
-            self._schema = self.api.get_report_schema(self.report_link_name)
+        schema = self.api.get_report_schema(self.report_link_name)
 
         found_cursor_fields = []
 
         for cursor_field in self.DEFAULT_CURSOR_FIELDS:
-            if cursor_field in self._schema:
+            if cursor_field in schema:
                 found_cursor_fields.append(cursor_field)
         
         if not found_cursor_fields:
@@ -104,16 +114,18 @@ class ReportDataStream(HttpStream):
     def _state_cursor_field(self) -> Optional[str]:
         """
         Return the single cursor field to use for state tracking.
-        
+
+        Returns None immediately for full-refresh syncs — no state is tracked and
+        there is no need to fetch the schema to check for cursor field presence.
         If a configured catalog provided a specific cursor field, prefer that.
         Otherwise, fall back to the first available default cursor field.
         """
+        if self._sync_mode == SyncMode.full_refresh:
+            return None
         if self._configured_cursor_field:
             return self._configured_cursor_field
-        else:
-            cf = self.cursor_field
-            if isinstance(cf, list):
-                return cf[0] if cf else None
+        cf = self.cursor_field
+        return cf[0] if isinstance(cf, list) and cf else None
 
     def read(
         self,
@@ -125,8 +137,10 @@ class ReportDataStream(HttpStream):
         internal_config: InternalConfig
     ) -> Iterable[StreamData]:
         """
-        Override to capture the user-selected cursor_field from the configured catalog.
+        Override to capture the sync mode and cursor_field from the configured catalog.
         """
+        self._sync_mode = configured_stream.sync_mode
+
         if configured_stream.cursor_field:
             # Only set _configured_cursor_field if cursor_field is present and non-empty in the configured catalog.
             if configured_stream.cursor_field and len(configured_stream.cursor_field) > 0:
@@ -185,15 +199,58 @@ class ReportDataStream(HttpStream):
         logger.info("Params: %s", params)
         return params
 
+    # Zoho Creator API codes that indicate "no records" — not a failure.
+    # See: https://www.zoho.com/creator/help/api/v2/status-codes.html
+    NO_RECORDS_CODES = {
+        3100,  # No records found for the given criteria (incremental sync with no new data)
+        3930,  # No reports available
+        3920,  # No pages available
+        3910,  # No forms available
+    }
+
     def parse_response(self, response, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """Parse API response: extract records from 'data' array if code is 3000, otherwise raise error."""
-        data = response.json()
-        if data.get("code") == 3000:
+        """Parse API response, handling both success and all error cases.
+
+        Zoho returns HTTP 404 + code 3100 when no records match the criteria filter
+        (e.g. incremental sync with no new data). Because raise_on_http_errors is
+        False, non-200 responses reach here and must be handled explicitly.
+        """
+        try:
+            data = response.json()
+        except Exception:
+            raise ZohoCreatorAPIError(
+                f"Non-JSON response (HTTP {response.status_code}): {response.text[:200]}"
+            )
+
+        code = data.get("code")
+
+        # Empty-result codes: treat as a valid empty page, not a failure.
+        # Notably, code 3100 ("no records for criteria") arrives as HTTP 404.
+        if code in self.NO_RECORDS_CODES:
+            logger.info("Zoho API returned code %s (%s) — treating as empty result set.", code, data.get("message", ""))
+            return
+
+        # For non-200 responses that aren't a known empty-result code, raise now.
+        if response.status_code != 200:
+            error_msg = data.get("message", response.text[:200])
+            msg_lower = error_msg.lower()
+            if any(kw in msg_lower for kw in ("invalid token", "authentication", "unauthorized", "access denied")):
+                raise ZohoCreatorAuthError(f"Authentication error (code {code}): {error_msg}")
+            raise ZohoCreatorAPIError(f"HTTP {response.status_code}, Zoho API error (code {code}): {error_msg}")
+
+        if code == 3000:
             yield from data.get("data", [])
             return
 
         error_msg = data.get("message", "Unknown API error")
-        raise ZohoCreatorAPIError(f"Zoho API error: {error_msg}")
+
+        # Distinguish auth failures so operators know to rotate credentials rather
+        # than treating it as a transient API error.
+        msg_lower = error_msg.lower()
+        if any(kw in msg_lower for kw in ("invalid token", "authentication", "unauthorized", "access denied")):
+            raise ZohoCreatorAuthError(f"Authentication error (code {code}): {error_msg}")
+
+        raise ZohoCreatorAPIError(f"Zoho API error (code {code}): {error_msg}")
 
     def get_updated_state(
         self,
@@ -243,12 +300,9 @@ class ReportDataStream(HttpStream):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """Generate JSON schema dynamically by fetching sample data and inferring field types."""
-        
-        self._schema = self.api.get_report_schema(self.report_link_name)
-
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": self._schema,
+            "properties": self.api.get_report_schema(self.report_link_name),
             "additionalProperties": True,
         }

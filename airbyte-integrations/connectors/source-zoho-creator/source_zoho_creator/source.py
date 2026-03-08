@@ -8,7 +8,14 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional
 from airbyte_cdk.models import AirbyteMessage, AirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from zoho_creator_sdk.exceptions import (
+    AuthenticationError,
+    ConfigurationError as SDKConfigurationError,
+    InvalidCredentialsError,
+    NetworkError,
+    TokenRefreshError,
+    ZohoCreatorError,
+)
 
 from .api import ZohoCreatorAPI
 from .streams import ReportDataStream
@@ -26,15 +33,14 @@ class SourceZohoCreator(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[str]]:
         """
         Check if the connector can successfully connect to Zoho Creator API.
-        
-        Args:
-            logger: Logger instance
-            config: Configuration dictionary containing API credentials
-            
+
+        Performs two checks in sequence:
+        1. OAuth2 token retrieval — surfaces typed SDK auth exceptions.
+        2. HTTP metadata endpoint call — verifies app/owner access and API reachability.
+
         Returns:
             Tuple of (success: bool, error_message: Optional[str])
         """
-        # Then in the check_connection method:
         try:
             api = ZohoCreatorAPI(
                 client_id=config["client_id"],
@@ -42,27 +48,53 @@ class SourceZohoCreator(AbstractSource):
                 client_refresh_token=config["client_refresh_token"],
                 account_owner_name=config["account_owner_name"],
                 app_link_name=config["app_link_name"],
-                base_accounts_url=config["base_accounts_url"],
-                base_url=config["base_url"],
+                datacenter=config.get("datacenter", "US"),
             )
-
-            success, error = api.validate_config()
-        
-            if success:
-                logger.info("✅ Connection to Zoho Creator API successful")
-            else:
-                logger.error(f"❌ Connection failed: {error}")
-        
-            return success, error
-        
         except KeyError as e:
-            error_msg = f"Missing required configuration: {str(e)}"
+            error_msg = f"Missing required configuration field: {e}"
             logger.error(error_msg)
             return False, error_msg
-        except Exception as e:
-            error_msg = f"Unexpected error during connection check: {str(e)}"
+        except SDKConfigurationError as e:
+            error_msg = f"SDK configuration error (check credentials format): {e}"
             logger.error(error_msg)
             return False, error_msg
+
+        # Call get_access_token() directly so typed SDK exceptions surface here
+        # rather than being swallowed by validate_config()'s generic except clause.
+        # validate_config() will reuse the cached token on its own internal call.
+        try:
+            api.get_access_token()
+        except InvalidCredentialsError as e:
+            error_msg = f"Invalid credentials: client_id, client_secret, or refresh token is incorrect. ({e})"
+            logger.error(error_msg)
+            return False, error_msg
+        except TokenRefreshError as e:
+            recoverable = "may succeed on retry" if e.is_recoverable else "check your refresh token"
+            error_msg = f"Token refresh failed ({recoverable}): {e}"
+            logger.error(error_msg)
+            return False, error_msg
+        except AuthenticationError as e:
+            error_msg = f"Authentication failed: {e}"
+            logger.error(error_msg)
+            return False, error_msg
+        except NetworkError as e:
+            error_msg = f"Network error while reaching Zoho OAuth endpoint: {e}"
+            logger.error(error_msg)
+            return False, error_msg
+        except ZohoCreatorError as e:
+            error_msg = f"Zoho SDK error during authentication: {e}"
+            logger.error(error_msg)
+            return False, error_msg
+
+        # HTTP-level check: validates app_link_name, account_owner_name, and API reachability.
+        success, error = api.validate_config()
+
+        if success:
+            logger.info("Connection to Zoho Creator API successful")
+        else:
+            logger.error(f"Connection failed: {error}")
+
+        return success, error
 
     def streams(self, config: Mapping[str, Any]) -> List:
 
@@ -77,8 +109,7 @@ class SourceZohoCreator(AbstractSource):
             client_refresh_token=config["client_refresh_token"],
             account_owner_name=config["account_owner_name"],
             app_link_name=config["app_link_name"],
-            base_accounts_url=config["base_accounts_url"],
-            base_url=config["base_url"],
+            datacenter=config.get("datacenter", "US"),
         )
 
         stream_instances: List = []
@@ -86,7 +117,12 @@ class SourceZohoCreator(AbstractSource):
         # Fetch reports for this application
         try:
             reports = api.get_application_reports()
-            logger.info(f"Successfully fetched all report names for application {api.app_link_name}")
+            if reports:
+                logger.info(f"Successfully fetched all report names for application {api.app_link_name}")
+                # debugging
+                print(reports)
+            else:
+                logger.warning(f"No reports found for application {api.app_link_name}")
         except Exception as e:
             logger.error(f"Failed to fetch reports: {e}")
             reports = []

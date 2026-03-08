@@ -4,7 +4,7 @@
 
 import logging
 import pytest
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import Mock, patch, MagicMock
 
 from source_zoho_creator import SourceZohoCreator
 
@@ -97,17 +97,16 @@ class TestSourceZohoCreatorCheckConnection:
     def test_check_connection_eu_datacenter(self, config_eu_datacenter, mock_logger, mocker):
         """Test connection check with EU datacenter config."""
         source = SourceZohoCreator()
-        
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
         mock_api.return_value.validate_config.return_value = (True, None)
-        
+
         success, error = source.check_connection(mock_logger, config_eu_datacenter)
-        
-        # Verify API was initialized with EU endpoints
+
+        # Verify API was initialized with EU datacenter
         mock_api.assert_called_once()
         call_kwargs = mock_api.call_args[1]
-        assert call_kwargs["base_accounts_url"] == "accounts.zoho.eu"
-        assert call_kwargs["base_url"] == "www.zohoapis.eu"
+        assert call_kwargs["datacenter"] == "EU"
         assert success is True
 
 
@@ -138,59 +137,40 @@ class TestSourceZohoCreatorStreams:
         
         assert streams == []
 
-    def test_streams_with_applications(self, config_valid_minimal, mocker):
-        """Test streams method creates stream instances for each form."""
+    def test_streams_with_reports(self, config_valid_minimal, mocker):
+        """Test streams method creates one stream instance per discovered report."""
         source = SourceZohoCreator()
-        
-        # Mock API to return applications and forms
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
         mock_api_instance = mock_api.return_value
-        
-        # Simulate Zoho Creator returning applications
-        mock_api_instance.list_applications.return_value = [
-            {
-                "app_id": "app_1",
-                "app_name": "Inventory Management",
-                "app_link_name": "inventory_management",
-            }
+        mock_api_instance.get_application_reports.return_value = [
+            {"link_name": "All_Products"},
+            {"link_name": "All_Stock"},
         ]
-        
-        # Simulate forms within the app
-        mock_api_instance.get_application_forms.return_value = [
-            {
-                "form_id": "form_1",
-                "form_name": "Products",
-                "form_link_name": "products",
-            },
-            {
-                "form_id": "form_2",
-                "form_name": "Stock",
-                "form_link_name": "stock",
-            },
-        ]
-        
+        mock_api_instance.get_authenticator.return_value = MagicMock()
+
         streams = source.streams(config_valid_minimal)
-        
-        # Should create 2 stream instances (one per form)
+
+        # Should create 2 stream instances (one per report)
         assert len(streams) == 2
 
     def test_streams_specific_app_link(self, config_valid_minimal, mocker):
-        """Test streams when app_link_name is specified in config."""
+        """Test streams calls get_application_reports for the configured app."""
         source = SourceZohoCreator()
-        
+
         config = config_valid_minimal.copy()
         config["app_link_name"] = "specific_app"
-        
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
         mock_api_instance = mock_api.return_value
-        mock_api_instance.get_application_forms.return_value = [
-            {"form_id": "form_1", "form_name": "Form 1", "form_link_name": "form_1"}
+        mock_api_instance.get_application_reports.return_value = [
+            {"link_name": "report_1"}
         ]
-        
-        streams = source.streams(config)
-        
-        # Should call get_application_forms for the specific app
-        mock_api_instance.get_application_forms.assert_called()
+        mock_api_instance.get_authenticator.return_value = MagicMock()
+
+        source.streams(config)
+
+        mock_api_instance.get_application_reports.assert_called_once()
 
 
 @pytest.mark.unit
@@ -205,10 +185,9 @@ class TestSourceZohoCreatorDiscover:
         mock_api.return_value.list_applications.return_value = []
         
         catalog = source.discover(mock_logger, config_valid_minimal)
-        
-        # Should return ConfiguredAirbyteCatalog
-        from airbyte_cdk.models import ConfiguredAirbyteCatalog
-        assert isinstance(catalog, ConfiguredAirbyteCatalog)
+
+        from airbyte_cdk.models import AirbyteCatalog
+        assert isinstance(catalog, AirbyteCatalog)
 
 
 @pytest.mark.unit
@@ -258,22 +237,21 @@ class TestSourceZohoCreatorIntegration:
         assert isinstance(streams, list)
 
     def test_config_with_all_required_fields(self, config_valid_full, mock_logger, mocker):
-        """Test all 7 required config fields are passed to API."""
+        """Test all required config fields are passed to API."""
         source = SourceZohoCreator()
-        
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
         mock_api.return_value.validate_config.return_value = (True, None)
-        
+
         source.check_connection(mock_logger, config_valid_full)
-        
+
         # Verify all config fields were passed
         mock_api.assert_called_once()
         call_kwargs = mock_api.call_args[1]
-        
+
         assert "client_id" in call_kwargs
         assert "client_secret" in call_kwargs
         assert "client_refresh_token" in call_kwargs
         assert "account_owner_name" in call_kwargs
         assert "app_link_name" in call_kwargs
-        assert "base_accounts_url" in call_kwargs
-        assert "base_url" in call_kwargs
+        assert "datacenter" in call_kwargs

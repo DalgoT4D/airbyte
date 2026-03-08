@@ -22,8 +22,7 @@ def config_valid_minimal():
         "client_refresh_token": "1000.test_refresh_token",
         "account_owner_name": "john.doe",
         "app_link_name": "inventory_management",
-        "base_accounts_url": "accounts.zoho.com",
-        "base_url": "www.zohoapis.com",
+        "datacenter": "US",
     }
 
 
@@ -36,8 +35,7 @@ def config_valid_full():
         "client_refresh_token": "1000.test_refresh_token",
         "account_owner_name": "john.doe",
         "app_link_name": "inventory_management",
-        "base_accounts_url": "accounts.zoho.com",
-        "base_url": "www.zohoapis.com",
+        "datacenter": "US",
     }
 
 
@@ -50,8 +48,7 @@ def config_eu_datacenter():
         "client_refresh_token": "1000.test_refresh_token_eu",
         "account_owner_name": "jane.smith",
         "app_link_name": "crm_system",
-        "base_accounts_url": "accounts.zoho.eu",
-        "base_url": "www.zohoapis.eu",
+        "datacenter": "EU",
     }
 
 
@@ -64,8 +61,7 @@ def config_au_datacenter():
         "client_refresh_token": "1000.test_refresh_token_au",
         "account_owner_name": "alice.johnson",
         "app_link_name": "erp_system",
-        "base_accounts_url": "accounts.zoho.com.au",
-        "base_url": "www.zohoapis.com.au",
+        "datacenter": "AU",
     }
 
 
@@ -77,8 +73,7 @@ def config_invalid_missing_field():
         "client_secret": "test_client_secret",
         "account_owner_name": "john.doe",
         "app_link_name": "inventory_management",
-        "base_accounts_url": "accounts.zoho.com",
-        "base_url": "www.zohoapis.com",
+        "datacenter": "US",
     }
 
 
@@ -91,8 +86,7 @@ def config_invalid_empty_username():
         "client_refresh_token": "1000.test_refresh_token",
         "account_owner_name": "",
         "app_link_name": "inventory_management",
-        "base_accounts_url": "accounts.zoho.com",
-        "base_url": "www.zohoapis.com",
+        "datacenter": "US",
     }
 
 
@@ -105,8 +99,7 @@ def config_invalid_empty_app_link():
         "client_refresh_token": "1000.test_refresh_token",
         "account_owner_name": "john.doe",
         "app_link_name": "",
-        "base_accounts_url": "accounts.zoho.com",
-        "base_url": "www.zohoapis.com",
+        "datacenter": "US",
     }
 
 
