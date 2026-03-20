@@ -201,9 +201,11 @@ class ZohoCreatorAPI:
             if code == 3000:
                 return response_json.get("data", [])
 
-            # Code 3100 = no records (arrives as HTTP 404) — valid empty state, not an error.
-            if code == 3100:
-                logger.info("Report '%s' has no records; schema will have no inferred fields.", report_link_name)
+            # Codes indicating no records — valid empty state, not an error.
+            # 3100: arrives as HTTP 404 (older Zoho behaviour)
+            # 9280: arrives as HTTP 400 (newer Zoho behaviour)
+            if code in (3100, 9280):
+                logger.info("Report '%s' has no records (code %s); schema will have no inferred fields.", report_link_name, code)
                 return []
 
             if response.status_code != 200:

@@ -133,6 +133,7 @@ class TestZohoCreatorStreamParsing:
         """Test parse_response yields records when API returns code 3000."""
         stream = _make_stream()
         response = Mock()
+        response.status_code = 200
         response.json.return_value = {
             "code": 3000,
             "data": [
@@ -151,16 +152,36 @@ class TestZohoCreatorStreamParsing:
         """Test parse_response handles empty data array."""
         stream = _make_stream()
         response = Mock()
+        response.status_code = 200
         response.json.return_value = {"code": 3000, "data": []}
 
         records = list(stream.parse_response(response))
 
         assert records == []
 
-    def test_raise_on_http_errors_is_false(self):
-        """Test raise_on_http_errors is False so 404s reach parse_response."""
+    def test_get_error_handler_remaps_404_to_success(self):
+        """Test get_error_handler maps 404 → SUCCESS so 404s reach parse_response."""
+        from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
         stream = _make_stream()
-        assert stream.raise_on_http_errors is False
+        handler = stream.get_error_handler()
+        import requests
+        mock_response = Mock(spec=requests.Response)
+        mock_response.status_code = 404
+        mock_response.ok = False
+        resolution = handler.interpret_response(mock_response)
+        assert resolution.response_action == ResponseAction.SUCCESS
+
+    def test_get_error_handler_remaps_400_to_success(self):
+        """Test get_error_handler maps 400 → SUCCESS so HTTP 400 + code 9280 reaches parse_response."""
+        from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+        stream = _make_stream()
+        handler = stream.get_error_handler()
+        import requests
+        mock_response = Mock(spec=requests.Response)
+        mock_response.status_code = 400
+        mock_response.ok = False
+        resolution = handler.interpret_response(mock_response)
+        assert resolution.response_action == ResponseAction.SUCCESS
 
     def test_parse_response_non_3000_code_raises(self):
         """Test parse_response raises ZohoCreatorAPIError on unknown non-3000 code."""
@@ -191,6 +212,24 @@ class TestZohoCreatorStreamParsing:
 
         assert records == []
 
+    def test_parse_response_http_400_code_9280_yields_empty(self):
+        """Test parse_response yields no records when Zoho returns HTTP 400 + code 9280.
+
+        Zoho returns HTTP 400 + code 9280 for "No records found matching the given
+        criteria" — the newer behaviour for incremental syncs with no new data.
+        """
+        stream = _make_stream()
+        response = Mock()
+        response.status_code = 400
+        response.json.return_value = {
+            "code": 9280,
+            "message": "No records found matching the given criteria. Try using a different search criteria.",
+        }
+
+        records = list(stream.parse_response(response))
+
+        assert records == []
+
     @pytest.mark.parametrize("no_records_code", [3930, 3920, 3910])
     def test_parse_response_other_no_records_codes_yield_empty(self, no_records_code):
         """Test parse_response yields no records for other Zoho 'no data' codes (HTTP 200)."""
@@ -211,6 +250,7 @@ class TestZohoCreatorStreamParsing:
         stream = _make_stream()
         response = Mock()
         response.status_code = 500
+        response.text = "Internal server error"
         response.json.return_value = {"code": 9999, "message": "Internal server error"}
 
         with pytest.raises(ZohoCreatorAPIError):

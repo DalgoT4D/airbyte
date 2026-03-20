@@ -9,14 +9,12 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from airbyte_cdk.models import ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.streams.concurrent.cursor import ConnectorStateManager
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
-
-# try:
-#     from airbyte_cdk.sources.streams.http.config import HttpConfig as InternalConfig
-# except Exception:
-#     InternalConfig = Any
 
 
 from .api import ZohoCreatorAPI
@@ -79,16 +77,32 @@ class ReportDataStream(HttpStream):
         """HTTP method for API requests (GET for reading data)."""
         return "GET"
 
-    @property
-    def raise_on_http_errors(self) -> bool:
-        """Disable CDK's automatic raise_for_status().
+    def get_error_handler(self) -> ErrorHandler:
+        """Return a custom error handler that remaps Zoho's empty-result HTTP codes to SUCCESS.
 
-        Zoho returns HTTP 404 (not 200) for code 3100 "no records found".
-        If we let the CDK raise on 4xx, parse_response is never reached and
-        every incremental sync with no new records fails. We handle all HTTP
-        error cases manually in parse_response instead.
+        In CDK 7.x, error handling is owned by HttpClient via get_error_handler().
+        The deprecated raise_on_http_errors property is never consulted unless the
+        stream also defines should_retry(), which HttpStream base does not have.
+
+        Zoho returns non-200 responses for legitimate "no records" conditions:
+          - HTTP 404 + code 3100: no records for the given criteria (older API behaviour)
+          - HTTP 400 + code 9280: no records matching the given criteria (newer behaviour)
+        By remapping both to SUCCESS the response flows through to parse_response()
+        where the Zoho code is inspected and treated as an empty result set.
+
+        All other status codes keep their default CDK behaviour.
         """
-        return False
+        _empty_result = ErrorResolution(
+            response_action=ResponseAction.SUCCESS,
+            failure_type=None,
+            error_message=None,
+        )
+        custom_mapping = {
+            **DEFAULT_ERROR_MAPPING,
+            404: _empty_result,
+            400: _empty_result,
+        }
+        return HttpStatusErrorHandler(logger=logger, error_mapping=custom_mapping)
 
     @property
     def cursor_field(self) -> str:
@@ -202,7 +216,8 @@ class ReportDataStream(HttpStream):
     # Zoho Creator API codes that indicate "no records" — not a failure.
     # See: https://www.zoho.com/creator/help/api/v2/status-codes.html
     NO_RECORDS_CODES = {
-        3100,  # No records found for the given criteria (incremental sync with no new data)
+        3100,  # No records found for the given criteria — HTTP 404 (older behaviour)
+        9280,  # No records found matching the given criteria — HTTP 400 (newer behaviour)
         3930,  # No reports available
         3920,  # No pages available
         3910,  # No forms available

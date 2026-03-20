@@ -119,8 +119,6 @@ class SourceZohoCreator(AbstractSource):
             reports = api.get_application_reports()
             if reports:
                 logger.info(f"Successfully fetched all report names for application {api.app_link_name}")
-                # debugging
-                print(reports)
             else:
                 logger.warning(f"No reports found for application {api.app_link_name}")
         except Exception as e:
