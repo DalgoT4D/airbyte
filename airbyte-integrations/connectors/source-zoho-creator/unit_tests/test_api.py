@@ -174,41 +174,233 @@ class TestZohoCreatorAPIValidation:
 
 
 @pytest.mark.unit
+class TestZohoCreatorAPIDatacenterValidation:
+    """Test suite for datacenter config validation."""
+
+    def test_invalid_datacenter_raises_config_error(self, config_valid_minimal, mock_sdk_client):
+        """Test that an unsupported datacenter raises ZohoCreatorConfigError."""
+        from source_zoho_creator.exceptions import ZohoCreatorConfigError
+        config = {**config_valid_minimal, "datacenter": "INVALID"}
+        with pytest.raises(ZohoCreatorConfigError, match="INVALID"):
+            _make_api(config, mock_sdk_client)
+
+    def test_datacenter_case_insensitive(self, mock_sdk_client):
+        """Test that datacenter value is uppercased before validation."""
+        config = {
+            "client_id": "1000.test",
+            "client_secret": "secret",
+            "client_refresh_token": "token",
+            "account_owner_name": "john.doe",
+            "app_link_name": "app",
+            "datacenter": "us",
+        }
+        api = _make_api(config, mock_sdk_client)
+        assert api.datacenter == "US"
+        assert api.base_url == "www.zohoapis.com"
+
+
+@pytest.mark.unit
 class TestZohoCreatorAPIReportData:
-    """Test suite for get_report_data via SDK."""
+    """Test suite for get_report_data via raw HTTP requests."""
 
     def test_get_report_data_returns_records(self, config_valid_minimal, mock_sdk_client):
-        """Test get_report_data returns dicts from SDK Record.model_dump()."""
-        record1 = Mock()
-        record1.model_dump.return_value = {"ID": "1", "Name": "Product A"}
-        record2 = Mock()
-        record2.model_dump.return_value = {"ID": "2", "Name": "Product B"}
-        mock_sdk_client.application.return_value.report.return_value.get_records.return_value = iter([record1, record2])
-
+        """Test get_report_data returns records from a successful API response."""
         api = _make_api(config_valid_minimal, mock_sdk_client)
-        records = api.get_report_data("All_Products")
+
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "code": 3000,
+            "data": [
+                {"ID": "1", "Name": "Product A"},
+                {"ID": "2", "Name": "Product B"},
+            ],
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            records = api.get_report_data("All_Products")
 
         assert records == [{"ID": "1", "Name": "Product A"}, {"ID": "2", "Name": "Product B"}]
-        mock_sdk_client.application.assert_called_once_with("inventory_management", "john.doe")
-        mock_sdk_client.application.return_value.report.assert_called_once_with("All_Products")
 
-    def test_get_report_data_empty_report(self, config_valid_minimal, mock_sdk_client):
-        """Test get_report_data returns empty list when no records."""
-        mock_sdk_client.application.return_value.report.return_value.get_records.return_value = iter([])
-
+    def test_get_report_data_code_3100_returns_empty(self, config_valid_minimal, mock_sdk_client):
+        """Test get_report_data returns empty list for code 3100 (no records, HTTP 404)."""
         api = _make_api(config_valid_minimal, mock_sdk_client)
-        records = api.get_report_data("Empty_Report")
+
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_response.json.return_value = {
+            "code": 3100,
+            "message": "No records found for the given criteria.",
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            records = api.get_report_data("Empty_Report")
 
         assert records == []
 
-    def test_get_report_data_handles_sdk_exception(self, config_valid_minimal, mock_sdk_client):
-        """Test get_report_data returns empty list on SDK error."""
-        mock_sdk_client.application.return_value.report.return_value.get_records.side_effect = Exception("API error")
-
+    def test_get_report_data_code_9280_returns_empty(self, config_valid_minimal, mock_sdk_client):
+        """Test get_report_data returns empty list for code 9280 (no records, HTTP 400)."""
         api = _make_api(config_valid_minimal, mock_sdk_client)
-        records = api.get_report_data("All_Products")
+
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.json.return_value = {
+            "code": 9280,
+            "message": "No records found matching the given criteria.",
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            records = api.get_report_data("Empty_Report")
 
         assert records == []
+
+    def test_get_report_data_http_error_returns_empty(self, config_valid_minimal, mock_sdk_client):
+        """Test get_report_data returns empty list on unexpected HTTP error."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.status_code = 403
+        mock_response.json.return_value = {"code": 1005, "message": "Permission denied."}
+        mock_response.text = "Permission denied."
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            records = api.get_report_data("All_Products")
+
+        assert records == []
+
+    def test_get_report_data_handles_exception(self, config_valid_minimal, mock_sdk_client):
+        """Test get_report_data returns empty list on network exception."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        with patch("source_zoho_creator.api.requests.get", side_effect=Exception("Network error")):
+            records = api.get_report_data("All_Products")
+
+        assert records == []
+
+
+@pytest.mark.unit
+class TestZohoCreatorAPIApplicationReports:
+    """Test suite for get_application_reports."""
+
+    def test_get_application_reports_success(self, config_valid_minimal, mock_sdk_client):
+        """Test get_application_reports returns list of report dicts on success."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "reports": [
+                {"link_name": "All_Products", "display_name": "All Products"},
+                {"link_name": "All_Stock", "display_name": "All Stock"},
+            ]
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            reports = api.get_application_reports()
+
+        assert len(reports) == 2
+        assert reports[0]["link_name"] == "All_Products"
+
+    def test_get_application_reports_http_error_returns_empty(self, config_valid_minimal, mock_sdk_client):
+        """Test get_application_reports returns empty list on HTTP error."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.status_code = 403
+        mock_response.text = "Forbidden"
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            reports = api.get_application_reports()
+
+        assert reports == []
+
+    def test_get_application_reports_exception_returns_empty(self, config_valid_minimal, mock_sdk_client):
+        """Test get_application_reports returns empty list on network exception."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        with patch("source_zoho_creator.api.requests.get", side_effect=Exception("Network error")):
+            reports = api.get_application_reports()
+
+        assert reports == []
+
+
+@pytest.mark.unit
+class TestZohoCreatorAPIReportSchema:
+    """Test suite for get_report_schema schema inference."""
+
+    def test_get_report_schema_infers_string_fields(self, config_valid_minimal, mock_sdk_client):
+        """Test schema inference maps string values to string type."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "code": 3000,
+            "data": [{"ID": "1", "Name": "Product A", "Added_Time": "01-Jan-2024 10:00:00"}],
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            schema = api.get_report_schema("All_Products")
+
+        assert schema["ID"] == {"type": "string"}
+        assert schema["Name"] == {"type": "string"}
+        assert schema["Added_Time"] == {"type": "string"}
+
+    def test_get_report_schema_infers_object_fields(self, config_valid_minimal, mock_sdk_client):
+        """Test schema inference maps dict values to object type."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "code": 3000,
+            "data": [{"ID": "1", "Address": {"City": "London", "Country": "UK"}}],
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            schema = api.get_report_schema("All_Products")
+
+        assert schema["Address"] == {"type": "object", "additionalProperties": True}
+
+    def test_get_report_schema_infers_array_fields(self, config_valid_minimal, mock_sdk_client):
+        """Test schema inference maps list values to array type."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "code": 3000,
+            "data": [{"ID": "1", "Tags": ["a", "b"]}],
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            schema = api.get_report_schema("All_Products")
+
+        assert schema["Tags"] == {"type": "array", "items": {"type": "string"}}
+
+    def test_get_report_schema_empty_report_returns_empty_dict(self, config_valid_minimal, mock_sdk_client):
+        """Test schema inference returns empty dict for reports with no records."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.json.return_value = {"code": 9280, "message": "No records."}
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response):
+            schema = api.get_report_schema("Empty_Report")
+
+        assert schema == {}
+
+    def test_get_report_schema_caches_result(self, config_valid_minimal, mock_sdk_client):
+        """Test schema is cached — second call for same report does not hit the API."""
+        api = _make_api(config_valid_minimal, mock_sdk_client)
+
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "code": 3000,
+            "data": [{"ID": "1"}],
+        }
+
+        with patch("source_zoho_creator.api.requests.get", return_value=mock_response) as mock_get:
+            api.get_report_schema("All_Products")
+            api.get_report_schema("All_Products")
+            assert mock_get.call_count == 1
 
 
 @pytest.mark.unit

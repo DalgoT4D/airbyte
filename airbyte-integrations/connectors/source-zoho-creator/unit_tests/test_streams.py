@@ -78,6 +78,7 @@ class TestZohoCreatorStreamPagination:
         """Test next_page_token extracts record_cursor from response headers."""
         stream = _make_stream()
         response = Mock()
+        response.status_code = 200
         response.headers = {"record_cursor": "abc123cursor"}
 
         token = stream.next_page_token(response)
@@ -88,6 +89,7 @@ class TestZohoCreatorStreamPagination:
         """Test next_page_token returns None when no record_cursor header."""
         stream = _make_stream()
         response = Mock()
+        response.status_code = 200
         response.headers = {}
 
         token = stream.next_page_token(response)
@@ -315,6 +317,74 @@ class TestZohoCreatorStreamIncremental:
 
         assert "criteria" in params
         assert "Added_Time" in params["criteria"]
+
+
+@pytest.mark.unit
+class TestZohoCreatorStreamAuthErrorDetection:
+    """Test suite for _is_auth_error helper."""
+
+    def test_is_auth_error_by_zoho_code(self):
+        """Test _is_auth_error returns True for known Zoho auth error codes."""
+        stream = _make_stream()
+        for code in (1001, 1004, 1005, 1006):
+            assert stream._is_auth_error(code, "some error") is True
+
+    def test_is_auth_error_by_message_keyword(self):
+        """Test _is_auth_error returns True for auth-related keywords regardless of code."""
+        stream = _make_stream()
+        assert stream._is_auth_error(9999, "invalid token provided") is True
+        assert stream._is_auth_error(9999, "authentication required") is True
+        assert stream._is_auth_error(9999, "unauthorized access") is True
+        assert stream._is_auth_error(9999, "access denied") is True
+
+    def test_is_auth_error_false_for_normal_error(self):
+        """Test _is_auth_error returns False for non-auth errors."""
+        stream = _make_stream()
+        assert stream._is_auth_error(3001, "Some API error") is False
+        assert stream._is_auth_error(None, "Internal server error") is False
+
+
+@pytest.mark.unit
+class TestZohoCreatorStreamCriteriaInjection:
+    """Test suite for criteria injection protection in request_params."""
+
+    def test_request_params_rejects_unknown_cursor_field(self):
+        """Test request_params raises ZohoCreatorAPIError for cursor fields not in the whitelist."""
+        stream = _make_stream()
+        stream._configured_cursor_field = "Injected_Field"
+
+        with pytest.raises(ZohoCreatorAPIError, match="Unsupported cursor field"):
+            stream.request_params(
+                stream_state={"Injected_Field": "01-Jan-2024 10:00:00"},
+                stream_slice=None,
+                next_page_token=None,
+            )
+
+    def test_request_params_rejects_malformed_cursor_value(self):
+        """Test request_params raises ZohoCreatorAPIError if cursor value doesn't match DATE_FORMAT."""
+        stream = _make_stream()
+        stream._configured_cursor_field = "Added_Time"
+
+        with pytest.raises(ZohoCreatorAPIError, match="Invalid cursor value"):
+            stream.request_params(
+                stream_state={"Added_Time": "not-a-valid-date"},
+                stream_slice=None,
+                next_page_token=None,
+            )
+
+    def test_request_params_accepts_valid_cursor_value(self):
+        """Test request_params builds criteria correctly for a valid whitelisted cursor field."""
+        stream = _make_stream()
+        stream._configured_cursor_field = "Added_Time"
+
+        params = stream.request_params(
+            stream_state={"Added_Time": "01-Jan-2024 10:00:00"},
+            stream_slice=None,
+            next_page_token=None,
+        )
+
+        assert "criteria" in params
+        assert 'Added_Time > "01-Jan-2024 10:00:00"' == params["criteria"]
 
 
 @pytest.mark.unit

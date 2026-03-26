@@ -49,21 +49,29 @@ class TestSourceZohoCreatorCheckConnection:
         assert success is False
         assert error is not None
 
-    def test_check_connection_empty_account_owner(self, config_invalid_empty_username, mock_logger):
-        """Test connection check fails with empty account owner name."""
+    def test_check_connection_empty_account_owner(self, config_invalid_empty_username, mock_logger, mocker):
+        """Test connection check fails gracefully with empty account owner name."""
         source = SourceZohoCreator()
-        
+        mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
+        mock_api.return_value.validate_config.return_value = (
+            False, "Application or account not found. Check account_owner_name and app_link_name."
+        )
+
         success, error = source.check_connection(mock_logger, config_invalid_empty_username)
-        
+
         assert success is False
         assert error is not None
 
-    def test_check_connection_empty_app_link(self, config_invalid_empty_app_link, mock_logger):
-        """Test connection check fails with empty app link name."""
+    def test_check_connection_empty_app_link(self, config_invalid_empty_app_link, mock_logger, mocker):
+        """Test connection check fails gracefully with empty app link name."""
         source = SourceZohoCreator()
-        
+        mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
+        mock_api.return_value.validate_config.return_value = (
+            False, "Application or account not found. Check account_owner_name and app_link_name."
+        )
+
         success, error = source.check_connection(mock_logger, config_invalid_empty_app_link)
-        
+
         assert success is False
         assert error is not None
 
@@ -82,17 +90,22 @@ class TestSourceZohoCreatorCheckConnection:
         assert success is False
         assert "not found" in error.lower()
 
-    def test_check_connection_generic_error(self, config_valid_minimal, mock_logger, mocker):
-        """Test connection check handles generic exceptions."""
+    def test_check_connection_invalid_datacenter(self, mock_logger):
+        """Test connection check fails with a clear message for an invalid datacenter."""
         source = SourceZohoCreator()
-        
-        mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
-        mock_api.side_effect = Exception("Unexpected error")
-        
-        success, error = source.check_connection(mock_logger, config_valid_minimal)
-        
+        config = {
+            "client_id": "1000.test",
+            "client_secret": "secret",
+            "client_refresh_token": "token",
+            "account_owner_name": "john.doe",
+            "app_link_name": "app",
+            "datacenter": "INVALID",
+        }
+        success, error = source.check_connection(mock_logger, config)
+
         assert success is False
         assert error is not None
+        assert "INVALID" in error or "datacenter" in error.lower()
 
     def test_check_connection_eu_datacenter(self, config_eu_datacenter, mock_logger, mocker):
         """Test connection check with EU datacenter config."""
@@ -117,24 +130,23 @@ class TestSourceZohoCreatorStreams:
     def test_streams_returns_list(self, config_valid_minimal, mocker):
         """Test streams method returns a list."""
         source = SourceZohoCreator()
-        
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
-        mock_api.return_value.list_applications.return_value = []
-        mock_api.return_value.get_application_forms.return_value = []
-        
+        mock_api.return_value.get_application_reports.return_value = []
+
         streams = source.streams(config_valid_minimal)
-        
+
         assert isinstance(streams, list)
 
-    def test_streams_with_no_applications(self, config_valid_minimal, mocker):
-        """Test streams when no applications are available."""
+    def test_streams_with_no_reports(self, config_valid_minimal, mocker):
+        """Test streams returns empty list when no reports are available."""
         source = SourceZohoCreator()
-        
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
-        mock_api.return_value.list_applications.return_value = []
-        
+        mock_api.return_value.get_application_reports.return_value = []
+
         streams = source.streams(config_valid_minimal)
-        
+
         assert streams == []
 
     def test_streams_with_reports(self, config_valid_minimal, mocker):
@@ -180,10 +192,10 @@ class TestSourceZohoCreatorDiscover:
     def test_discover_returns_catalog(self, config_valid_minimal, mock_logger, mocker):
         """Test discover method returns a catalog."""
         source = SourceZohoCreator()
-        
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
-        mock_api.return_value.list_applications.return_value = []
-        
+        mock_api.return_value.get_application_reports.return_value = []
+
         catalog = source.discover(mock_logger, config_valid_minimal)
 
         from airbyte_cdk.models import AirbyteCatalog
@@ -197,9 +209,9 @@ class TestSourceZohoCreatorRead:
     def test_read_yields_messages(self, config_valid_minimal, mock_logger, mocker):
         """Test read method yields AirbyteMessage instances."""
         source = SourceZohoCreator()
-        
+
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
-        mock_api.return_value.list_applications.return_value = []
+        mock_api.return_value.get_application_reports.return_value = []
         
         # Mock catalog and state
         catalog = mocker.MagicMock()
@@ -222,8 +234,8 @@ class TestSourceZohoCreatorIntegration:
         mock_api = mocker.patch("source_zoho_creator.source.ZohoCreatorAPI")
         mock_api_instance = mock_api.return_value
         mock_api_instance.validate_config.return_value = (True, None)
-        mock_api_instance.list_applications.return_value = []
-        
+        mock_api_instance.get_application_reports.return_value = []
+
         # Check connection
         success, error = source.check_connection(mock_logger, config_valid_minimal)
         assert success is True

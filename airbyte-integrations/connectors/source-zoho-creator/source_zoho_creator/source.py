@@ -18,6 +18,7 @@ from zoho_creator_sdk.exceptions import (
 )
 
 from .api import ZohoCreatorAPI
+from .exceptions import ZohoCreatorConfigError
 from .streams import ReportDataStream
 
 logger = logging.getLogger("airbyte")
@@ -52,6 +53,10 @@ class SourceZohoCreator(AbstractSource):
             )
         except KeyError as e:
             error_msg = f"Missing required configuration field: {e}"
+            logger.error(error_msg)
+            return False, error_msg
+        except ZohoCreatorConfigError as e:
+            error_msg = f"Configuration error: {e}"
             logger.error(error_msg)
             return False, error_msg
         except SDKConfigurationError as e:
@@ -97,33 +102,35 @@ class SourceZohoCreator(AbstractSource):
         return success, error
 
     def streams(self, config: Mapping[str, Any]) -> List:
-
         """Return stream instances based on configuration.
-        This implementation instantiates a `ZohoCreatorAPI` with the
-        required config fields and creates a `ReportDataStream` for each
-        report discovered in the configured application.
+
+        Instantiates a `ZohoCreatorAPI` with the required config fields and
+        creates a `ReportDataStream` for each report discovered in the configured
+        application.
         """
-        api = ZohoCreatorAPI(
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            client_refresh_token=config["client_refresh_token"],
-            account_owner_name=config["account_owner_name"],
-            app_link_name=config["app_link_name"],
-            datacenter=config.get("datacenter", "US"),
-        )
+        try:
+            api = ZohoCreatorAPI(
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                client_refresh_token=config["client_refresh_token"],
+                account_owner_name=config["account_owner_name"],
+                app_link_name=config["app_link_name"],
+                datacenter=config.get("datacenter", "US"),
+            )
+        except KeyError as e:
+            raise RuntimeError(f"Missing required configuration field: {e}") from e
+        except ZohoCreatorConfigError as e:
+            raise RuntimeError(str(e)) from e
 
         stream_instances: List = []
 
-        # Fetch reports for this application
-        try:
-            reports = api.get_application_reports()
-            if reports:
-                logger.info(f"Successfully fetched all report names for application {api.app_link_name}")
-            else:
-                logger.warning(f"No reports found for application {api.app_link_name}")
-        except Exception as e:
-            logger.error(f"Failed to fetch reports: {e}")
-            reports = []
+        # get_application_reports() handles all exceptions internally and always
+        # returns a list — no outer try/except needed.
+        reports = api.get_application_reports()
+        if reports:
+            logger.info(f"Successfully fetched all report names for application {api.app_link_name}")
+        else:
+            logger.warning(f"No reports found for application {api.app_link_name}")
 
         for report in reports:
             # each report obj returned by Zoho will contain `link_name` i.e. actual name of the report

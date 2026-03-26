@@ -10,7 +10,7 @@ import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from zoho_creator_sdk import ZohoCreatorClient
 
-from .exceptions import ZohoCreatorAPIError
+from .exceptions import ZohoCreatorAPIError, ZohoCreatorConfigError
 
 logger = logging.getLogger("airbyte")
 
@@ -70,6 +70,10 @@ class ZohoCreatorAPI:
         self.account_owner_name = account_owner_name
         self.app_link_name = app_link_name
         self.datacenter = datacenter.upper()
+        if self.datacenter not in DATACENTER_API_URL:
+            raise ZohoCreatorConfigError(
+                f"Invalid datacenter '{self.datacenter}'. Must be one of: {list(DATACENTER_API_URL.keys())}"
+            )
         self.base_url = DATACENTER_API_URL[self.datacenter]
 
         self._sdk_client = self._init_sdk_client()
