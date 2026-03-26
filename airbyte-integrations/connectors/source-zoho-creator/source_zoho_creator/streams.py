@@ -4,23 +4,21 @@
 
 import datetime
 import logging
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.models import ConfiguredAirbyteStream
+from airbyte_cdk.models import ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.streams.concurrent.cursor import ConnectorStateManager
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
-# try:
-#     from airbyte_cdk.sources.streams.http.config import HttpConfig as InternalConfig
-# except Exception:
-#     InternalConfig = Any
-
 
 from .api import ZohoCreatorAPI
-from .exceptions import ZohoCreatorAPIError
+from .exceptions import ZohoCreatorAPIError, ZohoCreatorAuthError
 
 logger = logging.getLogger("airbyte")
 
@@ -34,14 +32,28 @@ class ReportDataStream(HttpStream):
     DEFAULT_CURSOR_FIELDS = ["Added_Time", "Modified_Time"]
     MAX_RECORDS = 1000
 
+    # Zoho Creator API codes that indicate "no records" — not a failure.
+    # See: https://www.zoho.com/creator/help/api/v2/status-codes.html
+    NO_RECORDS_CODES = {
+        3100,  # No records found for the given criteria — HTTP 404 (older behaviour)
+        9280,  # No records found matching the given criteria — HTTP 400 (newer behaviour)
+        3930,  # No reports available
+        3920,  # No pages available
+        3910,  # No forms available
+    }
+
+    # Zoho error codes that always indicate an auth/permission failure.
+    # These should surface as ZohoCreatorAuthError so operators know to rotate credentials.
+    ZOHO_AUTH_ERROR_CODES = {1001, 1004, 1005, 1006}
+
     def __init__(self, api: ZohoCreatorAPI, report_link_name: str):
         """Initialize stream for a specific Zoho Creator report."""
         # Set instance attributes before super().__init__() to ensure they're available
         # if HttpStream initialization accesses properties like 'name'
         self.api = api
         self.report_link_name = report_link_name
-        self._schema = None  # Cache for schema
         self._configured_cursor_field: Optional[str] = None
+        self._sync_mode: Optional[SyncMode] = None
         super().__init__(authenticator=api.get_authenticator())
 
     @property
@@ -74,26 +86,54 @@ class ReportDataStream(HttpStream):
         """Primary key field is 'ID' for all Zoho Creator records."""
         return self.PRIMARY_KEY
 
-    @property
-    def http_method(self) -> str:
-        """HTTP method for API requests (GET for reading data)."""
-        return "GET"
+    def get_error_handler(self) -> ErrorHandler:
+        """Return a custom error handler that remaps Zoho's empty-result HTTP codes to SUCCESS.
+
+        In CDK 7.x, error handling is owned by HttpClient via get_error_handler().
+        The deprecated raise_on_http_errors property is never consulted unless the
+        stream also defines should_retry(), which HttpStream base does not have.
+
+        Zoho returns non-200 responses for legitimate "no records" conditions:
+          - HTTP 404 + code 3100: no records for the given criteria (older API behaviour)
+          - HTTP 400 + code 9280: no records matching the given criteria (newer behaviour)
+        By remapping both to SUCCESS the response flows through to parse_response()
+        where the Zoho code is inspected and treated as an empty result set.
+
+        All other status codes keep their default CDK behaviour.
+        """
+        _empty_result = ErrorResolution(
+            response_action=ResponseAction.SUCCESS,
+            failure_type=None,
+            error_message=None,
+        )
+        custom_mapping = {
+            **DEFAULT_ERROR_MAPPING,
+            404: _empty_result,
+            400: _empty_result,
+        }
+        return HttpStatusErrorHandler(logger=logger, error_mapping=custom_mapping)
+
+    def _is_auth_error(self, code: Optional[int], message: str) -> bool:
+        """Return True if the Zoho error code or message indicates an auth/permission failure."""
+        return code in self.ZOHO_AUTH_ERROR_CODES or any(
+            kw in message.lower() for kw in ("invalid token", "authentication", "unauthorized", "access denied")
+        )
 
     @property
-    def cursor_field(self) -> str:
+    def cursor_field(self) -> List[str]:
         """
-        Return cursor field if 'Added_Time', 'Modified_Time' exists in schema, otherwise None.
-        
-        Returns None to disable incremental sync (full refresh only).
+        Return list of cursor fields present in this report's schema.
+
+        Returns an empty list when neither 'Added_Time' nor 'Modified_Time' exists,
+        which causes the stream to operate as full-refresh only.
         """
 
-        if self._schema is None:
-            self._schema = self.api.get_report_schema(self.report_link_name)
+        schema = self.api.get_report_schema(self.report_link_name)
 
         found_cursor_fields = []
 
         for cursor_field in self.DEFAULT_CURSOR_FIELDS:
-            if cursor_field in self._schema:
+            if cursor_field in schema:
                 found_cursor_fields.append(cursor_field)
         
         if not found_cursor_fields:
@@ -104,16 +144,18 @@ class ReportDataStream(HttpStream):
     def _state_cursor_field(self) -> Optional[str]:
         """
         Return the single cursor field to use for state tracking.
-        
+
+        Returns None immediately for full-refresh syncs — no state is tracked and
+        there is no need to fetch the schema to check for cursor field presence.
         If a configured catalog provided a specific cursor field, prefer that.
         Otherwise, fall back to the first available default cursor field.
         """
+        if self._sync_mode == SyncMode.full_refresh:
+            return None
         if self._configured_cursor_field:
             return self._configured_cursor_field
-        else:
-            cf = self.cursor_field
-            if isinstance(cf, list):
-                return cf[0] if cf else None
+        cf = self.cursor_field
+        return cf[0] if isinstance(cf, list) and cf else None
 
     def read(
         self,
@@ -125,14 +167,12 @@ class ReportDataStream(HttpStream):
         internal_config: InternalConfig
     ) -> Iterable[StreamData]:
         """
-        Override to capture the user-selected cursor_field from the configured catalog.
+        Override to capture the sync mode and cursor_field from the configured catalog.
         """
+        self._sync_mode = configured_stream.sync_mode
+
         if configured_stream.cursor_field:
-            # Only set _configured_cursor_field if cursor_field is present and non-empty in the configured catalog.
-            if configured_stream.cursor_field and len(configured_stream.cursor_field) > 0:
-                self._configured_cursor_field = configured_stream.cursor_field[0]
-            else:
-                self._configured_cursor_field = None
+            self._configured_cursor_field = configured_stream.cursor_field[0]
 
         return super().read(
             configured_stream,
@@ -161,7 +201,13 @@ class ReportDataStream(HttpStream):
         return headers
 
     def next_page_token(self, response) -> Optional[str]:
-        """Extract pagination token from response headers (Zoho uses 'record_cursor' header)."""
+        """Extract pagination token from response headers (Zoho uses 'record_cursor' header).
+
+        Non-200 responses (HTTP 400/404 remapped to SUCCESS for empty-result codes) must
+        not continue pagination — they carry no cursor header, but we guard explicitly.
+        """
+        if response.status_code != 200:
+            return None
         token = response.headers.get("record_cursor")
         if token:
             return {"record_cursor": token}
@@ -179,21 +225,72 @@ class ReportDataStream(HttpStream):
         state_cursor_field = self._state_cursor_field()
 
         if state_cursor_field and stream_state and state_cursor_field in stream_state:
+            # Whitelist: only allow known safe cursor fields to prevent criteria injection.
+            if state_cursor_field not in self.DEFAULT_CURSOR_FIELDS:
+                raise ZohoCreatorAPIError(
+                    f"Unsupported cursor field '{state_cursor_field}'. Must be one of: {self.DEFAULT_CURSOR_FIELDS}"
+                )
             last_cursor_time = stream_state[state_cursor_field]
+            # Validate the cursor value matches the expected date format before embedding
+            # it in the criteria string. Prevents injection if state is corrupt/tampered.
+            try:
+                datetime.datetime.strptime(last_cursor_time, self.DATE_FORMAT)
+            except (ValueError, TypeError):
+                raise ZohoCreatorAPIError(
+                    f"Invalid cursor value '{last_cursor_time}' for field '{state_cursor_field}': "
+                    f"expected format {self.DATE_FORMAT!r}"
+                )
             params["criteria"] = f'{state_cursor_field} > "{last_cursor_time}"'
 
-        logger.info("Params: %s", params)
+        logger.debug("Params: %s", params)
         return params
 
     def parse_response(self, response, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """Parse API response: extract records from 'data' array if code is 3000, otherwise raise error."""
-        data = response.json()
-        if data.get("code") == 3000:
-            yield from data.get("data", [])
+        """Parse API response, handling both success and all error cases.
+
+        Non-200 responses that map to NO_RECORDS_CODES reach here because
+        get_error_handler() remaps HTTP 400 and 404 to ResponseAction.SUCCESS,
+        allowing parse_response() to distinguish empty results from real failures.
+        """
+        try:
+            data = response.json()
+        except Exception:
+            raise ZohoCreatorAPIError(
+                f"Non-JSON response (HTTP {response.status_code}): {response.text[:200]}"
+            )
+
+        code = data.get("code")
+
+        # Empty-result codes: treat as a valid empty page, not a failure.
+        # Notably, code 3100 ("no records for criteria") arrives as HTTP 404.
+        if code in self.NO_RECORDS_CODES:
+            logger.info("Zoho API returned code %s (%s) — treating as empty result set.", code, data.get("message", ""))
+            return
+
+        # For non-200 responses that aren't a known empty-result code, raise now.
+        if response.status_code != 200:
+            error_msg = data.get("message", response.text[:200])
+            if self._is_auth_error(code, error_msg):
+                raise ZohoCreatorAuthError(f"Authentication error (code {code}): {error_msg}")
+            raise ZohoCreatorAPIError(f"HTTP {response.status_code}, Zoho API error (code {code}): {error_msg}")
+
+        if code == 3000:
+            records = data.get("data", [])
+            if not isinstance(records, list):
+                raise ZohoCreatorAPIError(
+                    f"Unexpected 'data' type in Zoho response: expected list, got {type(records).__name__}"
+                )
+            yield from records
             return
 
         error_msg = data.get("message", "Unknown API error")
-        raise ZohoCreatorAPIError(f"Zoho API error: {error_msg}")
+
+        # Distinguish auth failures so operators know to rotate credentials rather
+        # than treating it as a transient API error.
+        if self._is_auth_error(code, error_msg):
+            raise ZohoCreatorAuthError(f"Authentication error (code {code}): {error_msg}")
+
+        raise ZohoCreatorAPIError(f"Zoho API error (code {code}): {error_msg}")
 
     def get_updated_state(
         self,
@@ -205,20 +302,16 @@ class ReportDataStream(HttpStream):
         Parses date strings in format '04-Oct-2023 12:35:24' and ensures we always
         track the maximum cursor value seen, even if records arrive out of order.
         """
-        try:
-            state_cursor_field = self._state_cursor_field()
+        state_cursor_field = self._state_cursor_field()
 
-            if not state_cursor_field:
-                return current_stream_state or {}
+        if not state_cursor_field:
+            return current_stream_state or {}
 
-            if state_cursor_field not in latest_record:
-                return current_stream_state or {}
-        except TypeError as e:
-            raise
+        if state_cursor_field not in latest_record:
+            return current_stream_state or {}
 
         try:
             # Parse the latest record's cursor value
-            state_cursor_field = self._state_cursor_field()
             latest_cursor_str = latest_record[state_cursor_field]
             latest_cursor_dt = datetime.datetime.strptime(latest_cursor_str, self.DATE_FORMAT)
 
@@ -233,22 +326,19 @@ class ReportDataStream(HttpStream):
 
             # Return as string in original format
             updated_state = {state_cursor_field: max_cursor_dt.strftime(self.DATE_FORMAT)}
-            logger.info(f"Updated state: {updated_state}")
+            logger.debug("Updated state: %s", updated_state)
             return updated_state
 
         except (ValueError, TypeError) as e:
             # If parsing fails, log and return current state
-            logger.warning(f"Failed to parse {self.cursor_field} value: {e}. Using current state.")
+            logger.warning(f"Failed to parse {state_cursor_field} value: {e}. Using current state.")
             return current_stream_state or {}
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """Generate JSON schema dynamically by fetching sample data and inferring field types."""
-        
-        self._schema = self.api.get_report_schema(self.report_link_name)
-
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": self._schema,
+            "properties": self.api.get_report_schema(self.report_link_name),
             "additionalProperties": True,
         }
