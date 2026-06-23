@@ -49,6 +49,11 @@ class SourceMicrosoftSharePointClient:
     """
 
     def __init__(self, config: SourceMicrosoftSharePointSpec):
+        super().__init__()
+        self._auth_client = None
+        self._one_drive_client = None
+        self._url_cache = {}
+
         self.config = config
         self._client = None
         self._msal_app = ConfidentialClientApplication(
@@ -56,6 +61,7 @@ class SourceMicrosoftSharePointClient:
             authority=f"https://login.microsoftonline.com/{self.config.credentials.tenant_id}",
             client_credential=self.config.credentials.client_secret,
         )
+        self._url_cache = {}
 
     @property
     def client(self):
@@ -402,6 +408,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         items_processed = False
         for file in files_generator:
             items_processed = True
+            self._url_cache[file.uri] = file.download_url
             yield file
 
         if not items_processed:
@@ -411,6 +418,13 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        
+        # Pull the URL from the object (if it exists) or rescue it from our cache
+        actual_url = getattr(file, "download_url", None) or self._url_cache.get(file.uri)
+        
+        if not actual_url:
+            raise RuntimeError(f"Could not find download URL for {file.uri}")
+        
         # choose correct compression mode because the url is random and doesn't end with filename extension
         file_extension = file.uri.split(".")[-1]
         if file_extension in ["gz", "bz2"]:
@@ -419,7 +433,8 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             compression = "disable"
 
         try:
-            return smart_open.open(file.download_url, mode=mode.value, compression=compression, encoding=encoding)
+            # Pass our rescued 'actual_url' into smart_open
+            return smart_open.open(actual_url, mode=mode.value, compression=compression, encoding=encoding)
         except Exception as e:
             logger.exception(f"Error opening file {file.uri}: {e}")
 

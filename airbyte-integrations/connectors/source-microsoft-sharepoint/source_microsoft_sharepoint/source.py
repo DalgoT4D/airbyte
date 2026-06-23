@@ -4,6 +4,8 @@
 
 
 from typing import Any, Mapping, Optional
+from airbyte_cdk.sources.file_based.config.excel_format import ExcelFormat
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 
 from airbyte_cdk import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification, TState
 from airbyte_cdk.models import AuthFlowType, OauthConnectorInputSpecification
@@ -13,6 +15,78 @@ from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import SourceMicrosoftSharePointStreamReader
 from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder
 
+import pandas as pd
+from typing import Any, Dict, Iterator
+# You may need to verify this exact import path by looking at the CDK source in your virtual environment
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+
+
+class AllSheetsExcelParser(FileTypeParser):
+    @property
+    def file_read_mode(self) -> FileReadMode:
+        return FileReadMode.READ_BINARY
+
+    def check_config(self, *args, **kwargs) -> bool:
+        # Return True for success, and None for the error message
+        return True, None
+    
+    async def infer_schema(
+        self,
+        config: Any,
+        file: Any,
+        stream_reader: Any,
+        logger: Any,
+        **kwargs
+    ) -> dict:
+        schema = {"_ab_source_file_sheet": {"type": "string"}}
+        
+        with stream_reader.open_file(file, self.file_read_mode, None, logger) as fp:
+            try:
+                # Tell Pandas to only peek at the tab matching the Stream Name
+                df = pd.read_excel(fp, sheet_name=config.name, nrows=0)
+            except ValueError:
+                # If the tab doesn't exist in this specific file, return empty schema safely
+                return schema
+            
+            # Register columns only for this specific tab
+            for col in df.columns:
+                schema[str(col)] = {"type": "string"}
+                    
+        return schema
+
+    def parse_records(
+        self,
+        config: Any,
+        file: Any,
+        stream_reader: Any,
+        logger: Any,
+        discovered_schema: Any,
+        *args,
+        **kwargs
+    ) -> Iterator[Dict[str, Any]]:
+        
+        with stream_reader.open_file(file, self.file_read_mode, None, logger) as fp:
+            try:
+                # Tell Pandas to only load data from the tab matching the Stream Name
+                df = pd.read_excel(fp, sheet_name=config.name)
+            except ValueError:
+                logger.warning(f"Sheet '{config.name}' not found in {file.uri}. Skipping.")
+                return
+
+            df.dropna(how="all", inplace=True)
+            df = df.where(pd.notnull(df), None)
+            
+            for record in df.to_dict(orient="records"):
+                record["_ab_source_file_sheet"] = config.name
+                
+                # Forcefully cast ALL non-null values to strings to match our infer_schema!
+                for key, value in record.items():
+                    if value is not None:
+                        # This safely handles Timestamps, huge ints, floats, and booleans
+                        record[key] = str(value) 
+                # ---------------
+                
+                yield record
 
 class SourceMicrosoftSharePoint(FileBasedSource):
     SCOPES = ["offline_access", "Files.Read.All", "Sites.Read.All", "Sites.Selected"]
@@ -25,6 +99,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             config=config,
             state=state,
             cursor_cls=DefaultFileBasedCursor,
+            parsers={ExcelFormat: AllSheetsExcelParser()}
         )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
