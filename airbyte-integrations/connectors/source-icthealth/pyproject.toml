@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "source-icthealth"
+version = "0.1.0"
+description = "Connector to pull data from ict_health service"
+authors = ["Tech4dev"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "6.13.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

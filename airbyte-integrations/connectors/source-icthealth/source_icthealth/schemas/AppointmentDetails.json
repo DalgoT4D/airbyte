@@ -1,0 +1,145 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": true,
+    "type": "object",
+    "required": [
+        "eventid"
+    ],
+    "properties": {
+        "address": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "age": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "cancelreason": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "city": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "consultant": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "createdby": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "createddate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "department": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "dob": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "eventid": {
+            "type": "number"
+        },
+        "eventstatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "eventvalidfrom": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "eventvalidto": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "gender": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "isprocessed": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "mobileno": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mrno": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "patientname": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "roomno": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "slotendtime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "slotstarttime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "unit": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "updateddate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

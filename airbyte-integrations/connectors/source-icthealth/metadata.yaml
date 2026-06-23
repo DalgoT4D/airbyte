@@ -1,0 +1,18 @@
+data:
+  connectorType: source  # or destination
+  connectorSubtype: api  # or api, file, etc.
+  definitionId: 48f88635-0e54-4eb9-b0d3-0b0b1cfe7eb7  # Generate a UUID for your connector
+  dockerImageTag: 0.1.0  # Your connector version
+  dockerRepository: airbyte/source-icthealth
+  githubIssueLabel: source-icthealth
+  icon: icon.svg  # If you have an icon
+  license: MIT  # or other license
+  name: ICT Health
+  tags:
+    - language:python
+    - cdk:python  # or cdk:low-code if using the low-code CDK
+  supportLevel: community  # or certified
+  documentationUrl: https://docs.airbyte.com/integrations/sources/icthealth
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+metadataSpecVersion: "1.0"

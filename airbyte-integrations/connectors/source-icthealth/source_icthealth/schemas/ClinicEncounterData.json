@@ -1,0 +1,157 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": true,
+    "type": "object",
+    "required": [
+        "encounterid"
+    ],
+    "properties": {
+        "age": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "appointmenttype": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "assocmpny": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "billstatus": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "consultationrequestdate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "createddate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "department": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "doctor": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "encounterid": {
+            "type": "number"
+        },
+        "endconsultationtime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "gender": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoiceno": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "isprocessed": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "mobileno": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mrno": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "patientname": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "plan": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "queuegenerationtime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "queueno": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "reginvcreateddate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sponsorname": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "startconsultationtime": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "unit": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "updateddate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "visitid": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}
