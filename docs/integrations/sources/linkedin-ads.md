@@ -60,12 +60,20 @@ You can follow the steps laid out below to create the application and obtain the
 
 2. Click the **OAuth 2.0 tools** link in the **Understanding authentication and OAuth 2.0** section on the right side of the page.
 3. Click **Create token**.
-4. Select the scopes you want to use for your app. We recommend using the following scopes:
-   - `r_emailaddress`
-   - `r_liteprofile`
-   - `r_ads`
-   - `r_ads_reporting`
-   - `r_organization_social`
+4. Select the scopes you want to use for your app. The connector requires the following scopes:
+   - `r_ads` - Read ad accounts and related data
+   - `r_ads_reporting` - Read ad analytics and reporting data
+   - `r_basicprofile` - Read basic profile information
+   - `r_liteprofile` - Read lite profile information
+   - `r_emailaddress` - Read email address
+   - `r_organization_social` - Read organization social data
+   - `r_organization_admin` - Read organization admin data
+   - `r_events` - Read events data
+   - `r_1st_connections_size` - Read first-degree connection count
+   - `r_marketing_leadgen_automation` - Read lead gen form data
+   - `r_ads_leadgen_automation` - Read lead gen automation data
+
+   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics.
 5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
 
 :::caution
@@ -110,7 +118,9 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
-8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled form LinkedIn Ads with your particular needs. To add a custom report:
+8. (Optional) For **Lookback Window**, enter the number of days to look back when syncing ad analytics data. This allows the connector to re-fetch data from a previous period to capture late-arriving conversions or attribution updates. Leave blank to use the default behavior.
+9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
+10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
    2. Enter a **Report Name**. This will be used as the stream name during replication.
    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
@@ -119,7 +129,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
-9. Click **Set up source** and wait for the tests to complete.
+11. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 ## Supported sync modes
@@ -139,6 +149,8 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Campaigns](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http&view=li-lms-2023-05#search-for-campaigns)
 - [Creatives](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http%2Chttp-update-a-creative&view=li-lms-2023-05#search-for-creatives)
 - [Conversions](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account)
+- [Lead forms](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-forms-1)
+- [Lead form responses](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#get-lead-form-responses)
 - [Ad Analytics by Campaign](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Creative](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Impression Device](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
@@ -147,6 +159,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Ad Analytics by Member Job Function](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Job Title](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Industry](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
+- [Ad Analytics by Member Seniority](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Region](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Company](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 
@@ -158,19 +171,27 @@ For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by
 
 ## Performance considerations
 
+### Rate limits
+
 LinkedIn Ads has Official Rate Limits for API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases, you will receive the following error message:
 
 ```text
 "Caught retriable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
 ```
 
-This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. If the maximum available API requests capacity is reached, you will have the following message:
+This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. The connector uses exponential backoff to retry rate-limited requests automatically. If you experience persistent rate limiting, check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics.
 
-```text
-"Max try rate limit exceeded..."
-```
+### Ad analytics streams
 
-After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics.
+LinkedIn Ads supports a number of different streams that provide metrics about the effectiveness of ads for a specified date range across various properties and dimensions such as `clicks`, `follows`, `impressions`, `reactions`, `totalEngagements`, and others. Fetching the entire set of properties per ad object can lead to increased sync times.
+
+In order to improve sync performance, when configuring your connection, only select the columns that you need replicated into your downstream destination. Fewer columns selected should reduce the duration of syncs.
+
+:::caution
+
+The LinkedIn Ads API does not return records that have no values for any of the dimensions you specify. Take caution selecting columns, as you may see fewer or more records depending on your selection.
+
+:::
 
 ## Data type map
 
@@ -179,18 +200,64 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | `number`         | `number`     | float number                |
 | `integer`        | `integer`    | whole number                |
 | `date`           | `string`     | FORMAT YYYY-MM-DD           |
-| `datetime`       | `string`     | FORMAT YYYY-MM-DDThh:mm: ss |
+| `datetime`       | `string`     | FORMAT YYYY-MM-DDThh:mm:ss  |
 | `array`          | `array`      |                             |
 | `boolean`        | `boolean`    | True/False                  |
 | `string`         | `string`     |                             |
+
+## Limitations
+
+### Lead forms and Lead form responses
+
+The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
+| 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
+| 5.6.7 | 2026-04-02 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for proper indefinite backoff on rate-limited requests |
+| 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
+| 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |
+| 5.6.2 | 2026-01-20 | [72028](https://github.com/airbytehq/airbyte/pull/72028) | Update dependencies |
+| 5.6.1 | 2026-01-14 | [68982](https://github.com/airbytehq/airbyte/pull/68982) | Update dependencies |
+| 5.6.0 | 2025-11-04 | [69180](https://github.com/airbytehq/airbyte/pull/69180) | Promoting release candidate 5.6.0-rc.1 to a main version. |
+| 5.6.0-rc.1 | 2025-10-29 | [68614](https://github.com/airbytehq/airbyte/pull/68614) | Upgrade to latest CDK to only include the selected columns of the schema in API requests for ad analytics streams |
+| 5.5.5 | 2025-10-28 | [68626](https://github.com/airbytehq/airbyte/pull/68626) | Increase concurrency and introduce initial attempt at API budget |
+| 5.5.4 | 2025-10-21 | [64967](https://github.com/airbytehq/airbyte/pull/64967) | Update dependencies |
+| 5.5.3 | 2025-10-14 | [67564](https://github.com/airbytehq/airbyte/pull/67564) | Upgrade to CDK v7. |
+| 5.5.2 | 2025-07-16 | [63336](https://github.com/airbytehq/airbyte/pull/63336) | Promoting release candidate 5.5.2-rc.1 to a main version. |
+| 5.5.2-rc.1 | 2025-06-23 | [60996](https://github.com/airbytehq/airbyte/pull/60996) | Fix to properly manage pagination for `Lead forms` and `Lead form responses` streams |
+| 5.5.1 | 2025-06-18 | [61639](https://github.com/airbytehq/airbyte/pull/61639) | Reduce default concurrency level to 3 and enable configurability via `num_workers` config property |
+| 5.5.0 | 2025-04-28 | [59116](https://github.com/airbytehq/airbyte/pull/59116) | Promoting release candidate 5.5.0-rc.1 to a main version. |
+| 5.5.0-rc.1 | 2025-04-25 | [58628](https://github.com/airbytehq/airbyte/pull/58628) | Convert to manifest-only format |
+| 5.4.1 | 2025-04-23 | [58134](https://github.com/airbytehq/airbyte/pull/58134) | Fix to properly retrieve `approximateMemberReach` for `adAnalytics` streams following `v5.3.3`. |
+| 5.4.0 | 2025-04-22 | [58593](https://github.com/airbytehq/airbyte/pull/58593) | Promoting release candidate 5.4.0-rc.1 to a main version. |
+| 5.4.0-rc.1 | 2025-04-18 | [58114](https://github.com/airbytehq/airbyte/pull/58114) | Removes custom retrievers and cursors from analytics streams so that they can take up concurrency. |
+| 5.3.3 | 2025-03-12 | [55724](https://github.com/airbytehq/airbyte/pull/55724) | Update outdated schema `approximateUniqueImpressions` to new `approximateMemberReach` for `adAnalytics` streams. |
+| 5.3.2 | 2025-03-08 | [55447](https://github.com/airbytehq/airbyte/pull/55447) | Update dependencies |
+| 5.3.1 | 2025-03-05 | [55211](https://github.com/airbytehq/airbyte/pull/55211) | Update dependencies |
+| 5.3.0 | 2025-03-02 | [55171](https://github.com/airbytehq/airbyte/pull/55171) | Migrate API to v202502 |
+| 5.2.3 | 2025-03-01 | [54813](https://github.com/airbytehq/airbyte/pull/54813) | Update dependencies |
+| 5.2.2 | 2025-02-22 | [53308](https://github.com/airbytehq/airbyte/pull/53308) | Update dependencies |
+| 5.2.1 | 2025-02-10 | [53611](https://github.com/airbytehq/airbyte/pull/53611) | Add schema precisions for `Lead forms` and `Lead form responses` streams |
+| 5.2.0 | 2025-02-04 | [52047](https://github.com/airbytehq/airbyte/pull/52047) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations |
+| 5.1.6 | 2025-02-02 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream |
+| 5.1.5 | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies |
+| 5.1.4 | 2025-01-30 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Fix state error |
+| 5.1.3 | 2025-01-22 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Update CDK to production ^6 |
 | 5.1.2 | 2025-01-25 | [52253](https://github.com/airbytehq/airbyte/pull/52253) | Update dependencies |
 | 5.1.1 | 2025-01-15 | [47092](https://github.com/airbytehq/airbyte/pull/47092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 5.1.0 | 2025-01-14 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation & URL Error Handling |

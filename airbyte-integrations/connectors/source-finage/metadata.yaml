@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-finage
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.2@sha256:19eb795baa82bad71c097a7388313c1fd9f36978f543a8c7a245bbedb0c9a153
   connectorSubtype: api
   connectorType: source
   definitionId: 5220663f-d87b-498e-8aed-1f2d59371a61
-  dockerImageTag: 0.0.8
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-finage
   githubIssueLabel: source-finage
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Finage
   releaseDate: 2024-11-09
   releaseStage: alpha
@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Finage API documentation
+      url: https://finage.co.uk/docs/api
+      type: api_reference
+    - title: Finage authentication
+      url: https://finage.co.uk/docs/api/getting-started
+      type: authentication_guide

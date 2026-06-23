@@ -158,7 +158,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -227,11 +227,7 @@ The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/l
 
 There are currently no options for JSONL parsing.
 
-### Document File Type Format (Experimental)
-
-:::warning
-The Document file type format is currently an experimental feature and not subject to SLAs. Use at your own risk.
-:::
+### Document File Type Format
 
 The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
 
@@ -240,6 +236,38 @@ One record will be emitted for each document. Keep in mind that large files can 
 Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
 
 <HideInUI>
+
+### Copy Raw Files Configuration
+
+<FieldAnchor field="delivery_method.delivery_type">
+
+:::info
+
+The raw file replication feature has the following requirements and limitations:
+- **Supported Airbyte Versions:**
+  - Cloud: All Workspaces
+  - OSS / Enterprise: `v1.2.0` or later
+- **Max File Size:** `1GB` per file
+- **Supported Destinations:**
+  - S3: `v1.4.0` or later
+
+:::
+
+Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.
+
+Format options will not be taken into account. Instead, files will be transferred to the file-based destination without parsing underlying data.
+
+</FieldAnchor>
+
+##### Preserve Sub-Directories in File Paths
+
+If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
+
+### Multi-Site Support
+
+By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site.
+The site url should be in the format `https://<tenant_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+To have the connector iterate all sub-sites provide the site url as `https://<tenant_name>.sharepoint.com/sites/`.
 
 ### Supported sync modes
 
@@ -267,6 +295,10 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -274,30 +306,48 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.5.2   | 2024-08-24 | [45646](https://github.com/airbytehq/airbyte/pull/45646) | Fix: handle wrong folder name                                             |
-| 0.5.1   | 2024-08-24 | [44660](https://github.com/airbytehq/airbyte/pull/44660) | Update dependencies                                                       |
-| 0.5.0   | 2024-08-19 | [42983](https://github.com/airbytehq/airbyte/pull/42983) | Migrate to CDK v4.5.1                                                     |
-| 0.4.5   | 2024-08-19 | [44382](https://github.com/airbytehq/airbyte/pull/44382) | Update dependencies                                                       |
-| 0.4.4   | 2024-08-12 | [43743](https://github.com/airbytehq/airbyte/pull/43743) | Update dependencies                                                       |
-| 0.4.3   | 2024-08-10 | [43565](https://github.com/airbytehq/airbyte/pull/43565) | Update dependencies                                                       |
-| 0.4.2   | 2024-08-03 | [43235](https://github.com/airbytehq/airbyte/pull/43235) | Update dependencies                                                       |
-| 0.4.1   | 2024-07-27 | [42704](https://github.com/airbytehq/airbyte/pull/42704) | Update dependencies                                                       |
-| 0.4.0   | 2024-07-25 | [42008](https://github.com/airbytehq/airbyte/pull/42008) | Migrate to CDK v3.5.3                                                     |
-| 0.3.1   | 2024-07-20 | [42143](https://github.com/airbytehq/airbyte/pull/42143) | Update dependencies                                                       |
-| 0.3.0   | 2024-07-16 | [42007](https://github.com/airbytehq/airbyte/pull/42007) | Migrate to CDK v2.4.0                                                     |
-| 0.2.11  | 2024-07-13 | [41688](https://github.com/airbytehq/airbyte/pull/41688) | Update dependencies                                                       |
-| 0.2.10  | 2024-07-10 | [41589](https://github.com/airbytehq/airbyte/pull/41589) | Update dependencies                                                       |
-| 0.2.9   | 2024-07-06 | [40917](https://github.com/airbytehq/airbyte/pull/40917) | Update dependencies                                                       |
-| 0.2.8   | 2024-06-26 | [40539](https://github.com/airbytehq/airbyte/pull/40539) | Update dependencies                                                       |
-| 0.2.7   | 2024-06-25 | [40357](https://github.com/airbytehq/airbyte/pull/40357) | Update dependencies                                                       |
-| 0.2.6   | 2024-06-24 | [40233](https://github.com/airbytehq/airbyte/pull/40233) | Update dependencies                                                       |
-| 0.2.5   | 2024-06-22 | [39987](https://github.com/airbytehq/airbyte/pull/39987) | Update dependencies                                                       |
-| 0.2.4   | 2024-05-29 | [38675](https://github.com/airbytehq/airbyte/pull/38675) | Avoid error on empty stream when running discover                         |
-| 0.2.3   | 2024-04-17 | [37372](https://github.com/airbytehq/airbyte/pull/37372) | Make refresh token optional                                               |
-| 0.2.2   | 2024-03-28 | [36573](https://github.com/airbytehq/airbyte/pull/36573) | Update QL to 400                                                          |
-| 0.2.1   | 2024-03-22 | [36381](https://github.com/airbytehq/airbyte/pull/36381) | Unpin CDK                                                                 |
-| 0.2.0   | 2024-03-06 | [35830](https://github.com/airbytehq/airbyte/pull/35830) | Add fetching shared items                                                 |
-| 0.1.0   | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source                                                                |
+| 0.10.4 | 2025-08-21 | [65118](https://github.com/airbytehq/airbyte/pull/65118) | Decertify connector |
+| 0.10.3 | 2025-07-13 | [60562](https://github.com/airbytehq/airbyte/pull/60562) | Update dependencies |
+| 0.10.2 | 2025-05-10 | [59113](https://github.com/airbytehq/airbyte/pull/59113) | Update dependencies |
+| 0.10.1 | 2025-05-07 | [59711](https://github.com/airbytehq/airbyte/pull/59711) | Fix edege case for unexcpeted uris. |
+| 0.10.0 | 2025-05-07 | [59700](https://github.com/airbytehq/airbyte/pull/59700) | Promoting release candidate 0.10.0-rc.1 to a main version. |
+| 0.10.0-rc.1 | 2025-05-05 | [57507](https://github.com/airbytehq/airbyte/pull/57507) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
+| 0.9.3 | 2025-04-19 | [58471](https://github.com/airbytehq/airbyte/pull/58471) | Update dependencies |
+| 0.9.2 | 2025-04-12 | [57920](https://github.com/airbytehq/airbyte/pull/57920) | Update dependencies |
+| 0.9.1 | 2025-04-05 | [57065](https://github.com/airbytehq/airbyte/pull/57065) | Update dependencies |
+| 0.9.0 | 2025-04-01 | [55912](https://github.com/airbytehq/airbyte/pull/55912) | Provide ability to iterate all sharepoint sites |
+| 0.8.2 | 2025-03-29 | [56712](https://github.com/airbytehq/airbyte/pull/56712) | Update dependencies |
+| 0.8.1 | 2025-03-22 | [56014](https://github.com/airbytehq/airbyte/pull/56014) | Update dependencies |
+| 0.8.0 | 2025-03-12 | [54658](https://github.com/airbytehq/airbyte/pull/54658) | Provide ability to sync other sites than Main sharepoint site |
+| 0.7.2 | 2025-03-08 | [55427](https://github.com/airbytehq/airbyte/pull/55427) | Update dependencies |
+| 0.7.1 | 2025-03-01 | [54749](https://github.com/airbytehq/airbyte/pull/54749) | Update dependencies |
+| 0.7.0 | 2025-02-27 | [54200](https://github.com/airbytehq/airbyte/pull/54200) | Add advanced Oauth |
+| 0.6.1 | 2025-02-22 | [45062](https://github.com/airbytehq/airbyte/pull/45062) | Update dependencies |
+| 0.6.0 | 2025-02-20 | [54140](https://github.com/airbytehq/airbyte/pull/54140) | Implement file transfer mode to move raw files |
+| 0.5.2 | 2024-08-24 | [45646](https://github.com/airbytehq/airbyte/pull/45646) | Fix: handle wrong folder name |
+| 0.5.1 | 2024-08-24 | [44660](https://github.com/airbytehq/airbyte/pull/44660) | Update dependencies |
+| 0.5.0 | 2024-08-19 | [42983](https://github.com/airbytehq/airbyte/pull/42983) | Migrate to CDK v4.5.1 |
+| 0.4.5 | 2024-08-19 | [44382](https://github.com/airbytehq/airbyte/pull/44382) | Update dependencies |
+| 0.4.4 | 2024-08-12 | [43743](https://github.com/airbytehq/airbyte/pull/43743) | Update dependencies |
+| 0.4.3 | 2024-08-10 | [43565](https://github.com/airbytehq/airbyte/pull/43565) | Update dependencies |
+| 0.4.2 | 2024-08-03 | [43235](https://github.com/airbytehq/airbyte/pull/43235) | Update dependencies |
+| 0.4.1 | 2024-07-27 | [42704](https://github.com/airbytehq/airbyte/pull/42704) | Update dependencies |
+| 0.4.0 | 2024-07-25 | [42008](https://github.com/airbytehq/airbyte/pull/42008) | Migrate to CDK v3.5.3 |
+| 0.3.1 | 2024-07-20 | [42143](https://github.com/airbytehq/airbyte/pull/42143) | Update dependencies |
+| 0.3.0 | 2024-07-16 | [42007](https://github.com/airbytehq/airbyte/pull/42007) | Migrate to CDK v2.4.0 |
+| 0.2.11 | 2024-07-13 | [41688](https://github.com/airbytehq/airbyte/pull/41688) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41589](https://github.com/airbytehq/airbyte/pull/41589) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40917](https://github.com/airbytehq/airbyte/pull/40917) | Update dependencies |
+| 0.2.8 | 2024-06-26 | [40539](https://github.com/airbytehq/airbyte/pull/40539) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40357](https://github.com/airbytehq/airbyte/pull/40357) | Update dependencies |
+| 0.2.6 | 2024-06-24 | [40233](https://github.com/airbytehq/airbyte/pull/40233) | Update dependencies |
+| 0.2.5 | 2024-06-22 | [39987](https://github.com/airbytehq/airbyte/pull/39987) | Update dependencies |
+| 0.2.4 | 2024-05-29 | [38675](https://github.com/airbytehq/airbyte/pull/38675) | Avoid error on empty stream when running discover |
+| 0.2.3 | 2024-04-17 | [37372](https://github.com/airbytehq/airbyte/pull/37372) | Make refresh token optional |
+| 0.2.2 | 2024-03-28 | [36573](https://github.com/airbytehq/airbyte/pull/36573) | Update QL to 400 |
+| 0.2.1 | 2024-03-22 | [36381](https://github.com/airbytehq/airbyte/pull/36381) | Unpin CDK |
+| 0.2.0 | 2024-03-06 | [35830](https://github.com/airbytehq/airbyte/pull/35830) | Add fetching shared items |
+| 0.1.0 | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source |
 
 </details>
 

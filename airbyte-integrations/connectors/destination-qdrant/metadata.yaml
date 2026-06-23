@@ -6,10 +6,10 @@ data:
       enabled: true
   allowedHosts:
     hosts:
-      - "${indexing.url}"
+      - ${indexing.url}
       - api.openai.com
       - api.cohere.ai
-      - "${embedding.api_base}"
+      - ${embedding.api_base}
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -18,15 +18,15 @@ data:
           memory_limit: 2Gi
           memory_request: 2Gi
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
-  dockerImageTag: 0.1.28
+  dockerImageTag: 0.1.41
   dockerRepository: airbyte/destination-qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
-  license: MIT
+  license: ELv2
   name: Qdrant
   releaseDate: 2023-09-22
   releaseStage: alpha
@@ -40,4 +40,14 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  externalDocumentationUrls:
+    - title: Qdrant documentation
+      url: https://qdrant.tech/documentation/
+      type: api_reference
+    - title: Release notes
+      url: https://github.com/qdrant/qdrant/releases
+      type: api_release_history
+    - title: Authentication
+      url: https://qdrant.tech/documentation/guides/security/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

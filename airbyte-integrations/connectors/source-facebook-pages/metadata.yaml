@@ -6,11 +6,11 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 1.0.30
+  dockerImageTag: 2.1.1
   dockerRepository: airbyte/source-facebook-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
@@ -19,7 +19,7 @@ data:
   name: Facebook Pages
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: beta
@@ -30,6 +30,13 @@ data:
   supportLevel: community
   releases:
     breakingChanges:
+      2.0.0:
+        message: >-
+          This version updates the API version from v23 to v24. Deprecated fields have been removed and new fields have been added for the streams `Post`, `Post Insights` and `Page Insights`.
+        upgradeDeadline: "2025-12-02"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["post", "page_insights", "post_insights"]
       1.0.0:
         message: >-
           This version updates the API version from v15 to v19. Deprecated fields have been removed and new fields have been added for the stream `Page`.
@@ -41,18 +48,23 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: acceptanceTests
     - suite: liveTests
       testConnections:
         - name: facebook-pages_config_dev_null
           id: 4446147a-669a-472b-bda8-6ee069eb3099
     - suite: unitTests
-    # Disable acceptance tests for now
-    # No/Low cloud usage
-    # - suite: acceptanceTests
-    #   testSecrets:
-    #     - name: SECRET_SOURCE-FACEBOOK-PAGES__CREDS
-    #       fileName: config.json
-    #       secretStore:
-    #         type: GSM
-    #         alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Facebook Pages API reference
+      url: https://developers.facebook.com/docs/pages/
+      type: api_reference
+    - title: Facebook Graph API changelog
+      url: https://developers.facebook.com/docs/graph-api/changelog/
+      type: api_release_history
+    - title: Facebook authentication guide
+      url: https://developers.facebook.com/docs/facebook-login/guides/access-tokens/
+      type: authentication_guide
+    - title: Facebook Platform Status
+      url: https://developers.facebook.com/status/
+      type: status_page
 metadataSpecVersion: "1.0"

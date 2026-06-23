@@ -40,6 +40,10 @@ The RD Station Marketing source connector supports the following [sync modes](ht
 
 Each endpoint has its own performance limitations, which also consider the account plan. For more informations, visit the page [API request limit](https://developers.rdstation.com/reference/limite-de-requisicoes-da-api?lng=en).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -47,6 +51,19 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.3.24 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
+| 0.3.23 | 2025-05-10 | [60134](https://github.com/airbytehq/airbyte/pull/60134) | Update dependencies |
+| 0.3.22 | 2025-05-03 | [58497](https://github.com/airbytehq/airbyte/pull/58497) | Update dependencies |
+| 0.3.21 | 2025-04-12 | [57845](https://github.com/airbytehq/airbyte/pull/57845) | Update dependencies |
+| 0.3.20 | 2025-04-05 | [57360](https://github.com/airbytehq/airbyte/pull/57360) | Update dependencies |
+| 0.3.19 | 2025-03-29 | [56745](https://github.com/airbytehq/airbyte/pull/56745) | Update dependencies |
+| 0.3.18 | 2025-03-22 | [56205](https://github.com/airbytehq/airbyte/pull/56205) | Update dependencies |
+| 0.3.17 | 2025-03-08 | [55550](https://github.com/airbytehq/airbyte/pull/55550) | Update dependencies |
+| 0.3.16 | 2025-03-01 | [55026](https://github.com/airbytehq/airbyte/pull/55026) | Update dependencies |
+| 0.3.15 | 2025-02-23 | [54609](https://github.com/airbytehq/airbyte/pull/54609) | Update dependencies |
+| 0.3.14 | 2025-02-15 | [53966](https://github.com/airbytehq/airbyte/pull/53966) | Update dependencies |
+| 0.3.13 | 2025-02-08 | [53465](https://github.com/airbytehq/airbyte/pull/53465) | Update dependencies |
+| 0.3.12 | 2025-02-01 | [53015](https://github.com/airbytehq/airbyte/pull/53015) | Update dependencies |
 | 0.3.11 | 2025-01-25 | [52525](https://github.com/airbytehq/airbyte/pull/52525) | Update dependencies |
 | 0.3.10 | 2025-01-18 | [51869](https://github.com/airbytehq/airbyte/pull/51869) | Update dependencies |
 | 0.3.9 | 2025-01-11 | [51324](https://github.com/airbytehq/airbyte/pull/51324) | Update dependencies |

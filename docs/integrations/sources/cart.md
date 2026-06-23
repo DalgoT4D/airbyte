@@ -8,10 +8,13 @@ This source can sync data for the [Cart.com API](https://developers.cart.com/doc
 
 This Source is capable of syncing the following core Streams:
 
-- [CustomersCart](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get)
-- [Orders](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get)
-- [OrderPayments](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get)
-- [Products](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get)
+- [Addresses](https://developers.cart.com/docs/rest-api/b3A6MjMzMTc3Njc-get-addresses) (Incremental)
+- [CustomersCart](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get) (Incremental)
+- [OrderItems](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get) (Incremental)
+- [OrderPayments](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get) (Incremental)
+- [Orders](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get) (Incremental)
+- [OrderStatuses](https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses) (Full Refresh)
+- [Products](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get) (Incremental)
 
 ### Data type mapping
 
@@ -38,13 +41,49 @@ The Cart.com API has some request limitation. See [this](https://developers.cart
 
 ### Requirements
 
-- AmeriCommerce account
-- Admin access
-- Access Token
+- Cart.com account (formerly AmeriCommerce)
+- Admin access to your Cart.com store
+- Authentication credentials (either Single Store Access Token or Central API Router credentials)
 
 ### Setup guide
 
-Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/README.md#setup) to obtain Access Token for your account.
+Cart.com supports two authentication methods. Choose the method that best fits your use case:
+
+#### Single Store Access Token
+
+This method is recommended for most users who need to sync data from a single Cart.com store.
+
+1. Log in to your Cart.com admin console
+2. Navigate to **Tools** > **Apps & Addons** > **API Apps & Integrations**
+3. Find or create your API application
+4. Click the **Tokens** icon (second icon from the left) next to your application
+5. Click **New** to create a new access token
+6. Select the required scopes for your integration
+7. Click **Save**
+8. Copy the access token from the token details view
+
+When configuring the connector in Airbyte, you'll need:
+
+- **Access Token**: The token you generated
+- **Store Name**: Your store's domain name (for example, `mystorename.com`)
+
+#### Central API Router
+
+This method is designed for applications that need to access multiple Cart.com stores or require programmatic authentication.
+
+1. Contact Cart.com support to set up Central API Router access
+2. Obtain your provisioning credentials:
+   - **User Name**: Your provisioning user name
+   - **User Secret**: Your provisioning user secret
+   - **Site ID**: Your site identifier
+
+When configuring the connector in Airbyte, select the Central API Router authentication method and provide these credentials.
+
+For more details on authentication, see the [Cart.com authentication documentation](https://developers.cart.com/docs/rest-api/ZG9jOjU4NjM4-cart-com-online-store-api-authentication).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -53,6 +92,44 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.3.52 | 2026-06-23 | [80416](https://github.com/airbytehq/airbyte/pull/80416) | Update dependencies |
+| 0.3.51 | 2026-06-16 | [79805](https://github.com/airbytehq/airbyte/pull/79805) | Update dependencies |
+| 0.3.50 | 2026-06-09 | [79268](https://github.com/airbytehq/airbyte/pull/79268) | Update dependencies |
+| 0.3.49 | 2026-06-02 | [78617](https://github.com/airbytehq/airbyte/pull/78617) | Update dependencies |
+| 0.3.48 | 2026-04-28 | [77163](https://github.com/airbytehq/airbyte/pull/77163) | Update dependencies |
+| 0.3.47 | 2026-04-21 | [76530](https://github.com/airbytehq/airbyte/pull/76530) | Update dependencies |
+| 0.3.46 | 2026-03-24 | [75319](https://github.com/airbytehq/airbyte/pull/75319) | Update dependencies |
+| 0.3.45 | 2026-03-17 | [74934](https://github.com/airbytehq/airbyte/pull/74934) | Update dependencies |
+| 0.3.44 | 2026-03-10 | [74450](https://github.com/airbytehq/airbyte/pull/74450) | Update dependencies |
+| 0.3.43 | 2026-03-03 | [74226](https://github.com/airbytehq/airbyte/pull/74226) | Update dependencies |
+| 0.3.42 | 2026-02-10 | [72369](https://github.com/airbytehq/airbyte/pull/72369) | Update dependencies |
+| 0.3.41 | 2026-01-20 | [72131](https://github.com/airbytehq/airbyte/pull/72131) | Update dependencies |
+| 0.3.40 | 2026-01-14 | [71696](https://github.com/airbytehq/airbyte/pull/71696) | Update dependencies |
+| 0.3.39 | 2025-12-18 | [70634](https://github.com/airbytehq/airbyte/pull/70634) | Update dependencies |
+| 0.3.38 | 2025-12-02 | [70284](https://github.com/airbytehq/airbyte/pull/70284) | Update dependencies |
+| 0.3.37 | 2025-11-25 | [68900](https://github.com/airbytehq/airbyte/pull/68900) | Update dependencies |
+| 0.3.36 | 2025-11-24 | [69783](https://github.com/airbytehq/airbyte/pull/69783) | Upgrade to Python 3.13, base image 4.1.0, and CDK 7.x |
+| 0.3.35 | 2025-10-14 | [68085](https://github.com/airbytehq/airbyte/pull/68085) | Update dependencies |
+| 0.3.34 | 2025-10-07 | [67194](https://github.com/airbytehq/airbyte/pull/67194) | Update dependencies |
+| 0.3.33 | 2025-09-30 | [65341](https://github.com/airbytehq/airbyte/pull/65341) | Update dependencies |
+| 0.3.32 | 2025-08-16 | [65042](https://github.com/airbytehq/airbyte/pull/65042) | Update dependencies |
+| 0.3.31 | 2025-08-09 | [64653](https://github.com/airbytehq/airbyte/pull/64653) | Update dependencies |
+| 0.3.30 | 2025-07-26 | [63783](https://github.com/airbytehq/airbyte/pull/63783) | Update dependencies |
+| 0.3.29 | 2025-06-21 | [61884](https://github.com/airbytehq/airbyte/pull/61884) | Update dependencies |
+| 0.3.28 | 2025-06-15 | [60717](https://github.com/airbytehq/airbyte/pull/60717) | Update dependencies |
+| 0.3.27 | 2025-05-10 | [59773](https://github.com/airbytehq/airbyte/pull/59773) | Update dependencies |
+| 0.3.26 | 2025-05-03 | [59323](https://github.com/airbytehq/airbyte/pull/59323) | Update dependencies |
+| 0.3.25 | 2025-04-26 | [58740](https://github.com/airbytehq/airbyte/pull/58740) | Update dependencies |
+| 0.3.24 | 2025-04-19 | [58262](https://github.com/airbytehq/airbyte/pull/58262) | Update dependencies |
+| 0.3.23 | 2025-04-12 | [57614](https://github.com/airbytehq/airbyte/pull/57614) | Update dependencies |
+| 0.3.22 | 2025-04-05 | [57124](https://github.com/airbytehq/airbyte/pull/57124) | Update dependencies |
+| 0.3.21 | 2025-03-29 | [56592](https://github.com/airbytehq/airbyte/pull/56592) | Update dependencies |
+| 0.3.20 | 2025-03-22 | [56133](https://github.com/airbytehq/airbyte/pull/56133) | Update dependencies |
+| 0.3.19 | 2025-03-08 | [55408](https://github.com/airbytehq/airbyte/pull/55408) | Update dependencies |
+| 0.3.18 | 2025-03-01 | [54879](https://github.com/airbytehq/airbyte/pull/54879) | Update dependencies |
+| 0.3.17 | 2025-02-22 | [54281](https://github.com/airbytehq/airbyte/pull/54281) | Update dependencies |
+| 0.3.16 | 2025-02-15 | [53886](https://github.com/airbytehq/airbyte/pull/53886) | Update dependencies |
+| 0.3.15 | 2025-02-01 | [52906](https://github.com/airbytehq/airbyte/pull/52906) | Update dependencies |
 | 0.3.14 | 2025-01-25 | [52205](https://github.com/airbytehq/airbyte/pull/52205) | Update dependencies |
 | 0.3.13 | 2025-01-18 | [51751](https://github.com/airbytehq/airbyte/pull/51751) | Update dependencies |
 | 0.3.12 | 2025-01-11 | [51294](https://github.com/airbytehq/airbyte/pull/51294) | Update dependencies |

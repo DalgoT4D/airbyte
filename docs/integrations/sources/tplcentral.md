@@ -42,6 +42,10 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en-us/articles/360056546352-Getting-Started-with-Credential-Management).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -49,6 +53,21 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.1.48 | 2026-06-02 | [79024](https://github.com/airbytehq/airbyte/pull/79024) | Update dependencies |
+| 0.1.47 | 2025-05-24 | [60431](https://github.com/airbytehq/airbyte/pull/60431) | Update dependencies |
+| 0.1.46 | 2025-05-10 | [60051](https://github.com/airbytehq/airbyte/pull/60051) | Update dependencies |
+| 0.1.45 | 2025-05-04 | [59602](https://github.com/airbytehq/airbyte/pull/59602) | Update dependencies |
+| 0.1.44 | 2025-04-27 | [59023](https://github.com/airbytehq/airbyte/pull/59023) | Update dependencies |
+| 0.1.43 | 2025-04-19 | [58375](https://github.com/airbytehq/airbyte/pull/58375) | Update dependencies |
+| 0.1.42 | 2025-04-12 | [57959](https://github.com/airbytehq/airbyte/pull/57959) | Update dependencies |
+| 0.1.41 | 2025-04-05 | [57465](https://github.com/airbytehq/airbyte/pull/57465) | Update dependencies |
+| 0.1.40 | 2025-03-29 | [56860](https://github.com/airbytehq/airbyte/pull/56860) | Update dependencies |
+| 0.1.39 | 2025-03-22 | [56326](https://github.com/airbytehq/airbyte/pull/56326) | Update dependencies |
+| 0.1.38 | 2025-03-08 | [55570](https://github.com/airbytehq/airbyte/pull/55570) | Update dependencies |
+| 0.1.37 | 2025-03-01 | [55110](https://github.com/airbytehq/airbyte/pull/55110) | Update dependencies |
+| 0.1.36 | 2025-02-22 | [54539](https://github.com/airbytehq/airbyte/pull/54539) | Update dependencies |
+| 0.1.35 | 2025-02-15 | [54084](https://github.com/airbytehq/airbyte/pull/54084) | Update dependencies |
+| 0.1.34 | 2025-02-01 | [53049](https://github.com/airbytehq/airbyte/pull/53049) | Update dependencies |
 | 0.1.33 | 2025-01-25 | [52413](https://github.com/airbytehq/airbyte/pull/52413) | Update dependencies |
 | 0.1.32 | 2025-01-18 | [51981](https://github.com/airbytehq/airbyte/pull/51981) | Update dependencies |
 | 0.1.31 | 2025-01-11 | [51428](https://github.com/airbytehq/airbyte/pull/51428) | Update dependencies |

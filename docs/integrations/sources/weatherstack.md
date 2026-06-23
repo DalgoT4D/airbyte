@@ -32,6 +32,10 @@ Visit the [Wetherstack](https://weatherstack.com/) to create a user account and 
 
 The free plan allows 250 calls per month, you won't get beyond these limits with existing Airbyte's sync frequencies.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -39,7 +43,20 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 1.1.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.1.14 | 2025-05-24 | [60741](https://github.com/airbytehq/airbyte/pull/60741) | Update dependencies |
+| 1.1.13 | 2025-05-10 | [59914](https://github.com/airbytehq/airbyte/pull/59914) | Update dependencies |
+| 1.1.12 | 2025-05-04 | [59546](https://github.com/airbytehq/airbyte/pull/59546) | Update dependencies |
+| 1.1.11 | 2025-04-26 | [58952](https://github.com/airbytehq/airbyte/pull/58952) | Update dependencies |
+| 1.1.10 | 2025-04-19 | [58542](https://github.com/airbytehq/airbyte/pull/58542) | Update dependencies |
+| 1.1.9 | 2025-04-12 | [58016](https://github.com/airbytehq/airbyte/pull/58016) | Update dependencies |
+| 1.1.8 | 2025-04-05 | [57433](https://github.com/airbytehq/airbyte/pull/57433) | Update dependencies |
+| 1.1.7 | 2025-03-29 | [56831](https://github.com/airbytehq/airbyte/pull/56831) | Update dependencies |
+| 1.1.6 | 2025-03-22 | [56268](https://github.com/airbytehq/airbyte/pull/56268) | Update dependencies |
+| 1.1.5 | 2025-03-08 | [55600](https://github.com/airbytehq/airbyte/pull/55600) | Update dependencies |
+| 1.1.4 | 2025-03-01 | [55096](https://github.com/airbytehq/airbyte/pull/55096) | Update dependencies |
+| 1.1.3 | 2025-02-22 | [54498](https://github.com/airbytehq/airbyte/pull/54498) | Update dependencies |
+| 1.1.2 | 2025-02-15 | [47532](https://github.com/airbytehq/airbyte/pull/47532) | Update dependencies |
+| 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.1.0 | 2024-08-14 | [44046](https://github.com/airbytehq/airbyte/pull/44046) | Refactor connector to manifest-only format |
 | 1.0.2 | 2024-08-12 | [43892](https://github.com/airbytehq/airbyte/pull/43892) | Update dependencies |
 | 1.0.1 | 2024-08-10 | [43615](https://github.com/airbytehq/airbyte/pull/43615) | Update dependencies |

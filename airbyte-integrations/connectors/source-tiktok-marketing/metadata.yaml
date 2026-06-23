@@ -7,16 +7,26 @@ data:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.1@sha256:f71ff70e2761f634c080233f6d718bb4bcf96fa310351d56e98ba58d43ab1c9f
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 4.3.7
+  dockerImageTag: 5.1.0
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
+  externalDocumentationUrls:
+    - title: Versioning docs
+      url: https://business-api.tiktok.com/portal/docs?id=1740029169927169
+      type: api_reference
+    - title: Changelog
+      url: https://business-api.tiktok.com/portal/docs?id=1740029165513730
+      type: api_release_history
+    - title: TikTok Business API Documentation
+      url: https://business-api.tiktok.com/portal/docs?id=1740302848670722
+      type: api_release_history
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 86400
   name: TikTok Marketing
   registryOverrides:
@@ -25,7 +35,20 @@ data:
     oss:
       enabled: true
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
+      5.0.0:
+        message:
+          The `currency` field in the `pixels` stream's `events` array has been corrected
+          from `boolean` to `string` type. Users syncing the `pixels` stream will need to
+          refresh the source schema and reset the stream after upgrading.
+          For more information, see our migration documentation for source TikTok Marketing.
+        upgradeDeadline: "2026-03-03"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "pixels"
       4.0.0:
         message:
           The source TikTok Marketing connector is being migrated from the Python CDK
@@ -55,6 +78,8 @@ data:
               - "ads_audience_reports_daily"
               - "ads_reports_daily"
               - "ads_reports_hourly"
+              - "ads_reports_by_country_daily"
+              - "ads_reports_by_country_hourly"
               - "advertisers_audience_reports_by_country_daily"
               - "advertisers_audience_reports_by_platform_daily"
               - "advertisers_audience_reports_daily"
@@ -71,7 +96,7 @@ data:
   releaseStage: generally_available
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-tiktok-marketing
   suggestedStreams:
     streams:
@@ -84,8 +109,8 @@ data:
       - advertisers_reports_daily
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

@@ -1,10 +1,10 @@
-const { catalog } = require("../connector_registry");
+const { fetchRegistry } = require("../scripts/fetch-registry");
 
 // the migration guide and troubleshooting guide are not connectors, but also not in a sub-folder, e.g. /integrations/sources/mssql-migrations
 const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];
 const connectorPageAlternativeEndingsRegExp = new RegExp(
   connectorPageAlternativeEndings.join("|"),
-  "gi"
+  "gi",
 );
 
 const isDocsPage = (vfile) => {
@@ -62,20 +62,20 @@ const getRegistryEntry = async (vfile) => {
 
   const dockerRepository = `airbyte/${connectorType.replace(
     /s$/,
-    ""
+    "",
   )}-${connectorName}`;
 
-  const registry = await catalog;
+  const registry = await fetchRegistry();
 
   let registryEntry = registry.find(
-    (r) => r.dockerRepository_oss === dockerRepository
+    (r) => r.dockerRepository === dockerRepository,
   );
 
   if (!registryEntry) {
     registryEntry = buildArchivedRegistryEntry(
       connectorName,
       dockerRepository,
-      connectorType
+      connectorType,
     );
   }
 
@@ -85,18 +85,18 @@ const getRegistryEntry = async (vfile) => {
 const buildArchivedRegistryEntry = (
   connectorName,
   dockerRepository,
-  connectorType
+  connectorType,
 ) => {
   const dockerName = dockerRepository.split("/")[1];
   const registryEntry = {
     connectorName,
-    name_oss: dockerName,
-    dockerRepository_oss: dockerRepository,
+    name: dockerName,
+    dockerRepository,
     is_oss: false,
     is_cloud: false,
-    iconUrl_oss: `https://connectors.airbyte.com/files/metadata/airbyte/${dockerName}/latest/icon.svg`,
-    supportLevel_oss: "archived",
-    documentationUrl_oss: `https://docs.airbyte.com/integrations/${connectorType}s/${connectorName}`,
+    iconUrl: `https://connectors.airbyte.com/files/metadata/airbyte/${dockerName}/latest/icon.svg`,
+    supportLevel: "archived",
+    documentationUrl: `https://docs.airbyte.com/integrations/${connectorType}s/${connectorName}`,
   };
 
   return registryEntry;

@@ -18,6 +18,10 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 | bookings | id | DefaultPaginator | ✅ |  ❌  |
 | conferencing | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,50 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-06-23 | [80368](https://github.com/airbytehq/airbyte/pull/80368) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79779](https://github.com/airbytehq/airbyte/pull/79779) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79218](https://github.com/airbytehq/airbyte/pull/79218) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78586](https://github.com/airbytehq/airbyte/pull/78586) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77188](https://github.com/airbytehq/airbyte/pull/77188) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76540](https://github.com/airbytehq/airbyte/pull/76540) | Update dependencies |
+| 0.0.46 | 2026-03-31 | [75684](https://github.com/airbytehq/airbyte/pull/75684) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [74941](https://github.com/airbytehq/airbyte/pull/74941) | Update dependencies |
+| 0.0.44 | 2026-03-10 | [74603](https://github.com/airbytehq/airbyte/pull/74603) | Update dependencies |
+| 0.0.43 | 2026-02-03 | [72081](https://github.com/airbytehq/airbyte/pull/72081) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71505](https://github.com/airbytehq/airbyte/pull/71505) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70624](https://github.com/airbytehq/airbyte/pull/70624) | Update dependencies |
+| 0.0.40 | 2025-11-25 | [69968](https://github.com/airbytehq/airbyte/pull/69968) | Update dependencies |
+| 0.0.39 | 2025-11-18 | [69436](https://github.com/airbytehq/airbyte/pull/69436) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68717](https://github.com/airbytehq/airbyte/pull/68717) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68273](https://github.com/airbytehq/airbyte/pull/68273) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67839](https://github.com/airbytehq/airbyte/pull/67839) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67196](https://github.com/airbytehq/airbyte/pull/67196) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66315](https://github.com/airbytehq/airbyte/pull/66315) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [66029](https://github.com/airbytehq/airbyte/pull/66029) | Update dependencies |
+| 0.0.32 | 2025-08-23 | [65345](https://github.com/airbytehq/airbyte/pull/65345) | Update dependencies |
+| 0.0.31 | 2025-08-09 | [64661](https://github.com/airbytehq/airbyte/pull/64661) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64423](https://github.com/airbytehq/airbyte/pull/64423) | Update dependencies |
+| 0.0.29 | 2025-07-28 | [64099](https://github.com/airbytehq/airbyte/pull/64099) | Add support for updatedAt, cancelledByEmail, rescheduledByEmail and cancellationReason fields in GET Bookings |
+| 0.0.28 | 2025-07-26 | [63787](https://github.com/airbytehq/airbyte/pull/63787) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63486](https://github.com/airbytehq/airbyte/pull/63486) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63075](https://github.com/airbytehq/airbyte/pull/63075) | Update dependencies |
+| 0.0.25 | 2025-07-06 | [62522](https://github.com/airbytehq/airbyte/pull/62522) | Update rescheduled to rescheduledToUid field in GET Bookings |
+| 0.0.24 | 2025-07-05 | [62539](https://github.com/airbytehq/airbyte/pull/62539) | Update dependencies |
+| 0.0.23 | 2025-06-26 | [61717](https://github.com/airbytehq/airbyte/pull/61717) | Add support for createdAt, rescheduled and absentHost fields in GET Bookings |
+| 0.0.22 | 2025-06-15 | [61097](https://github.com/airbytehq/airbyte/pull/61097) | Update dependencies |
+| 0.0.21 | 2025-05-17 | [60707](https://github.com/airbytehq/airbyte/pull/60707) | Update dependencies |
+| 0.0.20 | 2025-05-10 | [59898](https://github.com/airbytehq/airbyte/pull/59898) | Update dependencies |
+| 0.0.19 | 2025-05-03 | [59325](https://github.com/airbytehq/airbyte/pull/59325) | Update dependencies |
+| 0.0.18 | 2025-04-26 | [58713](https://github.com/airbytehq/airbyte/pull/58713) | Update dependencies |
+| 0.0.17 | 2025-04-19 | [58272](https://github.com/airbytehq/airbyte/pull/58272) | Update dependencies |
+| 0.0.16 | 2025-04-12 | [57662](https://github.com/airbytehq/airbyte/pull/57662) | Update dependencies |
+| 0.0.15 | 2025-04-05 | [56603](https://github.com/airbytehq/airbyte/pull/56603) | Update dependencies |
+| 0.0.14 | 2025-03-22 | [56117](https://github.com/airbytehq/airbyte/pull/56117) | Update dependencies |
+| 0.0.13 | 2025-03-08 | [55379](https://github.com/airbytehq/airbyte/pull/55379) | Update dependencies |
+| 0.0.12 | 2025-03-01 | [54907](https://github.com/airbytehq/airbyte/pull/54907) | Update dependencies |
+| 0.0.11 | 2025-02-22 | [54272](https://github.com/airbytehq/airbyte/pull/54272) | Update dependencies |
+| 0.0.10 | 2025-02-15 | [53868](https://github.com/airbytehq/airbyte/pull/53868) | Update dependencies |
+| 0.0.9 | 2025-02-08 | [52935](https://github.com/airbytehq/airbyte/pull/52935) | Update dependencies |
 | 0.0.8 | 2025-01-25 | [52186](https://github.com/airbytehq/airbyte/pull/52186) | Update dependencies |
 | 0.0.7 | 2025-01-18 | [51712](https://github.com/airbytehq/airbyte/pull/51712) | Update dependencies |
 | 0.0.6 | 2025-01-11 | [51247](https://github.com/airbytehq/airbyte/pull/51247) | Update dependencies |

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -66,6 +66,19 @@ object ValidatedJsonUtils {
             }
         }
         return jsonList.map { parseUnvalidated(it, elementClass) }
+    }
+
+    fun <T> parseUnvalidated(
+        json: String,
+        klazz: Class<T>,
+    ): T {
+        val tree: JsonNode =
+            try {
+                Jsons.readTree(json)
+            } catch (e: Exception) {
+                throw ConfigErrorException("malformed json value while parsing for $klazz", e)
+            }
+        return parseUnvalidated(tree, klazz)
     }
 
     fun <T> parseUnvalidated(

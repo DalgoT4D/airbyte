@@ -15,6 +15,7 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 ## Setup Guide
 
 ### Required configuration options
+
 - **Pardot Business Unit ID** (`pardot_business_unit_id`): This value uniquely identifies your account, and can be found at Setup > Pardot > Pardot Account Setup
 
 - **Client ID** (`client_id`): The Consumer Key that can be found when viewing your app in Salesforce
@@ -24,11 +25,8 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 - **Refresh Token** (`refresh_token`): Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow [this guide](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) to retrieve it.
 
 ### Optional configuration options
+
 - **Start Date** (`start_date`): UTC date and time in the format `2020-01-25T00:00:00Z`. Any data before this date will not be replicated. Defaults to `2007-01-01T00:00:00Z` (the year Pardot was launched)
-
-- **Page Size Limit** (`page_size`): The default page size to return; defaults to `1000` (which is Pardot's maximum). Does not apply to the Email Clicks stream which uses the v4 API and is limited to 200 per page.
-
-- **Default Split Up Interval** (`split_up_interval`): The default split up interval is used on incremental streams to prevent hitting Pardots limit of 100 pages per result (effectively 100K records on most endpoints). The default is `P3M`, which will break incremental requests into three-month groupings. If you expect more than 100K records to be modified between syncs in a single endpoint, you can increase the granularity to `P1M`, `P14D`, `P7D`, `P3D`, or `P1D` to reduce the maximum records to be paged through per split. For small accounts unlikely to hit the limit, decreasing the granularity to `P6M` or `P1Y` may increase the speed of those syncs, especially the initial backfill.
 
 - **Is Sandbox App?** (`is_sandbox`): Whether or not the app is in a Salesforce sandbox. If you do not know what this is, assume it is false.
 
@@ -47,7 +45,7 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 
 :::tip
 
-Due to timeouts on large accounts, the Split Up Interval (the time period used to page through incrementally) is surfaced as a configuration option. While the default should work for most accounts, large accounts may need to increase the granularity from the default. Similarly, small accounts may see faster initial syncs with a longer interval. See the Optional Configuration Options section for more details.
+Pardot has daily API limits based on plan level. If one of these limits is hit, the connector will retry every two hours until quota is replenished.
 
 :::
 
@@ -91,12 +89,62 @@ Several output streams are available from this source. Unless noted otherwise, s
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
-| 1.0.0  | 2023-12-12 | [49424](https://github.com/airbytehq/airbyte/pull/49424) | Update streams to API V5. Fix auth flow  |
-| 0.2.0  | 2024-10-13 | [44528](https://github.com/airbytehq/airbyte/pull/44528) | Migrate to LowCode then Manifest-only  |
+| 1.0.46 | 2026-06-23 | [80586](https://github.com/airbytehq/airbyte/pull/80586) | Update dependencies |
+| 1.0.45 | 2026-06-16 | [79997](https://github.com/airbytehq/airbyte/pull/79997) | Update dependencies |
+| 1.0.44 | 2026-06-09 | [79466](https://github.com/airbytehq/airbyte/pull/79466) | Update dependencies |
+| 1.0.43 | 2026-06-02 | [78883](https://github.com/airbytehq/airbyte/pull/78883) | Update dependencies |
+| 1.0.42 | 2026-04-28 | [77362](https://github.com/airbytehq/airbyte/pull/77362) | Update dependencies |
+| 1.0.41 | 2026-04-21 | [76711](https://github.com/airbytehq/airbyte/pull/76711) | Update dependencies |
+| 1.0.40 | 2026-03-31 | [75820](https://github.com/airbytehq/airbyte/pull/75820) | Update dependencies |
+| 1.0.39 | 2026-03-24 | [75021](https://github.com/airbytehq/airbyte/pull/75021) | Update dependencies |
+| 1.0.38 | 2026-03-10 | [74501](https://github.com/airbytehq/airbyte/pull/74501) | Update dependencies |
+| 1.0.37 | 2026-03-03 | [74170](https://github.com/airbytehq/airbyte/pull/74170) | Update dependencies |
+| 1.0.36 | 2026-02-10 | [73068](https://github.com/airbytehq/airbyte/pull/73068) | Update dependencies |
+| 1.0.35 | 2026-01-20 | [72176](https://github.com/airbytehq/airbyte/pull/72176) | Update dependencies |
+| 1.0.34 | 2026-01-14 | [71683](https://github.com/airbytehq/airbyte/pull/71683) | Update dependencies |
+| 1.0.33 | 2025-12-18 | [70501](https://github.com/airbytehq/airbyte/pull/70501) | Update dependencies |
+| 1.0.32 | 2025-11-25 | [70091](https://github.com/airbytehq/airbyte/pull/70091) | Update dependencies |
+| 1.0.31 | 2025-11-18 | [69674](https://github.com/airbytehq/airbyte/pull/69674) | Update dependencies |
+| 1.0.30 | 2025-10-29 | [69020](https://github.com/airbytehq/airbyte/pull/69020) | Update dependencies |
+| 1.0.29 | 2025-10-21 | [68326](https://github.com/airbytehq/airbyte/pull/68326) | Update dependencies |
+| 1.0.28 | 2025-10-14 | [67800](https://github.com/airbytehq/airbyte/pull/67800) | Update dependencies |
+| 1.0.27 | 2025-10-07 | [67342](https://github.com/airbytehq/airbyte/pull/67342) | Update dependencies |
+| 1.0.26 | 2025-09-30 | [66393](https://github.com/airbytehq/airbyte/pull/66393) | Update dependencies |
+| 1.0.25 | 2025-09-24 | [66592](https://github.com/airbytehq/airbyte/pull/66592) | Fix pagination when >100K records returned |
+| 1.0.24 | 2025-09-09 | [65782](https://github.com/airbytehq/airbyte/pull/65782) | Update dependencies |
+| 1.0.23 | 2025-08-23 | [65172](https://github.com/airbytehq/airbyte/pull/65172) | Update dependencies |
+| 1.0.22 | 2025-08-16 | [64794](https://github.com/airbytehq/airbyte/pull/64794) | Update dependencies |
+| 1.0.21 | 2025-08-02 | [64264](https://github.com/airbytehq/airbyte/pull/64264) | Update dependencies |
+| 1.0.20 | 2025-07-26 | [63887](https://github.com/airbytehq/airbyte/pull/63887) | Update dependencies |
+| 1.0.19 | 2025-07-19 | [63399](https://github.com/airbytehq/airbyte/pull/63399) | Update dependencies |
+| 1.0.18 | 2025-07-12 | [63221](https://github.com/airbytehq/airbyte/pull/63221) | Update dependencies |
+| 1.0.17 | 2025-07-05 | [62559](https://github.com/airbytehq/airbyte/pull/62559) | Update dependencies |
+| 1.0.16 | 2025-06-28 | [61048](https://github.com/airbytehq/airbyte/pull/61048) | Update dependencies |
+| 1.0.15 | 2025-06-20 | [61736](https://github.com/airbytehq/airbyte/pull/61736) | Fix lifecycle_stages -  was erroneously top-level instead of a property of column |
+| 1.0.14 | 2025-05-24 | [60515](https://github.com/airbytehq/airbyte/pull/60515) | Update dependencies |
+| 1.0.13 | 2025-05-10 | [60108](https://github.com/airbytehq/airbyte/pull/60108) | Update dependencies |
+| 1.0.12 | 2025-05-04 | [59521](https://github.com/airbytehq/airbyte/pull/59521) | Update dependencies |
+| 1.0.11 | 2025-04-27 | [59088](https://github.com/airbytehq/airbyte/pull/59088) | Update dependencies |
+| 1.0.10 | 2025-04-19 | [58468](https://github.com/airbytehq/airbyte/pull/58468) | Update dependencies |
+| 1.0.9 | 2025-04-12 | [57875](https://github.com/airbytehq/airbyte/pull/57875) | Update dependencies |
+| 1.0.8 | 2025-04-05 | [57321](https://github.com/airbytehq/airbyte/pull/57321) | Update dependencies |
+| 1.0.7 | 2025-03-29 | [56777](https://github.com/airbytehq/airbyte/pull/56777) | Update dependencies |
+| 1.0.6 | 2025-03-22 | [56190](https://github.com/airbytehq/airbyte/pull/56190) | Update dependencies |
+| 1.0.5 | 2025-03-08 | [55566](https://github.com/airbytehq/airbyte/pull/55566) | Update dependencies |
+| 1.0.4 | 2025-03-01 | [55009](https://github.com/airbytehq/airbyte/pull/55009) | Update dependencies |
+| 1.0.3 | 2025-02-23 | [54624](https://github.com/airbytehq/airbyte/pull/54624) | Update dependencies |
+| 1.0.2 | 2025-02-15 | [47530](https://github.com/airbytehq/airbyte/pull/47530) | Update dependencies |
+| 1.0.1 | 2025-01-10 | [51040](https://github.com/airbytehq/airbyte/pull/51040) | Fix schemas, adjust error handling, remove split-up interval |
+| 1.0.0 | 2024-12-12 | [49424](https://github.com/airbytehq/airbyte/pull/49424) | Update streams to API V5. Fix auth flow |
+| 0.2.0 | 2024-10-13 | [44528](https://github.com/airbytehq/airbyte/pull/44528) | Migrate to LowCode then Manifest-only |
 | 0.1.22 | 2024-10-12 | [46778](https://github.com/airbytehq/airbyte/pull/46778) | Update dependencies |
 | 0.1.21 | 2024-10-05 | [46441](https://github.com/airbytehq/airbyte/pull/46441) | Update dependencies |
 | 0.1.20 | 2024-09-28 | [46109](https://github.com/airbytehq/airbyte/pull/46109) | Update dependencies |

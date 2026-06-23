@@ -35,6 +35,10 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 1. Generate an API Key as described [here](https://www.aha.io/api#authentication).
 2. Use the generated `API Key` in the Airbyte connection.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -42,6 +46,19 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.4.24 | 2025-05-10 | [59855](https://github.com/airbytehq/airbyte/pull/59855) | Update dependencies |
+| 0.4.23 | 2025-05-03 | [59356](https://github.com/airbytehq/airbyte/pull/59356) | Update dependencies |
+| 0.4.22 | 2025-04-26 | [58723](https://github.com/airbytehq/airbyte/pull/58723) | Update dependencies |
+| 0.4.21 | 2025-04-19 | [57608](https://github.com/airbytehq/airbyte/pull/57608) | Update dependencies |
+| 0.4.20 | 2025-04-05 | [57119](https://github.com/airbytehq/airbyte/pull/57119) | Update dependencies |
+| 0.4.19 | 2025-03-29 | [56597](https://github.com/airbytehq/airbyte/pull/56597) | Update dependencies |
+| 0.4.18 | 2025-03-22 | [56112](https://github.com/airbytehq/airbyte/pull/56112) | Update dependencies |
+| 0.4.17 | 2025-03-08 | [55406](https://github.com/airbytehq/airbyte/pull/55406) | Update dependencies |
+| 0.4.16 | 2025-03-01 | [54899](https://github.com/airbytehq/airbyte/pull/54899) | Update dependencies |
+| 0.4.15 | 2025-02-22 | [54214](https://github.com/airbytehq/airbyte/pull/54214) | Update dependencies |
+| 0.4.14 | 2025-02-15 | [53905](https://github.com/airbytehq/airbyte/pull/53905) | Update dependencies |
+| 0.4.13 | 2025-02-08 | [53439](https://github.com/airbytehq/airbyte/pull/53439) | Update dependencies |
+| 0.4.12 | 2025-02-01 | [52886](https://github.com/airbytehq/airbyte/pull/52886) | Update dependencies |
 | 0.4.11 | 2025-01-25 | [52192](https://github.com/airbytehq/airbyte/pull/52192) | Update dependencies |
 | 0.4.10 | 2025-01-18 | [51732](https://github.com/airbytehq/airbyte/pull/51732) | Update dependencies |
 | 0.4.9 | 2025-01-11 | [51234](https://github.com/airbytehq/airbyte/pull/51234) | Update dependencies |
@@ -70,6 +87,6 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 | 0.3.1 | 2023-06-05 | [27002](https://github.com/airbytehq/airbyte/pull/27002) | Flag spec `api_key` field as `airbyte-secret` |
 | 0.3.0 | 2023-05-30 | [22642](https://github.com/airbytehq/airbyte/pull/22642) | Add `idea_comments`, `idea_endorsements`, and `idea_categories` streams |
 | 0.2.0 | 2023-05-26 | [26666](https://github.com/airbytehq/airbyte/pull/26666) | Fix integration test and schemas |
-| 0.1.0   | 2022-11-02 | [18883](https://github.com/airbytehq/airbyte/pull/18893) | 🎉 New Source: Aha                                                      |
+| 0.1.0   | 2022-11-02 | [18893](https://github.com/airbytehq/airbyte/pull/18893) | 🎉 New Source: Aha                                                      |
 
 </details>

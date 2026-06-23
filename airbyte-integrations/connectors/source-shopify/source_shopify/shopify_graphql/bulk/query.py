@@ -11,6 +11,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
+from setuptools.command.alias import alias
 
 from .tools import BULK_PARENT_KEY, BulkTools
 
@@ -61,6 +62,7 @@ class ShopifyBulkTemplates:
                     query: """
                     $query
                     """
+                    groupObjects: true
                 ) {
                     bulkOperation {
                         id
@@ -68,6 +70,7 @@ class ShopifyBulkTemplates:
                         createdAt
                     }
                     userErrors {
+                        code
                         field
                         message
                     }
@@ -950,6 +953,114 @@ class Collection(ShopifyBulkQuery):
         yield record
 
 
+class CollectionProduct(ShopifyBulkQuery):
+    """
+    Returns the products associated with each collection, including both custom collections
+    and smart collections. This provides all product<>collection associations, not just
+    manually associated products (which is what the Collects REST API provides).
+
+    {
+        collections(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    id
+                    handle
+                    updatedAt
+                    products {
+                        edges {
+                            node {
+                                __typename
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "collections"
+    sort_key = "UPDATED_AT"
+
+    products_fields: List[Field] = [
+        Field(
+            name="edges",
+            fields=[
+                Field(
+                    name="node",
+                    fields=[
+                        "__typename",
+                        "id",
+                    ],
+                )
+            ],
+        )
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        Field(name="handle"),
+        Field(name="updatedAt"),
+        Field(name="products", fields=products_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Collection",
+        "record_components": ["Product"],
+    }
+
+    def _process_product_components(self, products: List[dict]) -> List[dict]:
+        """
+        Process product components to resolve IDs from string to int and preserve the original ID.
+
+        Args:
+            products: List of product dictionaries with string IDs
+
+        Returns:
+            List of processed product dictionaries with both id (int) and admin_graphql_api_id (str)
+        """
+        for product in products:
+            # Save the original string ID before resolving
+            product["admin_graphql_api_id"] = product.get("id")
+            # Resolve the ID from string to int
+            product["id"] = self.tools.resolve_str_id(product.get("id"))
+        return products
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Process collection records and yield one record per collection-product association.
+        """
+        record_components = record.get("record_components", {})
+        products = record_components.get("Product", [])
+
+        # Get collection info - id is already resolved to int, admin_graphql_api_id has the string version
+        collection_id = record.get("id")
+        collection_admin_graphql_api_id = record.get("admin_graphql_api_id")
+        collection_handle = record.get("handle")
+        collection_updated_at = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+
+        if products:
+            # Process products to resolve their IDs
+            products = self._process_product_components(products)
+
+            for product in products:
+                product_id = product.get("id")
+                product_admin_graphql_api_id = product.get("admin_graphql_api_id")
+
+                yield {
+                    "collection_id": collection_id,
+                    "collection_admin_graphql_api_id": collection_admin_graphql_api_id,
+                    "collection_handle": collection_handle,
+                    "collection_updated_at": collection_updated_at,
+                    "product_id": product_id,
+                    "product_admin_graphql_api_id": product_admin_graphql_api_id,
+                    "shop_url": self.config.get("shop"),
+                }
+
+
 class CustomerAddresses(ShopifyBulkQuery):
     """
     {
@@ -1493,97 +1604,101 @@ class InventoryLevel(ShopifyBulkQuery):
 
 class FulfillmentOrder(ShopifyBulkQuery):
     """
-    Output example to BULK query `fulfillmentOrders` from `orders` with `filter query` by `updated_at`, sorted by `UPDATED_AT`:
+    Output example to BULK query `fulfillmentOrders` directly with `filter query` by `updated_at`, sorted by `UPDATED_AT`:
+
+    Note: This query fetches fulfillment orders directly from the `fulfillmentOrders` endpoint instead of
+    through the `orders` endpoint. This is necessary because Shopify's BULK API has limitations with nested
+    connections that can cause some fulfillment orders to be missing when queried through orders.
+    See: https://github.com/airbytehq/oncall/issues/10991
+
+    The `includeClosed` parameter is configurable via `fulfillment_orders_include_closed` (default: false).
+    When enabled, closed fulfillment orders are included in the results.
+
         {
-            orders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT){
+            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT){
                 edges {
                     node {
                         __typename
                         id
-                        fulfillmentOrders {
+                        channelId
+                        order {
+                            id
+                        }
+                        assignedLocation {
+                            location {
+                                locationId: id
+                            }
+                            address1
+                            address2
+                            city
+                            countryCode
+                            name
+                            phone
+                            province
+                            zip
+                        }
+                        destination {
+                            id
+                            address1
+                            address2
+                            city
+                            company
+                            countryCode
+                            email
+                            firstName
+                            lastName
+                            phone
+                            province
+                            zip
+                        }
+                        deliveryMethod {
+                            id
+                            methodType
+                            minDeliveryDateTime
+                            maxDeliveryDateTime
+                        }
+                        fulfillAt
+                        fulfillBy
+                        internationalDuties {
+                            incoterm
+                        }
+                        fulfillmentHolds {
+                            reason
+                            reasonNotes
+                        }
+                        lineItems {
                             edges {
                                 node {
                                     __typename
                                     id
-                                    channelId
-                                    assignedLocation {
-                                        location {
-                                            locationId: id
-                                        }
-                                        address1
-                                        address2
-                                        city
-                                        countryCode
-                                        name
-                                        phone
-                                        province
-                                        zip
-                                    }
-                                    destination {
-                                        id
-                                        address1
-                                        address2
-                                        city
-                                        company
-                                        countryCode
-                                        email
-                                        firstName
-                                        lastName
-                                        phone
-                                        province
-                                        zip
-                                    }
-                                    deliveryMethod {
-                                        id
-                                        methodType
-                                        minDeliveryDateTime
-                                        maxDeliveryDateTime
-                                    }
-                                    fulfillAt
-                                    fulfillBy
-                                    internationalDuties {
-                                        incoterm
-                                    }
-                                    fulfillmentHolds {
-                                        reason
-                                        reasonNotes
-                                    }
-                                    lineItems {
-                                        edges {
-                                            node {
-                                                __typename
-                                                id
-                                                inventoryItemId
-                                                lineItem {
-                                                    lineItemId: id
-                                                    fulfillableQuantity
-                                                    quantity: currentQuantity
-                                                    variant {
-                                                        variantId: id
-                                                    }
-                                                }
-                                            }
+                                    inventoryItemId
+                                    lineItem {
+                                        lineItemId: id
+                                        fulfillableQuantity
+                                        quantity: currentQuantity
+                                        variant {
+                                            variantId: id
                                         }
                                     }
-                                    createdAt
-                                    updatedAt
-                                    requestStatus
-                                    status
-                                    supportedActions {
-                                        action
-                                        externalUrl
-                                    }
-                                    merchantRequests {
-                                        edges {
-                                            node {
-                                                __typename
-                                                id
-                                                message
-                                                kind
-                                                requestOptions
-                                            }
-                                        }
-                                    }
+                                }
+                            }
+                        }
+                        createdAt
+                        updatedAt
+                        requestStatus
+                        status
+                        supportedActions {
+                            action
+                            externalUrl
+                        }
+                        merchantRequests {
+                            edges {
+                                node {
+                                    __typename
+                                    id
+                                    message
+                                    kind
+                                    requestOptions
                                 }
                             }
                         }
@@ -1593,7 +1708,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         }
     """
 
-    query_name = "orders"
+    query_name = "fulfillmentOrders"
     sort_key = "UPDATED_AT"
 
     assigned_location_fields: List[Field] = [
@@ -1653,7 +1768,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         "requestOptions",
     ]
 
-    fulfillment_order_fields: List[Field] = [
+    query_nodes: List[Field] = [
         "__typename",
         "id",
         "fulfillAt",
@@ -1663,6 +1778,7 @@ class FulfillmentOrder(ShopifyBulkQuery):
         "requestStatus",
         "status",
         "channelId",
+        Field(name="order", fields=["id"]),
         Field(name="assignedLocation", fields=assigned_location_fields),
         Field(name="destination", fields=destination_fields),
         Field(name="deliveryMethod", fields=delivery_method_fields),
@@ -1671,12 +1787,6 @@ class FulfillmentOrder(ShopifyBulkQuery):
         Field(name="lineItems", fields=[Field(name="edges", fields=[Field(name="node", fields=line_items_fields)])]),
         Field(name="supportedActions", fields=["action", "externalUrl"]),
         Field(name="merchantRequests", fields=[Field(name="edges", fields=[Field(name="node", fields=merchant_requests_fields)])]),
-    ]
-
-    query_nodes: List[Field] = [
-        "__typename",
-        "id",
-        Field(name="fulfillmentOrders", fields=[Field(name="edges", fields=[Field(name="node", fields=fulfillment_order_fields)])]),
     ]
 
     record_composition = {
@@ -1688,10 +1798,22 @@ class FulfillmentOrder(ShopifyBulkQuery):
         ],
     }
 
+    @property
+    def _should_include_closed(self) -> bool:
+        return self.config.get("fulfillment_orders_include_closed", False)
+
+    def query(self, filter_query: Optional[str] = None) -> Query:
+        additional_query_args = {"includeClosed": "true"} if self._should_include_closed else None
+        return self.build(self.query_name, self.query_nodes, filter_query, additional_query_args)
+
     def process_fulfillment_order(self, record: MutableMapping[str, Any], shop_id: int) -> MutableMapping[str, Any]:
         # addings
         record["shop_id"] = shop_id
-        record["order_id"] = record.get(BULK_PARENT_KEY)
+        # extract order_id from the nested `order` field (since we now query fulfillmentOrders directly)
+        order_data = record.get("order", {})
+        record["order_id"] = order_data.get("id") if order_data else None
+        # remove the order field after extracting the id
+        record.pop("order", None)
         # unnest nested locationId to the `assignedLocation`
         location_id = record.get("assignedLocation", {}).get("location", {}).get("locationId")
         record["assignedLocation"]["locationId"] = location_id
@@ -1700,7 +1822,6 @@ class FulfillmentOrder(ShopifyBulkQuery):
         record["line_items"] = []
         record["merchant_requests"] = []
         # cleaning
-        record.pop(BULK_PARENT_KEY)
         record.get("assignedLocation").pop("location", None)
         # resolve ids from `str` to `int`
         # location id
@@ -2652,7 +2773,15 @@ class ProductVariant(ShopifyBulkQuery):
             Field(name="src", alias="image_src"),
             Field(name="url", alias="image_url"),
         ]
-
+        measurement_fields = [
+            Field(name="weight", fields=["value", "unit"]),
+        ]
+        inventory_item_fields = [
+            Field(name="id", alias="inventory_item_id"),
+            Field(name="tracked", alias="tracked"),
+            Field(name="requiresShipping", alias="requires_shipping"),
+            Field(name="measurement", alias="measurement", fields=measurement_fields),
+        ]
         query_nodes: List[Field] = [
             "__typename",
             "id",
@@ -2662,25 +2791,25 @@ class ProductVariant(ShopifyBulkQuery):
             "position",
             "inventoryPolicy",
             "compareAtPrice",
-            "inventoryManagement",
             "createdAt",
             "updatedAt",
             "taxable",
             "barcode",
-            "weight",
-            "weightUnit",
             "inventoryQuantity",
-            "requiresShipping",
             "availableForSale",
             "displayName",
             "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
-            Field(name="weight", alias="grams"),
             Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
-            Field(name="product", fields=[Field(name="id", alias="product_id")]),
-            Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
-            Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
+            Field(
+                name="product",
+                fields=[
+                    Field(name="id", alias="product_id"),
+                    Field(name="options", alias="product_options", fields=["id", "name", "position"]),
+                ],
+            ),
+            Field(name="inventoryItem", fields=inventory_item_fields),
         ] + presentment_prices
 
         return query_nodes
@@ -2726,6 +2855,34 @@ class ProductVariant(ShopifyBulkQuery):
         entity = record.get(from_property, {})
         return self.tools.resolve_str_id(entity.get(id_field)) if entity else None
 
+    def _enrich_options_with_product_options(self, record: MutableMapping[str, Any]) -> None:
+        """
+        Enriches the variant's options with id and position from the product's options.
+        Matches options by name and adds the corresponding ProductOption id and position.
+        """
+        options = record.get("options") or []
+        product = record.get("product") or {}
+        product_options = product.get("product_options") or []
+
+        # Build a lookup map from option name to ProductOption data
+        product_options_map = {}
+        for product_option in product_options:
+            if product_option:
+                name = product_option.get("name")
+                if name:
+                    product_options_map[name] = {
+                        "id": self.tools.resolve_str_id(product_option.get("id")),
+                        "position": product_option.get("position"),
+                    }
+
+        # Enrich each option with id and position from the matching ProductOption
+        for option in options:
+            if option:
+                option_name = option.get("name")
+                if option_name and option_name in product_options_map:
+                    option["id"] = product_options_map[option_name]["id"]
+                    option["position"] = product_options_map[option_name]["position"]
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
@@ -2738,20 +2895,27 @@ class ProductVariant(ShopifyBulkQuery):
             record["presentment_prices"] = self._process_presentment_prices(record_components.get("ProductVariantPricePair", []))
             record.pop("record_components")
 
+        # enrich options with id and position from product options (must be done before product is removed)
+        self._enrich_options_with_product_options(record)
+
         # unnest mandatory fields from their placeholders
         record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
         record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
+        inventory_item = record.get("inventoryItem")
+        measurement_weight = record.get("inventoryItem", {}).get("measurement", {}).get("weight")
+        record["weight"] = measurement_weight.get("value", 0.0) if measurement_weight is not None else 0.0
+        record["weight_unit"] = measurement_weight.get("unit") if measurement_weight else None
+        record["tracked"] = inventory_item.get("tracked") if inventory_item else None
+        record["requires_shipping"] = inventory_item.get("requires_shipping") if inventory_item else None
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
         image = record.get("image", {})
         record["image_src"] = image.get("image_src") if image else None
         record["image_url"] = image.get("image_url") if image else None
-        # unnest `fulfillment_service` from `fulfillmentService`
-        record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
         # cast the `price` to number, could be literally `None`
         price = record.get("price")
         record["price"] = float(price) if price else None
         # cast the `grams` to integer
-        record["grams"] = int(record.get("grams", 0))
+        record["grams"] = int(record.get("weight", 0))
         # convert date-time cursors
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
@@ -3193,3 +3357,175 @@ class OrderAgreement(ShopifyBulkQuery):
         record["agreements"] = agreements_with_sales if agreements_with_sales else {}
 
         yield record
+
+
+class DeliveryZoneList:
+    query_name = "deliveryProfiles"
+    operation_name = "DeliveryZoneList"
+    operation_type = "query"
+
+    query_nodes: List[str] = []
+
+    page_size = 100
+
+    def resolve(self, query: Query) -> str:
+        # return the constructed query operation
+        return Operation(type=self.operation_type, name=self.operation_name, queries=[query]).render()
+
+    def build(self, name: str, query_args: Mapping[str, Any] = None) -> Query:
+        arguments = [Argument(name="first", value=self.page_size)]
+
+        if query_args:
+            if query_args.get("cursor"):
+                cursor = '"' + query_args["cursor"] + '"'
+                arguments.append(Argument(name="after", value=cursor))
+
+        query = Query(name=name, arguments=arguments, fields=self.query_nodes)
+        # return constructed query
+        return query
+
+    def query(self, query_args: Mapping[str, Any] = None) -> Query:
+        return self.build(self.query_name, query_args)
+
+    def get(self, query_args: Mapping[str, Any] = None) -> str:
+        query: Query = self.query(query_args)
+        return self.resolve(query)
+
+
+class ProfileLocationGroups(ShopifyBulkQuery):
+    query_name = "deliveryProfiles"
+    filter_field = None
+
+    record_composition = {"new_record": "DeliveryProfile"}
+
+    query_nodes: List[Field] = [
+        "__typename",
+        Field(
+            name="profileLocationGroups",
+            fields=[Field(name="locationGroup", fields=["id"])],
+        ),
+    ]
+
+
+class DeliveryProfile(DeliveryZoneList):
+    """
+        query DeliveryZoneList {
+      deliveryProfiles(
+        first: 1
+      ) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          profileLocationGroups(
+            locationGroupId: "<locationGroupId>"
+          ) {
+            locationGroupZones(
+              first: 100
+            ) {
+              nodes {
+                zone {
+                  id
+                  name
+                  countries {
+                    id
+                    name
+                    translatedName
+                    code {
+                      countryCode
+                      restOfWorld
+                    }
+                    provinces {
+                      id
+                      translatedName
+                      name
+                      code
+                    }
+                  }
+                }
+              }
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    page_size = 1
+    sub_page_size = 100
+
+    def __init__(self, location_group_id: str, location_group_zones_cursor: str = None):
+        self.location_group_id = location_group_id
+        self.location_group_zones_cursor = location_group_zones_cursor
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+        location_group_id = '"' + self.location_group_id + '"'
+        location_group_zones_arguments = [Argument(name="first", value=self.sub_page_size)]
+        if self.location_group_zones_cursor:
+            cursor = '"' + self.location_group_zones_cursor + '"'
+            location_group_zones_arguments.append(Argument(name="after", value=cursor))
+
+        query_nodes: List[Field] = [
+            Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+            Field(
+                name="nodes",
+                fields=[
+                    Field(
+                        name="profileLocationGroups",
+                        arguments=[Argument(name="locationGroupId", value=location_group_id)],
+                        fields=[
+                            Field(
+                                name="locationGroupZones",
+                                arguments=location_group_zones_arguments,
+                                fields=[
+                                    Field(
+                                        name="nodes",
+                                        fields=[
+                                            Field(
+                                                name="zone",
+                                                fields=[
+                                                    "id",
+                                                    "name",
+                                                    Field(
+                                                        name="countries",
+                                                        fields=[
+                                                            "id",
+                                                            "name",
+                                                            Field(name="translatedName", alias="translated_name"),
+                                                            Field(
+                                                                name="code",
+                                                                fields=[
+                                                                    Field(name="countryCode", alias="country_code"),
+                                                                    Field(name="restOfWorld", alias="rest_of_world"),
+                                                                ],
+                                                            ),
+                                                            Field(
+                                                                name="provinces",
+                                                                fields=[
+                                                                    "id",
+                                                                    "name",
+                                                                    "code",
+                                                                    Field(name="translatedName", alias="translated_name"),
+                                                                ],
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                    Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+        return query_nodes

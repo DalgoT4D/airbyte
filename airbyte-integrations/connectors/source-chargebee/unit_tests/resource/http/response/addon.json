@@ -2,31 +2,14 @@
   "list": [
     {
       "addon": {
-        "charge_type": "recurring",
-        "currency_code": "USD",
-        "enabled_in_portal": true,
-        "id": "tiered_addon",
-        "is_shippable": false,
-        "name": "Tiered Addon",
-        "object": "addon",
-        "period": 1,
-        "period_unit": "month",
-        "pricing_model": "tiered",
-        "resource_version": 1517505776000,
-        "show_description_in_invoices": false,
-        "show_description_in_quotes": false,
+        "id": "addon_001",
+        "name": "Test Addon",
+        "price": 500,
+        "type": "on_off",
         "status": "active",
-        "taxable": true,
-        "tiers": [
-          {
-            "ending_unit": 10,
-            "object": "tier",
-            "price": 100,
-            "starting_unit": 1
-          }
-        ],
-        "type": "tiered",
-        "updated_at": 1517505776
+        "updated_at": 1705312800,
+        "cf_product_category": "Premium",
+        "cf_item_tier": "Gold"
       }
     }
   ]

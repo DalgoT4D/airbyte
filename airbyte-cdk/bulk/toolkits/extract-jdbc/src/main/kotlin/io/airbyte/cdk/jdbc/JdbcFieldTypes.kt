@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.jdbc
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -31,6 +31,7 @@ import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.LosslessFieldType
+import java.lang.reflect.ParameterizedType
 import java.math.BigDecimal
 import java.net.URL
 import java.nio.ByteBuffer
@@ -56,6 +57,13 @@ abstract class JdbcFieldType<R>(
             null -> NullCodec.encode(null)
             else -> jsonEncoder.encode(decoded)
         }
+
+    @Suppress("UNCHECKED_CAST")
+    val genericClass: Class<R> =
+        ((javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0].let {
+            if (it is ParameterizedType) it.rawType else it
+        })
+            as Class<R>
 }
 
 /** Convenience class for defining concrete [LosslessFieldType] objects. */
@@ -265,7 +273,7 @@ data object OffsetTimeFieldType :
 data object OffsetDateTimeFieldType :
     LosslessJdbcFieldType<OffsetDateTime, OffsetDateTime>(
         LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
-        ObjectGetter(OffsetDateTime::class.java),
+        TimestampTzGetter,
         OffsetDateTimeCodec,
         OffsetDateTimeCodec,
         AnyAccessor,
@@ -291,5 +299,14 @@ data class ArrayFieldType<T>(
     JdbcFieldType<List<T>>(
         ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType),
         ArrayGetter(elementFieldType.jdbcGetter),
+        ArrayEncoder(elementFieldType.jsonEncoder),
+    )
+
+data class SapHanaArrayFieldType<T>(
+    val elementFieldType: JdbcFieldType<T>,
+) :
+    JdbcFieldType<List<T>>(
+        ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType),
+        SapHanaArrayGetter(elementFieldType),
         ArrayEncoder(elementFieldType.jsonEncoder),
     )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.cdk.integrations.destination.s3
 
@@ -805,7 +805,10 @@ protected constructor(
                 )
             fail("sync should have failed. Instead got output $destinationOutput")
         } catch (e: TestHarnessException) {
-            assertContains(e.outputMessages!![0].trace.error.internalMessage, "File does not exist")
+            assertContains(
+                e.outputMessages!![0].trace.error.internalMessage,
+                "java.io.FileNotFoundException: /staging/files/fakeFile (No such file or directory)"
+            )
         }
     }
 

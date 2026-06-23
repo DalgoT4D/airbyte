@@ -1,29 +1,96 @@
 # XKCD
 
+This page describes the setup guide and reference information for the XKCD source connector.
+
 ## Prerequisites
 
-XKCD is an open API, so no credentials are needed to set up the source.
+XKCD provides a public JSON API. You don't need credentials to set up this source.
+
+## Setup guide
+
+1. Add a new XKCD source.
+2. For **Comic Number**, enter the first comic number to replicate. The connector starts with this comic and requests each following comic until no more comic metadata is available.
 
 ## Supported sync modes
 
-The xkcd source connector supports on full sync refresh.
+The XKCD source connector supports full refresh syncs. Incremental syncs aren't supported.
 
-## Supported Streams
+## Supported streams
 
-That is just one stream for xkcd, that retrieves a given comic metadata.
+The connector syncs one stream:
 
-### Performance considerations
+| Stream | Description |
+| :--- | :--- |
+| `xkcd` | Comic metadata from the XKCD JSON API, including comic number, title, post date, image URL, transcript, and alt text. |
 
-XKCD does not perform rate limiting.
+## Performance considerations
+
+The connector sends one request for each comic it reads, starting with the configured comic number. Larger backfills require more requests.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Reference
+
+This connector uses the [XKCD JSON API](https://xkcd.com/json.html). Requests use the `https://xkcd.com` endpoint.
+
+For programmatic configuration, use this parameter name:
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `comic_number` | No | First comic number to replicate. Defaults to `2960`. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                   |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
-| 0.2.2   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 0.2.44 | 2026-06-16 | [80100](https://github.com/airbytehq/airbyte/pull/80100) | Update dependencies |
+| 0.2.43 | 2026-06-09 | [79566](https://github.com/airbytehq/airbyte/pull/79566) | Update dependencies |
+| 0.2.42 | 2026-06-02 | [79085](https://github.com/airbytehq/airbyte/pull/79085) | Update dependencies |
+| 0.2.41 | 2026-05-27 | [78454](https://github.com/airbytehq/airbyte/pull/78454) | Update dependencies |
+| 0.2.40 | 2026-04-28 | [77482](https://github.com/airbytehq/airbyte/pull/77482) | Update dependencies |
+| 0.2.39 | 2026-04-21 | [76803](https://github.com/airbytehq/airbyte/pull/76803) | Update dependencies |
+| 0.2.38 | 2026-03-17 | [75100](https://github.com/airbytehq/airbyte/pull/75100) | Update dependencies |
+| 0.2.37 | 2026-03-10 | [74666](https://github.com/airbytehq/airbyte/pull/74666) | Update dependencies |
+| 0.2.36 | 2026-02-24 | [73891](https://github.com/airbytehq/airbyte/pull/73891) | Update dependencies |
+| 0.2.35 | 2026-02-17 | [73528](https://github.com/airbytehq/airbyte/pull/73528) | Update dependencies |
+| 0.2.34 | 2026-02-10 | [73152](https://github.com/airbytehq/airbyte/pull/73152) | Update dependencies |
+| 0.2.33 | 2026-02-03 | [72089](https://github.com/airbytehq/airbyte/pull/72089) | Update dependencies |
+| 0.2.32 | 2026-01-14 | [71712](https://github.com/airbytehq/airbyte/pull/71712) | Update dependencies |
+| 0.2.31 | 2025-12-18 | [70711](https://github.com/airbytehq/airbyte/pull/70711) | Update dependencies |
+| 0.2.30 | 2025-11-25 | [70126](https://github.com/airbytehq/airbyte/pull/70126) | Update dependencies |
+| 0.2.29 | 2025-11-18 | [69517](https://github.com/airbytehq/airbyte/pull/69517) | Update dependencies |
+| 0.2.28 | 2025-10-29 | [68956](https://github.com/airbytehq/airbyte/pull/68956) | Update dependencies |
+| 0.2.27 | 2025-10-21 | [68446](https://github.com/airbytehq/airbyte/pull/68446) | Update dependencies |
+| 0.2.26 | 2025-10-14 | [67936](https://github.com/airbytehq/airbyte/pull/67936) | Update dependencies |
+| 0.2.25 | 2025-10-07 | [67318](https://github.com/airbytehq/airbyte/pull/67318) | Update dependencies |
+| 0.2.24 | 2025-09-30 | [66447](https://github.com/airbytehq/airbyte/pull/66447) | Update dependencies |
+| 0.2.23 | 2025-09-09 | [65734](https://github.com/airbytehq/airbyte/pull/65734) | Update dependencies |
+| 0.2.22 | 2025-08-24 | [65427](https://github.com/airbytehq/airbyte/pull/65427) | Update dependencies |
+| 0.2.21 | 2025-08-10 | [64865](https://github.com/airbytehq/airbyte/pull/64865) | Update dependencies |
+| 0.2.20 | 2025-08-02 | [64317](https://github.com/airbytehq/airbyte/pull/64317) | Update dependencies |
+| 0.2.19 | 2025-07-27 | [64089](https://github.com/airbytehq/airbyte/pull/64089) | Update dependencies |
+| 0.2.18 | 2025-07-20 | [63660](https://github.com/airbytehq/airbyte/pull/63660) | Update dependencies |
+| 0.2.17 | 2025-07-12 | [63193](https://github.com/airbytehq/airbyte/pull/63193) | Update dependencies |
+| 0.2.16 | 2025-07-05 | [61236](https://github.com/airbytehq/airbyte/pull/61236) | Update dependencies |
+| 0.2.15 | 2025-05-24 | [60764](https://github.com/airbytehq/airbyte/pull/60764) | Update dependencies |
+| 0.2.14 | 2025-05-10 | [60013](https://github.com/airbytehq/airbyte/pull/60013) | Update dependencies |
+| 0.2.13 | 2025-05-04 | [59557](https://github.com/airbytehq/airbyte/pull/59557) | Update dependencies |
+| 0.2.12 | 2025-04-26 | [58935](https://github.com/airbytehq/airbyte/pull/58935) | Update dependencies |
+| 0.2.11 | 2025-04-19 | [58563](https://github.com/airbytehq/airbyte/pull/58563) | Update dependencies |
+| 0.2.10 | 2025-04-13 | [58051](https://github.com/airbytehq/airbyte/pull/58051) | Update dependencies |
+| 0.2.9 | 2025-04-05 | [57393](https://github.com/airbytehq/airbyte/pull/57393) | Update dependencies |
+| 0.2.8 | 2025-03-29 | [56892](https://github.com/airbytehq/airbyte/pull/56892) | Update dependencies |
+| 0.2.7 | 2025-03-22 | [56251](https://github.com/airbytehq/airbyte/pull/56251) | Update dependencies |
+| 0.2.6 | 2025-03-08 | [55605](https://github.com/airbytehq/airbyte/pull/55605) | Update dependencies |
+| 0.2.5 | 2025-03-01 | [55116](https://github.com/airbytehq/airbyte/pull/55116) | Update dependencies |
+| 0.2.4 | 2025-02-22 | [54508](https://github.com/airbytehq/airbyte/pull/54508) | Update dependencies |
+| 0.2.3 | 2025-02-15 | [47934](https://github.com/airbytehq/airbyte/pull/47934) | Update dependencies |
+| 0.2.2 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.1 | 2024-07-28 | [42834](https://github.com/airbytehq/airbyte/pull/42834) | Fix Metadata sha256 digest |
 | 0.2.0 | 2024-07-25 | [42479](https://github.com/airbytehq/airbyte/pull/42479) | Migrate to low code manifest only connector |
 | 0.1.10 | 2024-07-20 | [42380](https://github.com/airbytehq/airbyte/pull/42380) | Update dependencies |

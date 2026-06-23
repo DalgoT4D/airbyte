@@ -2648,6 +2648,31 @@ definitions:
         - credentials
         - auth_type
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 10
+
+# Rate limits: https://help.getharvest.com/api-v2/introduction/overview/general/
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT15M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/reports/"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT15S
+      matchers: []
+  ratelimit_reset_header: "Retry-After"
+  status_codes_for_ratelimit_hit:
+    - 429
+
 streams:
   - $ref: "#/definitions/streams/clients"
   - $ref: "#/definitions/streams/company"
@@ -2696,7 +2721,7 @@ spec:
         description: >-
           Harvest account ID. Required for all Harvest requests in pair with
           Personal Access Token
-        order: 0
+        order: 1
         title: Account ID
         airbyte_secret: true
       replication_start_date:
@@ -2704,7 +2729,7 @@ spec:
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
-        order: 1
+        order: 2
         title: Start Date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -2715,7 +2740,7 @@ spec:
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data after
           this date will not be replicated.
-        order: 2
+        order: 3
         title: End Date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -2770,9 +2795,72 @@ spec:
                 const: Token
                 order: 0
             additionalProperties: true
-        order: 3
+        order: 0
         title: Authentication mechanism
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up
+          syncs but may increase API rate limit usage. Adjust based on your
+          Harvest API plan.
+        default: 4
+        minimum: 2
+        maximum: 10
+        order: 4
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://id.getharvest.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&response_type=code"
+        access_token_url: "https://id.getharvest.com/api/v2/oauth2/token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 
 metadata:
   autoImportSchema:
@@ -2994,6 +3082,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      approval_feature:
+        type:
+          - boolean
+          - "null"
       approval_required:
         type:
           - "null"
@@ -3004,6 +3096,18 @@ schemas:
           - "null"
           - string
         description: The base URI used in constructing URLs for this company.
+      currency:
+        type:
+          - string
+          - "null"
+      currency_code_display:
+        type:
+          - string
+          - "null"
+      currency_symbol_display:
+        type:
+          - string
+          - "null"
       clock:
         type:
           - "null"
@@ -3014,6 +3118,14 @@ schemas:
           - "null"
           - string
         description: The color scheme used in the user interface.
+      date_format:
+        type:
+          - string
+          - "null"
+      day_entry_notes_required:
+        type:
+          - boolean
+          - "null"
       decimal_symbol:
         type:
           - "null"
@@ -3056,6 +3168,14 @@ schemas:
           - "null"
           - string
         description: The type of plan subscribed by the company.
+      saml_sign_in_required:
+        type:
+          - boolean
+          - "null"
+      team_feature:
+        type:
+          - boolean
+          - "null"
       thousands_separator:
         type:
           - "null"
@@ -4514,6 +4634,10 @@ schemas:
               - string
             description: The date and time when the user assignment was last updated.
             format: date-time
+          use_default_rates:
+            type:
+              - boolean
+              - "null"
   user_assignments:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -4603,6 +4727,14 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      access_roles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       avatar_url:
         type:
           - "null"
@@ -4694,6 +4826,14 @@ schemas:
           - "null"
           - string
         description: User's last name.
+      permissions_claims:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       roles:
         type:
           - "null"
@@ -5126,6 +5266,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      avatar_url:
+        type:
+          - string
+          - "null"
       billable_amount:
         type:
           - "null"
@@ -5171,6 +5315,10 @@ schemas:
           - "null"
           - string
         description: The name of the user
+      weekly_capacity:
+        type:
+          - number
+          - "null"
   uninvoiced:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -5576,6 +5724,10 @@ schemas:
               - "null"
               - integer
             description: The unique identifier of the project
+          is_billable:
+            type:
+              - "null"
+              - boolean
           name:
             type:
               - "null"

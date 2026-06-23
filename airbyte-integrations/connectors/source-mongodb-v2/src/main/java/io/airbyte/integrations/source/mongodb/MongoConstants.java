@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -25,6 +25,8 @@ public class MongoConstants {
   public static final String DEFAULT_AUTH_SOURCE = "admin";
   public static final Integer DEFAULT_DISCOVER_SAMPLE_SIZE = 10000;
   public static final String DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY = "discover_sample_size";
+  public static final Integer DEFAULT_STREAM_DISCOVER_TIMEOUT_SEC = 600;
+  public static final String STREAM_DISCOVER_TIMEOUT_CONFIGURATION_KEY = "discover_timeout_seconds";
   public static final String DRIVER_NAME = "Airbyte";
   public static final String ID_FIELD = "_id";
   public static final String IS_TEST_CONFIGURATION_KEY = "is_test";
@@ -45,6 +47,17 @@ public class MongoConstants {
 
   public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
+
+  public static final int BSON_OBJECT_TOO_LARGE_ERROR_CODE = 10334;
+  public static final String BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE =
+      "A document in your MongoDB database exceeds the 16MB BSON size limit when processed through CDC (Change Data Capture) change streams. " +
+          "This error occurs specifically during incremental/CDC syncs when change stream events become too large. " +
+          "To resolve this issue, you have several options: " +
+          "(1) Switch the affected stream(s) to 'Full Refresh' sync mode instead of 'Incremental' mode, which does not use change streams. " +
+          "(2) If you are using 'Post Image' update capture mode, switch to 'Lookup' mode to reduce change event size. " +
+          "(3) Identify and restructure the large documents in your MongoDB collection to stay under 16MB. " +
+          "(4) Deselect streams containing documents that are too large. " +
+          "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
   private MongoConstants() {}
 

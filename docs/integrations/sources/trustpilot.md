@@ -54,6 +54,10 @@ The connector is restricted by Trustpilot [rate limit guidelines](https://docume
 
 The Trustpilot connector should not run into any limits under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -61,6 +65,21 @@ The Trustpilot connector should not run into any limits under normal usage. Plea
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.4.12 | 2025-05-10 | [60197](https://github.com/airbytehq/airbyte/pull/60197) | Update dependencies |
+| 0.4.11 | 2025-05-04 | [59622](https://github.com/airbytehq/airbyte/pull/59622) | Update dependencies |
+| 0.4.10 | 2025-04-27 | [58976](https://github.com/airbytehq/airbyte/pull/58976) | Update dependencies |
+| 0.4.9 | 2025-04-19 | [58437](https://github.com/airbytehq/airbyte/pull/58437) | Update dependencies |
+| 0.4.8 | 2025-04-12 | [57986](https://github.com/airbytehq/airbyte/pull/57986) | Update dependencies |
+| 0.4.7 | 2025-04-05 | [57489](https://github.com/airbytehq/airbyte/pull/57489) | Update dependencies |
+| 0.4.6 | 2025-03-29 | [56854](https://github.com/airbytehq/airbyte/pull/56854) | Update dependencies |
+| 0.4.5 | 2025-03-22 | [56310](https://github.com/airbytehq/airbyte/pull/56310) | Update dependencies |
+| 0.4.4 | 2025-03-08 | [55599](https://github.com/airbytehq/airbyte/pull/55599) | Update dependencies |
+| 0.4.3 | 2025-03-01 | [55080](https://github.com/airbytehq/airbyte/pull/55080) | Update dependencies |
+| 0.4.2 | 2025-02-22 | [54466](https://github.com/airbytehq/airbyte/pull/54466) | Update dependencies |
+| 0.4.1 | 2025-02-15 | [54050](https://github.com/airbytehq/airbyte/pull/54050) | Update dependencies |
+| 0.4.0 | 2025-02-11 | [53630](https://github.com/airbytehq/airbyte/pull/53630) | Fix token_refresh method |
+| 0.3.11 | 2025-02-08 | [53531](https://github.com/airbytehq/airbyte/pull/53531) | Update dependencies |
+| 0.3.10 | 2025-02-01 | [53104](https://github.com/airbytehq/airbyte/pull/53104) | Update dependencies |
 | 0.3.9 | 2025-01-25 | [52408](https://github.com/airbytehq/airbyte/pull/52408) | Update dependencies |
 | 0.3.8 | 2025-01-18 | [52025](https://github.com/airbytehq/airbyte/pull/52025) | Update dependencies |
 | 0.3.7 | 2025-01-11 | [51413](https://github.com/airbytehq/airbyte/pull/51413) | Update dependencies |

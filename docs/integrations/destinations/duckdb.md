@@ -32,7 +32,7 @@ We do not recommend providing your API token in the `md:` connection string, as 
 
 ### Authenticating to MotherDuck
 
-For authentication, you can can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option.
+For authentication, you can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option.
 
 ### Sync Overview
 
@@ -48,20 +48,21 @@ Each table will contain 3 columns:
 
 If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
 
-#### Features
-
-| Feature                        | Supported |     |
-| :----------------------------- | :-------- | :-- |
-| Full Refresh Sync              | Yes       |     |
-| Incremental - Append Sync      | Yes       |     |
-| Incremental - Append + Deduped | No        |     |
-| Namespaces                     | No        |     |
-
 #### Performance consideration
 
 This integration will be constrained by the speed at which your filesystem accepts writes.
 
 <!-- env:oss -->
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started with Local Database Files
 
@@ -98,7 +99,7 @@ You can also copy the output file to your host machine, the following command wi
 docker cp airbyte-server:/tmp/airbyte_local/{destination_path} .
 ```
 
-Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
+Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination) for an alternative approach.
 
 <!-- /env:oss -->
 
@@ -106,8 +107,13 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 ### Error message `Request failed:  (UNAVAILABLE, RPC 'GET_WELCOME_PACK')`
 
-This error may indicate that you are connecting with a `0.10.x` DuckDB client (as per DuckDB Destination connector versions `>=0.4.0`) and your database has not yet been upgraded to a version `>=0.10.x`. To resolve this, you'll need to manually upgrade your database or revert to a previous version of the DuckDB Destination connector.
+This error may indicate that you are connecting with a DuckDB client version that is incompatible with your database version. For example, if you are using DuckDB Destination connector version 0.6.0 or later (which uses DuckDB 1.4.x), your database must be compatible with DuckDB 1.4.x. To resolve this, you'll need to manually upgrade your database or revert to a previous version of the DuckDB Destination connector.
 
+For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations).
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a DuckDB schema.
 
 ## Changelog
 
@@ -116,6 +122,9 @@ This error may indicate that you are connecting with a `0.10.x` DuckDB client (a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.6.0 | 2026-01-06 | [70221](https://github.com/airbytehq/airbyte/pull/70221) | Upgrade DuckDB engine to v1.4.2 (LTS release). Requires Python 3.10+. Backwards compatible with databases created using DuckDB 0.10.x or higher. |
+| 0.5.1 | 2025-03-07 | [55256](https://github.com/airbytehq/airbyte/pull/55256) | Version bump to align Docker and Poetry versions |
+| 0.5.0 | 2025-03-07 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Upgrade DuckDB engine version to [`v1.2.1`](https://github.com/duckdb/duckdb/releases/tag/v1.2.1) |
 | 0.4.26 | 2024-10-29 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Update dependencies |
 | 0.4.25 | 2024-10-28 | [47070](https://github.com/airbytehq/airbyte/pull/47070) | Update dependencies |
 | 0.4.24 | 2024-10-12 | [46845](https://github.com/airbytehq/airbyte/pull/46845) | Update dependencies |

@@ -15,11 +15,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.3.11
   dockerRepository: airbyte/source-commercetools
   githubIssueLabel: source-commercetools
   icon: commercetools.svg
-  license: MIT
+  license: ELv2
   name: Commercetools
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/commercetools
@@ -42,5 +42,18 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  externalDocumentationUrls:
+    - title: commercetools API reference
+      url: https://docs.commercetools.com/api/
+      type: api_reference
+    - title: commercetools authentication
+      url: https://docs.commercetools.com/api/authorization
+      type: authentication_guide
+    - title: commercetools rate limits
+      url: https://docs.commercetools.com/api/general-concepts#rate-limits
+      type: rate_limits
+    - title: commercetools Status
+      url: https://status.commercetools.com/
+      type: status_page
 metadataSpecVersion: "1.0"

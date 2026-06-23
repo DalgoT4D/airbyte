@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read.cdc
@@ -12,6 +12,7 @@ import java.time.Duration
 import java.util.Properties
 import java.util.regex.Pattern
 import kotlin.reflect.KClass
+import kotlin.time.Duration.Companion.minutes
 import org.apache.kafka.connect.connector.Connector
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.storage.FileOffsetBackingStore
@@ -34,6 +35,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         // default values from debezium CommonConnectorConfig
         with("max.batch.size", "2048")
         with("max.queue.size", "8192")
+        with("max.queue.size.in.bytes", BYTE_VALUE_256_MB)
         // Disabling retries because debezium startup time might exceed our 60-second wait limit
         // The maximum number of retries on connection errors before failing (-1 = no limit, 0 =
         // disabled, > 0 = num of retries).
@@ -58,7 +60,10 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         with("value.converter.replace.null.with.default", "false")
         // Timeout for DebeziumEngine's close() method.
         // We find that in production, substantial time is in fact legitimately required here.
-        with("debezium.embedded.shutdown.pause.before.interrupt.ms", "60000")
+        with(
+            "debezium.embedded.shutdown.pause.before.interrupt.ms",
+            5.minutes.inWholeMilliseconds.toString()
+        )
         // Unblock CDC syncs by skipping errors caused by unparseable DDLs
         with("schema.history.internal.skip.unparseable.ddl", "true")
     }
@@ -116,6 +121,12 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
 
     /** Tells Debezium which tables and columns we care about. */
     fun withStreams(streams: List<Stream>): DebeziumPropertiesBuilder {
+        if (streams.isEmpty()) {
+            return apply {
+                with("table.include.list", "$^")
+                with("column.include.list", "$^")
+            }
+        }
         val tableIncludeList: List<String> =
             streams.map { Pattern.quote("${it.namespace}.${it.name}") }
         val columnIncludeList: List<String> =
@@ -148,7 +159,18 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         }
     }
 
+    fun withHeartbeatTimeout(timeout: Duration): DebeziumPropertiesBuilder =
+        with(AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS, timeout.seconds.toString())
+
     companion object {
+        private const val BYTE_VALUE_256_MB = (256 * 1024 * 1024).toString()
+
+        /**
+         * Airbyte-specific property: Maximum time in seconds to wait for the first CDC record. This
+         * is used by connectors to configure how long to wait before timing out when no initial
+         * records are received.
+         */
+        const val AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS = "airbyte.heartbeat.timeout.seconds"
 
         fun joinIncludeList(includes: List<String>): String =
             includes.map { it.replace(",", "\\,") }.joinToString(",")

@@ -89,6 +89,10 @@ GET https://api.themoviedb.org/3/movie/{movie_id}/alternative_titles?api_key={ap
 
 TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/introduction) has v3 at present and v4 is at development. The connector as default uses v3.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -96,6 +100,45 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 1.1.48 | 2026-06-16 | [80097](https://github.com/airbytehq/airbyte/pull/80097) | Update dependencies |
+| 1.1.47 | 2026-06-09 | [79550](https://github.com/airbytehq/airbyte/pull/79550) | Update dependencies |
+| 1.1.46 | 2026-06-02 | [79048](https://github.com/airbytehq/airbyte/pull/79048) | Update dependencies |
+| 1.1.45 | 2026-04-28 | [77431](https://github.com/airbytehq/airbyte/pull/77431) | Update dependencies |
+| 1.1.44 | 2026-04-21 | [76797](https://github.com/airbytehq/airbyte/pull/76797) | Update dependencies |
+| 1.1.43 | 2026-03-24 | [75357](https://github.com/airbytehq/airbyte/pull/75357) | Update dependencies |
+| 1.1.42 | 2026-03-03 | [74187](https://github.com/airbytehq/airbyte/pull/74187) | Update dependencies |
+| 1.1.41 | 2026-02-17 | [73514](https://github.com/airbytehq/airbyte/pull/73514) | Update dependencies |
+| 1.1.40 | 2026-02-10 | [73105](https://github.com/airbytehq/airbyte/pull/73105) | Update dependencies |
+| 1.1.39 | 2026-02-03 | [72771](https://github.com/airbytehq/airbyte/pull/72771) | Update dependencies |
+| 1.1.38 | 2026-01-20 | [72008](https://github.com/airbytehq/airbyte/pull/72008) | Update dependencies |
+| 1.1.37 | 2026-01-14 | [71379](https://github.com/airbytehq/airbyte/pull/71379) | Update dependencies |
+| 1.1.36 | 2025-12-18 | [70778](https://github.com/airbytehq/airbyte/pull/70778) | Update dependencies |
+| 1.1.35 | 2025-11-25 | [69893](https://github.com/airbytehq/airbyte/pull/69893) | Update dependencies |
+| 1.1.34 | 2025-11-18 | [69704](https://github.com/airbytehq/airbyte/pull/69704) | Update dependencies |
+| 1.1.33 | 2025-10-29 | [68901](https://github.com/airbytehq/airbyte/pull/68901) | Update dependencies |
+| 1.1.32 | 2025-10-21 | [68538](https://github.com/airbytehq/airbyte/pull/68538) | Update dependencies |
+| 1.1.31 | 2025-10-14 | [67891](https://github.com/airbytehq/airbyte/pull/67891) | Update dependencies |
+| 1.1.30 | 2025-10-07 | [67507](https://github.com/airbytehq/airbyte/pull/67507) | Update dependencies |
+| 1.1.29 | 2025-09-30 | [66831](https://github.com/airbytehq/airbyte/pull/66831) | Update dependencies |
+| 1.1.28 | 2025-09-24 | [66600](https://github.com/airbytehq/airbyte/pull/66600) | Update dependencies |
+| 1.1.27 | 2025-09-09 | [65704](https://github.com/airbytehq/airbyte/pull/65704) | Update dependencies |
+| 1.1.26 | 2025-08-24 | [65486](https://github.com/airbytehq/airbyte/pull/65486) | Update dependencies |
+| 1.1.25 | 2025-08-10 | [64858](https://github.com/airbytehq/airbyte/pull/64858) | Update dependencies |
+| 1.1.24 | 2025-07-19 | [61464](https://github.com/airbytehq/airbyte/pull/61464) | Update dependencies |
+| 1.1.23 | 2025-05-24 | [60579](https://github.com/airbytehq/airbyte/pull/60579) | Update dependencies |
+| 1.1.22 | 2025-05-11 | [60211](https://github.com/airbytehq/airbyte/pull/60211) | Update dependencies |
+| 1.1.21 | 2025-05-04 | [59608](https://github.com/airbytehq/airbyte/pull/59608) | Update dependencies |
+| 1.1.20 | 2025-04-27 | [58990](https://github.com/airbytehq/airbyte/pull/58990) | Update dependencies |
+| 1.1.19 | 2025-04-19 | [58423](https://github.com/airbytehq/airbyte/pull/58423) | Update dependencies |
+| 1.1.18 | 2025-04-12 | [57931](https://github.com/airbytehq/airbyte/pull/57931) | Update dependencies |
+| 1.1.17 | 2025-04-05 | [57474](https://github.com/airbytehq/airbyte/pull/57474) | Update dependencies |
+| 1.1.16 | 2025-03-29 | [56852](https://github.com/airbytehq/airbyte/pull/56852) | Update dependencies |
+| 1.1.15 | 2025-03-22 | [56308](https://github.com/airbytehq/airbyte/pull/56308) | Update dependencies |
+| 1.1.14 | 2025-03-08 | [55620](https://github.com/airbytehq/airbyte/pull/55620) | Update dependencies |
+| 1.1.13 | 2025-03-01 | [54475](https://github.com/airbytehq/airbyte/pull/54475) | Update dependencies |
+| 1.1.12 | 2025-02-15 | [54032](https://github.com/airbytehq/airbyte/pull/54032) | Update dependencies |
+| 1.1.11 | 2025-02-08 | [53550](https://github.com/airbytehq/airbyte/pull/53550) | Update dependencies |
+| 1.1.10 | 2025-02-01 | [53097](https://github.com/airbytehq/airbyte/pull/53097) | Update dependencies |
 | 1.1.9 | 2025-01-25 | [52460](https://github.com/airbytehq/airbyte/pull/52460) | Update dependencies |
 | 1.1.8 | 2025-01-18 | [51982](https://github.com/airbytehq/airbyte/pull/51982) | Update dependencies |
 | 1.1.7 | 2025-01-11 | [51419](https://github.com/airbytehq/airbyte/pull/51419) | Update dependencies |

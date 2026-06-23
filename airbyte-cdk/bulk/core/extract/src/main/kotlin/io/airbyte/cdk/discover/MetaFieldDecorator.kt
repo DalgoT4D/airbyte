@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.discover
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
 import io.airbyte.protocol.models.v0.AirbyteStream
 import java.time.OffsetDateTime
@@ -14,7 +15,7 @@ import java.time.OffsetDateTime
 interface MetaFieldDecorator {
 
     /** [MetaField] to use as a global cursor, if applicable. */
-    val globalCursor: MetaField?
+    val globalCursor: DataOrMetaField?
 
     /**
      * All [MetaField]s to be found in [Global] stream records.
@@ -34,7 +35,6 @@ interface MetaFieldDecorator {
         }
         val globalCursorIdentifier: String = globalCursor?.id ?: return
         airbyteStream.defaultCursorField = listOf(globalCursorIdentifier)
-        airbyteStream.sourceDefinedCursor = true
     }
 
     /**
@@ -54,5 +54,12 @@ interface MetaFieldDecorator {
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
         recordData: ObjectNode
+    )
+
+    fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
     )
 }

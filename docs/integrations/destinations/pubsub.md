@@ -29,14 +29,15 @@ The data will be a serialized JSON, containing the following fields
 - `_airbyte_emitted_at`: a long timestamp\(ms\) representing when the event was pulled from the data source.
 - `_airbyte_data`: a json string representing source data.
 
-#### Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -89,6 +90,10 @@ You should now have all the requirements needed to configure PubSub as a destina
 
 Once you've configured PubSub as a destination, delete the Service Account Key from your computer.
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -96,6 +101,7 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 
 | Version | Date              | Pull Request                                             | Subject                                                    |
 | :------ | :---------------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.2.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 0.2.2 | 2025-01-10 | [51481](https://github.com/airbytehq/airbyte/pull/51481) | Use a non root base image |
 | 0.2.1 | 2024-12-18 | [49878](https://github.com/airbytehq/airbyte/pull/49878) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.0   | August 16, 2022   | [15705](https://github.com/airbytehq/airbyte/pull/15705) | Add configuration for Batching and Ordering                |

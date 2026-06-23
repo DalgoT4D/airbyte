@@ -3,13 +3,6 @@
 This page guides you through the process of setting up the [Databend](https://databend.rs/)
 destination connector.
 
-## Features
-
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-
 #### Output Schema
 
 Each stream will be output into its own table in Databend. Each table will contain 3 columns:
@@ -20,6 +13,16 @@ Each stream will be output into its own table in Databend. Each table will conta
   The column type in Databend is `TIMESTAMP`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Databend is
   `VARVHAR`.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started (Airbyte Cloud)
 
@@ -65,6 +68,10 @@ You'll need the following information to configure the Databend destination:
 If your databend version >= v0.9.0 or later, you need to use databend-sqlalchemy version >= v0.1.0.
 And the [Databend Cloud](https://app.databend.com/) will only support databend version > 0.9.0.
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -72,6 +79,17 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
+| 0.1.47 | 2025-04-19 | [58228](https://github.com/airbytehq/airbyte/pull/58228) | Update dependencies |
+| 0.1.46 | 2025-04-12 | [57624](https://github.com/airbytehq/airbyte/pull/57624) | Update dependencies |
+| 0.1.45 | 2025-04-05 | [57144](https://github.com/airbytehq/airbyte/pull/57144) | Update dependencies |
+| 0.1.44 | 2025-03-29 | [56576](https://github.com/airbytehq/airbyte/pull/56576) | Update dependencies |
+| 0.1.43 | 2025-03-22 | [56126](https://github.com/airbytehq/airbyte/pull/56126) | Update dependencies |
+| 0.1.42 | 2025-03-08 | [55409](https://github.com/airbytehq/airbyte/pull/55409) | Update dependencies |
+| 0.1.41 | 2025-03-01 | [54881](https://github.com/airbytehq/airbyte/pull/54881) | Update dependencies |
+| 0.1.40 | 2025-02-22 | [54276](https://github.com/airbytehq/airbyte/pull/54276) | Update dependencies |
+| 0.1.39 | 2025-02-15 | [53909](https://github.com/airbytehq/airbyte/pull/53909) | Update dependencies |
+| 0.1.38 | 2025-02-08 | [53433](https://github.com/airbytehq/airbyte/pull/53433) | Update dependencies |
+| 0.1.37 | 2025-02-01 | [52895](https://github.com/airbytehq/airbyte/pull/52895) | Update dependencies |
 | 0.1.36 | 2025-01-25 | [52215](https://github.com/airbytehq/airbyte/pull/52215) | Update dependencies |
 | 0.1.35 | 2025-01-18 | [51721](https://github.com/airbytehq/airbyte/pull/51721) | Update dependencies |
 | 0.1.34 | 2025-01-11 | [51280](https://github.com/airbytehq/airbyte/pull/51280) | Update dependencies |

@@ -150,6 +150,7 @@ def bulk_error_with_concurrent_job():
                         "message": "",
                     },
                     {
+                        "code": "OPERATION_IN_PROGRESS",
                         "field": None,
                         "message": "A bulk query operation for this app and shop is already in progress: gid://shopify/BulkOperation/4046676525245.",
                     },
@@ -655,8 +656,7 @@ def metafield_jsonl_content_example():
 
 @pytest.fixture
 def filfillment_order_jsonl_content_example():
-    return """{"__typename":"Order","id":"gid:\/\/shopify\/Order\/1"}
-{"__typename":"FulfillmentOrder","id":"gid:\/\/shopify\/FulfillmentOrder\/2","fulfillAt":"2023-04-24T18:00:00Z","fulfillBy":null,"createdAt":"2023-04-24T18:00:09Z","updatedAt":"2023-04-24T18:00:09Z","requestStatus":"UNSUBMITTED","status":"CLOSED","channelId":null,"assignedLocation":{"address1":"Heroiv UPA 72","address2":null,"city":"Lviv","countryCode":"UA","name":"Heroiv UPA 72","phone":"","province":null,"zip":"30100","location":{"locationId":"gid:\/\/shopify\/Location\/63590301885"}},"destination":null,"deliveryMethod":{"id":"gid:\/\/shopify\/DeliveryMethod\/442031046845","methodType":"SHIPPING","minDeliveryDateTime":null,"maxDeliveryDateTime":null},"internationalDuties":null,"fulfillmentHolds":[],"supportedActions":[],"__parentId":"gid:\/\/shopify\/Order\/1"}
+    return """{"__typename":"FulfillmentOrder","id":"gid:\/\/shopify\/FulfillmentOrder\/2","fulfillAt":"2023-04-24T18:00:00Z","fulfillBy":null,"createdAt":"2023-04-24T18:00:09Z","updatedAt":"2023-04-24T18:00:09Z","requestStatus":"UNSUBMITTED","status":"CLOSED","channelId":null,"order":{"id":"gid:\/\/shopify\/Order\/1"},"assignedLocation":{"address1":"Heroiv UPA 72","address2":null,"city":"Lviv","countryCode":"UA","name":"Heroiv UPA 72","phone":"","province":null,"zip":"30100","location":{"locationId":"gid:\/\/shopify\/Location\/63590301885"}},"destination":null,"deliveryMethod":{"id":"gid:\/\/shopify\/DeliveryMethod\/442031046845","methodType":"SHIPPING","minDeliveryDateTime":null,"maxDeliveryDateTime":null},"internationalDuties":null,"fulfillmentHolds":[],"supportedActions":[]}
 {"__typename":"FulfillmentOrderLineItem","id":"gid:\/\/shopify\/FulfillmentOrderLineItem\/3","inventoryItemId":"gid:\/\/shopify\/InventoryItem\/43653688524989","lineItem":{"lineItemId":"gid:\/\/shopify\/LineItem\/12247585521853","fulfillableQuantity":0,"quantity":1,"variant":{"variantId":"gid:\/\/shopify\/ProductVariant\/41561961824445"}},"__parentId":"gid:\/\/shopify\/FulfillmentOrder\/2"}
 {"__typename":"FulfillmentOrderMerchantRequest","id":"gid:\/\/shopify\/FulfillmentOrderMerchantRequest\/333","message":null,"kind":"FULFILLMENT_REQUEST","requestOptions":{"notify_customer":true},"__parentId":"gid:\/\/shopify\/FulfillmentOrder\/2"}\n"""
 
@@ -689,9 +689,9 @@ def product_images_jsonl_content_example():
 
 @pytest.fixture
 def product_variants_jsonl_content_example():
-    return """{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/40091751448765","title":"Metal","price":"64.00","sku":"","position":1,"inventoryPolicy":"DENY","compareAtPrice":null,"inventoryManagement":"SHOPIFY","createdAt":"2021-06-23T06:04:41Z","updatedAt":"2023-10-27T16:56:50Z","taxable":true,"barcode":null,"weight":0.0,"weightUnit":"GRAMS","inventoryQuantity":6,"requiresShipping":false,"availableForSale":true,"displayName":"Waterproof iPhone Speaker - Metal","taxCode":"","grams":0.0,"image":null,"old_inventory_quantity":6,"product":{"product_id":"gid:\/\/shopify\/Product\/6796825198781"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42186366255293"}}
+    return """{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/40091751448765","title":"Metal","price":"64.00","sku":"","position":1,"inventoryPolicy":"DENY","compareAtPrice":null,"createdAt":"2021-06-23T06:04:41Z","updatedAt":"2023-10-27T16:56:50Z","taxable":true,"barcode":null,"inventoryQuantity":6,"availableForSale":true,"displayName":"Waterproof iPhone Speaker - Metal","taxCode":"","grams":0.0,"image":null,"old_inventory_quantity":6,"product":{"product_id":"gid:\/\/shopify\/Product\/6796825198781"},"inventoryItem":{"requires_shipping":false,"tracked":false,"measurement":{"weight":{"unit":"GRAMS"}},"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42186366255293"}}
 {"__typename":"ProductVariantPricePair","price":{"amount":"64.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/40091751448765"}
-{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/41561955827901","title":"Test Variant 1","price":"19.00","sku":"","position":2,"inventoryPolicy":"DENY","compareAtPrice":null,"inventoryManagement":"SHOPIFY","createdAt":"2022-03-06T22:09:20Z","updatedAt":"2023-10-27T16:56:00Z","taxable":true,"barcode":"","weight":112.0,"weightUnit":"GRAMS","inventoryQuantity":2,"requiresShipping":true,"availableForSale":true,"displayName":"4 Ounce Soy Candle - Test Variant 1","taxCode":"","grams":112.0,"image":null,"old_inventory_quantity":2,"product":{"product_id":"gid:\/\/shopify\/Product\/6796220989629"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/43653682495677"}}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/41561955827901","title":"Test Variant 1","price":"19.00","sku":"","position":2,"inventoryPolicy":"DENY","compareAtPrice":null,"createdAt":"2022-03-06T22:09:20Z","updatedAt":"2023-10-27T16:56:00Z","taxable":true,"barcode":"","inventoryQuantity":2,"availableForSale":true,"displayName":"4 Ounce Soy Candle - Test Variant 1","taxCode":"","grams":112.0,"image":null,"old_inventory_quantity":2,"product":{"product_id":"gid:\/\/shopify\/Product\/6796220989629"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/43653682495677","requires_shipping":true,"tracked": true,"measurement":{"weight":{"unit":"GRAMS","value":112.0}}}}
 {"__typename":"ProductVariantPricePair","price":{"amount":"19.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/41561955827901"}\n"""
 
 
@@ -736,6 +736,15 @@ def collections_jsonl_content_example():
 {"__typename":"CollectionPublication","publishedAt":"2021-07-19T14:02:54Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2021-08-18T09:39:34Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2023-04-20T11:12:24Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}\n"""
+
+
+@pytest.fixture
+def collection_products_jsonl_content_example():
+    return """{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/270889287869","handle":"frontpage","updatedAt":"2023-09-05T14:06:59Z"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/6796220989629","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/6796825198781","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
+{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/273278566589","handle":"test-collection","updatedAt":"2023-09-05T14:12:04Z"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/7654321098765","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}\n"""
 
 
 @pytest.fixture
@@ -977,7 +986,6 @@ def product_variants_response_expected_result():
             "position": 2,
             "inventory_policy": "DENY",
             "compare_at_price": None,
-            "inventory_management": "SHOPIFY",
             "created_at": "2022-03-06T22:09:20+00:00",
             "updated_at": "2023-10-27T16:56:00+00:00",
             "taxable": True,
@@ -991,7 +999,6 @@ def product_variants_response_expected_result():
             "tax_code": "",
             "grams": 112,
             "old_inventory_quantity": 2,
-            "fulfillment_service": "manual",
             "admin_graphql_api_id": "gid://shopify/ProductVariant/41561955827901",
             "presentment_prices": [{"price": {"amount": 19.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
             "product_id": 6796220989629,
@@ -1000,6 +1007,7 @@ def product_variants_response_expected_result():
             "image_src": None,
             "image_url": None,
             "shop_url": "test_shop",
+            "tracked": True,
         },
         {
             "id": 40091751448765,
@@ -1009,7 +1017,6 @@ def product_variants_response_expected_result():
             "position": 1,
             "inventory_policy": "DENY",
             "compare_at_price": None,
-            "inventory_management": "SHOPIFY",
             "created_at": "2021-06-23T06:04:41+00:00",
             "updated_at": "2023-10-27T16:56:50+00:00",
             "taxable": True,
@@ -1023,7 +1030,6 @@ def product_variants_response_expected_result():
             "tax_code": "",
             "grams": 0,
             "old_inventory_quantity": 6,
-            "fulfillment_service": "manual",
             "admin_graphql_api_id": "gid://shopify/ProductVariant/40091751448765",
             "presentment_prices": [{"price": {"amount": 64.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
             "product_id": 6796825198781,
@@ -1032,6 +1038,7 @@ def product_variants_response_expected_result():
             "image_src": None,
             "image_url": None,
             "shop_url": "test_shop",
+            "tracked": False,
         },
     ]
 
@@ -1498,6 +1505,39 @@ def collections_response_expected_result():
 
 
 @pytest.fixture
+def collection_products_response_expected_result():
+    return [
+        {
+            "collection_id": 270889287869,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/270889287869",
+            "collection_handle": "frontpage",
+            "collection_updated_at": "2023-09-05T14:06:59+00:00",
+            "product_id": 6796220989629,
+            "product_admin_graphql_api_id": "gid://shopify/Product/6796220989629",
+            "shop_url": "test_shop",
+        },
+        {
+            "collection_id": 270889287869,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/270889287869",
+            "collection_handle": "frontpage",
+            "collection_updated_at": "2023-09-05T14:06:59+00:00",
+            "product_id": 6796825198781,
+            "product_admin_graphql_api_id": "gid://shopify/Product/6796825198781",
+            "shop_url": "test_shop",
+        },
+        {
+            "collection_id": 273278566589,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/273278566589",
+            "collection_handle": "test-collection",
+            "collection_updated_at": "2023-09-05T14:12:04+00:00",
+            "product_id": 7654321098765,
+            "product_admin_graphql_api_id": "gid://shopify/Product/7654321098765",
+            "shop_url": "test_shop",
+        },
+    ]
+
+
+@pytest.fixture
 def transactions_response_expected_result():
     return {
         "id": 5721110872253,
@@ -1537,4 +1577,46 @@ def transactions_response_expected_result():
         "admin_graphql_api_id": "gid://shopify/OrderTransaction/5721110872253",
         "parent_id": None,
         "shop_url": "test_shop",
+    }
+
+
+@pytest.fixture
+def countries_record_data():
+    return {
+        "id": "link/to/entity/1111111",
+        "code": {"rest_of_world": False, "country_code": "UA"},
+        "provinces": [
+            {
+                "id": "link/to/entity/1111111",
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def countries_expected_record_data(config):
+    return {
+        "id": 1111111,
+        "rest_of_world": False,
+        "code": "UA",
+        "shop_url": config["shop"],
+        "provinces": [
+            {
+                "id": 1111111,
+                "country_id": 1111111,
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def countries_response_data(countries_record_data):
+    return {
+        "data": {
+            "deliveryProfiles": {
+                "nodes": [
+                    {"profileLocationGroups": [{"locationGroupZones": {"nodes": [{"zone": {"countries": [countries_record_data]}}]}}]}
+                ]
+            }
+        }
     }

@@ -142,6 +142,10 @@ This source will generate an dataset with products (skinny), customers (fat) and
 
 None!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -149,6 +153,27 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.46 | 2025-10-21 | [68285](https://github.com/airbytehq/airbyte/pull/68285) | Update dependencies |
+| 0.0.45 | 2025-10-14 | [67921](https://github.com/airbytehq/airbyte/pull/67921) | Update dependencies |
+| 0.0.44 | 2025-10-07 | [67413](https://github.com/airbytehq/airbyte/pull/67413) | Update dependencies |
+| 0.0.43 | 2025-09-30 | [66824](https://github.com/airbytehq/airbyte/pull/66824) | Update dependencies |
+| 0.0.42 | 2025-07-12 | [63159](https://github.com/airbytehq/airbyte/pull/63159) | Update dependencies |
+| 0.0.41 | 2025-05-17 | [60722](https://github.com/airbytehq/airbyte/pull/60722) | Update dependencies |
+| 0.0.40 | 2025-05-10 | [59811](https://github.com/airbytehq/airbyte/pull/59811) | Update dependencies |
+| 0.0.39 | 2025-05-03 | [58789](https://github.com/airbytehq/airbyte/pull/58789) | Update dependencies |
+| 0.0.38 | 2025-04-25 | [53640](https://github.com/airbytehq/airbyte/pull/53640) | tests(source-hardcoded-records): replace CAT with FAST Airbyte Standard Tests |
+| 0.0.37 | 2025-04-19 | [58217](https://github.com/airbytehq/airbyte/pull/58217) | Update dependencies |
+| 0.0.36 | 2025-04-12 | [57728](https://github.com/airbytehq/airbyte/pull/57728) | Update dependencies |
+| 0.0.35 | 2025-04-05 | [57091](https://github.com/airbytehq/airbyte/pull/57091) | Update dependencies |
+| 0.0.34 | 2025-03-29 | [56656](https://github.com/airbytehq/airbyte/pull/56656) | Update dependencies |
+| 0.0.33 | 2025-03-22 | [56044](https://github.com/airbytehq/airbyte/pull/56044) | Update dependencies |
+| 0.0.32 | 2025-03-08 | [55481](https://github.com/airbytehq/airbyte/pull/55481) | Update dependencies |
+| 0.0.31 | 2025-03-04 | [55196](https://github.com/airbytehq/airbyte/pull/55196) | fix(source-hardcoded-records): use latest CDK |
+| 0.0.30 | 2025-03-01 | [54814](https://github.com/airbytehq/airbyte/pull/54814) | Update dependencies |
+| 0.0.29 | 2025-02-22 | [54304](https://github.com/airbytehq/airbyte/pull/54304) | Update dependencies |
+| 0.0.28 | 2025-02-15 | [53810](https://github.com/airbytehq/airbyte/pull/53810) | Update dependencies |
+| 0.0.27 | 2025-02-10 | [53607](https://github.com/airbytehq/airbyte/pull/53607) | fix: pin CDK version and declare Python 3.12 support for source-hardcoded-records |
+| 0.0.26 | 2025-02-01 | [52749](https://github.com/airbytehq/airbyte/pull/52749) | Update dependencies |
 | 0.0.25 | 2025-01-25 | [52269](https://github.com/airbytehq/airbyte/pull/52269) | Update dependencies |
 | 0.0.24 | 2025-01-11 | [51223](https://github.com/airbytehq/airbyte/pull/51223) | Update dependencies |
 | 0.0.23 | 2025-01-04 | [50895](https://github.com/airbytehq/airbyte/pull/50895) | Update dependencies |

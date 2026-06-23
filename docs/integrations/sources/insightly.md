@@ -65,6 +65,10 @@ The Insightly source connector supports the following streams, some of them may 
 
 The connector is restricted by Insightly [requests limitation](https://api.na1.insightly.com/v3.1/#!/Overview/Introduction).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -72,6 +76,22 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.26 | 2025-10-14 | [67374](https://github.com/airbytehq/airbyte/pull/67374) | Update dependencies |
+| 0.3.25 | 2025-09-30 | [61132](https://github.com/airbytehq/airbyte/pull/61132) | Update dependencies |
+| 0.3.24 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
+| 0.3.23 | 2025-05-24 | [60654](https://github.com/airbytehq/airbyte/pull/60654) | Update dependencies |
+| 0.3.22 | 2025-05-10 | [58762](https://github.com/airbytehq/airbyte/pull/58762) | Update dependencies |
+| 0.3.21 | 2025-04-19 | [58172](https://github.com/airbytehq/airbyte/pull/58172) | Update dependencies |
+| 0.3.20 | 2025-04-12 | [57725](https://github.com/airbytehq/airbyte/pull/57725) | Update dependencies |
+| 0.3.19 | 2025-04-05 | [57110](https://github.com/airbytehq/airbyte/pull/57110) | Update dependencies |
+| 0.3.18 | 2025-03-29 | [56702](https://github.com/airbytehq/airbyte/pull/56702) | Update dependencies |
+| 0.3.17 | 2025-03-22 | [55500](https://github.com/airbytehq/airbyte/pull/55500) | Update dependencies |
+| 0.3.16 | 2025-03-01 | [54776](https://github.com/airbytehq/airbyte/pull/54776) | Update dependencies |
+| 0.3.15 | 2025-02-24 | [54663](https://github.com/airbytehq/airbyte/pull/54663) | Remove stream_state interpolation from source-insightly |
+| 0.3.14 | 2025-02-22 | [54312](https://github.com/airbytehq/airbyte/pull/54312) | Update dependencies |
+| 0.3.13 | 2025-02-15 | [53827](https://github.com/airbytehq/airbyte/pull/53827) | Update dependencies |
+| 0.3.12 | 2025-02-08 | [53246](https://github.com/airbytehq/airbyte/pull/53246) | Update dependencies |
+| 0.3.11 | 2025-02-01 | [52748](https://github.com/airbytehq/airbyte/pull/52748) | Update dependencies |
 | 0.3.10 | 2025-01-25 | [52257](https://github.com/airbytehq/airbyte/pull/52257) | Update dependencies |
 | 0.3.9 | 2025-01-18 | [51814](https://github.com/airbytehq/airbyte/pull/51814) | Update dependencies |
 | 0.3.8 | 2025-01-11 | [51161](https://github.com/airbytehq/airbyte/pull/51161) | Update dependencies |

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Freshservice supports full refresh syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Freshservice connector supports both full refresh and incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
 
@@ -21,6 +21,7 @@ Several output streams are available from this source:
 - [PurchaseOrders](https://api.freshservice.com/v2/#purchase-order)
 - [Software](https://api.freshservice.com/v2/#software)
 - [Satisfaction Survey Responses](https://api.freshservice.com/#ticket_csat_attributes)
+- [Requested Items](https://api.freshservice.com/v2/#requested-items)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -30,12 +31,19 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
-| SSL connection    | No         |
+| SSL connection    | Yes        |
 | Namespaces        | No         |
 
 ### Performance considerations
 
-The Freshservice connector should not run into Freshservice API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Freshservice connector should not run into Freshservice API limitations under normal usage. The API implements rate limiting that varies based on the Freshservice plan:
+
+- Starter: 100 requests/min overall limit
+- Growth: 200 requests/min overall limit
+- Pro: 400 requests/min overall limit
+- Enterprise: 500 requests/min overall limit
+
+There are also sublimits for specific operations (e.g., "View Ticket" which is 50 requests/min for the Starter plan). The connector automatically handles rate limiting with backoff strategies. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
@@ -43,12 +51,31 @@ The Freshservice connector should not run into Freshservice API limitations unde
 
 - Freshservice Account
 - Freshservice API Key
-- Freshservice domain name
-- Replciation Start Date
+- Freshservice domain name (e.g., `your-domain.freshservice.com`)
+- Replication Start Date (in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`)
 
 ### Setup guide
 
-Please read [How to find your API key](https://api.freshservice.com/#authentication).
+#### Freshservice API Key
+
+1. Log in to your Freshservice account
+2. Navigate to your profile settings by clicking on your profile picture in the top right corner
+3. Under the API section, you will find your API key
+4. If you don't have an API key, you can generate a new one
+
+For more details, please read [How to find your API key](https://api.freshservice.com/#authentication).
+
+#### Domain Name
+
+Your Freshservice domain is the subdomain of your Freshservice account URL. For example, if you access Freshservice at `https://your-company.freshservice.com`, then your domain name is `your-company.freshservice.com`.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Reference
+
+This connector uses the [Freshservice REST API v2](https://api.freshservice.com/). All API requests must use HTTPS.
 
 ## Changelog
 
@@ -57,6 +84,54 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.4.59 | 2026-06-23 | [80458](https://github.com/airbytehq/airbyte/pull/80458) | Update dependencies |
+| 1.4.58 | 2026-06-16 | [79876](https://github.com/airbytehq/airbyte/pull/79876) | Update dependencies |
+| 1.4.57 | 2026-06-09 | [79316](https://github.com/airbytehq/airbyte/pull/79316) | Update dependencies |
+| 1.4.56 | 2026-06-02 | [78718](https://github.com/airbytehq/airbyte/pull/78718) | Update dependencies |
+| 1.4.55 | 2026-04-28 | [77256](https://github.com/airbytehq/airbyte/pull/77256) | Update dependencies |
+| 1.4.54 | 2026-04-21 | [76612](https://github.com/airbytehq/airbyte/pull/76612) | Update dependencies |
+| 1.4.53 | 2026-03-31 | [75664](https://github.com/airbytehq/airbyte/pull/75664) | Update dependencies |
+| 1.4.52 | 2026-03-17 | [74560](https://github.com/airbytehq/airbyte/pull/74560) | Update dependencies |
+| 1.4.51 | 2026-03-03 | [74208](https://github.com/airbytehq/airbyte/pull/74208) | Update dependencies |
+| 1.4.50 | 2026-02-17 | [73399](https://github.com/airbytehq/airbyte/pull/73399) | Update dependencies |
+| 1.4.49 | 2026-02-10 | [73174](https://github.com/airbytehq/airbyte/pull/73174) | Update dependencies |
+| 1.4.48 | 2026-02-03 | [72545](https://github.com/airbytehq/airbyte/pull/72545) | Update dependencies |
+| 1.4.47 | 2026-01-20 | [71975](https://github.com/airbytehq/airbyte/pull/71975) | Update dependencies |
+| 1.4.46 | 2026-01-14 | [71605](https://github.com/airbytehq/airbyte/pull/71605) | Update dependencies |
+| 1.4.45 | 2025-12-18 | [70535](https://github.com/airbytehq/airbyte/pull/70535) | Update dependencies |
+| 1.4.44 | 2025-11-25 | [69955](https://github.com/airbytehq/airbyte/pull/69955) | Update dependencies |
+| 1.4.43 | 2025-11-18 | [69476](https://github.com/airbytehq/airbyte/pull/69476) | Update dependencies |
+| 1.4.42 | 2025-10-29 | [68819](https://github.com/airbytehq/airbyte/pull/68819) | Update dependencies |
+| 1.4.41 | 2025-10-21 | [68424](https://github.com/airbytehq/airbyte/pull/68424) | Update dependencies |
+| 1.4.40 | 2025-10-14 | [68037](https://github.com/airbytehq/airbyte/pull/68037) | Update dependencies |
+| 1.4.39 | 2025-10-07 | [67297](https://github.com/airbytehq/airbyte/pull/67297) | Update dependencies |
+| 1.4.38 | 2025-09-30 | [66772](https://github.com/airbytehq/airbyte/pull/66772) | Update dependencies |
+| 1.4.37 | 2025-09-24 | [66430](https://github.com/airbytehq/airbyte/pull/66430) | Update dependencies |
+| 1.4.36 | 2025-09-09 | [65776](https://github.com/airbytehq/airbyte/pull/65776) | Update dependencies |
+| 1.4.35 | 2025-08-23 | [65272](https://github.com/airbytehq/airbyte/pull/65272) | Update dependencies |
+| 1.4.34 | 2025-08-09 | [64701](https://github.com/airbytehq/airbyte/pull/64701) | Update dependencies |
+| 1.4.33 | 2025-08-02 | [64359](https://github.com/airbytehq/airbyte/pull/64359) | Update dependencies |
+| 1.4.32 | 2025-07-26 | [64025](https://github.com/airbytehq/airbyte/pull/64025) | Update dependencies |
+| 1.4.31 | 2025-07-19 | [63575](https://github.com/airbytehq/airbyte/pull/63575) | Update dependencies |
+| 1.4.30 | 2025-07-12 | [62965](https://github.com/airbytehq/airbyte/pull/62965) | Update dependencies |
+| 1.4.29 | 2025-07-05 | [62766](https://github.com/airbytehq/airbyte/pull/62766) | Update dependencies |
+| 1.4.28 | 2025-06-28 | [62320](https://github.com/airbytehq/airbyte/pull/62320) | Update dependencies |
+| 1.4.27 | 2025-06-21 | [61954](https://github.com/airbytehq/airbyte/pull/61954) | Update dependencies |
+| 1.4.26 | 2025-06-14 | [60426](https://github.com/airbytehq/airbyte/pull/60426) | Update dependencies |
+| 1.4.25 | 2025-05-10 | [59922](https://github.com/airbytehq/airbyte/pull/59922) | Update dependencies |
+| 1.4.24 | 2025-05-03 | [59405](https://github.com/airbytehq/airbyte/pull/59405) | Update dependencies |
+| 1.4.23 | 2025-04-26 | [58877](https://github.com/airbytehq/airbyte/pull/58877) | Update dependencies |
+| 1.4.22 | 2025-04-19 | [58343](https://github.com/airbytehq/airbyte/pull/58343) | Update dependencies |
+| 1.4.21 | 2025-04-12 | [57781](https://github.com/airbytehq/airbyte/pull/57781) | Update dependencies |
+| 1.4.20 | 2025-04-05 | [57197](https://github.com/airbytehq/airbyte/pull/57197) | Update dependencies |
+| 1.4.19 | 2025-03-29 | [56501](https://github.com/airbytehq/airbyte/pull/56501) | Update dependencies |
+| 1.4.18 | 2025-03-22 | [55953](https://github.com/airbytehq/airbyte/pull/55953) | Update dependencies |
+| 1.4.17 | 2025-03-08 | [55272](https://github.com/airbytehq/airbyte/pull/55272) | Update dependencies |
+| 1.4.16 | 2025-03-01 | [54928](https://github.com/airbytehq/airbyte/pull/54928) | Update dependencies |
+| 1.4.15 | 2025-02-22 | [54438](https://github.com/airbytehq/airbyte/pull/54438) | Update dependencies |
+| 1.4.14 | 2025-02-15 | [53758](https://github.com/airbytehq/airbyte/pull/53758) | Update dependencies |
+| 1.4.13 | 2025-02-08 | [53333](https://github.com/airbytehq/airbyte/pull/53333) | Update dependencies |
+| 1.4.12 | 2025-02-01 | [52816](https://github.com/airbytehq/airbyte/pull/52816) | Update dependencies |
 | 1.4.11 | 2025-01-25 | [52313](https://github.com/airbytehq/airbyte/pull/52313) | Update dependencies |
 | 1.4.10 | 2025-01-18 | [51684](https://github.com/airbytehq/airbyte/pull/51684) | Update dependencies |
 | 1.4.9 | 2025-01-11 | [51075](https://github.com/airbytehq/airbyte/pull/51075) | Update dependencies |

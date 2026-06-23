@@ -1,8 +1,10 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.function.Supplier
 
 /**
  * [PartitionsCreatorFactory] must be implemented by each source connector and serves as the
@@ -12,17 +14,45 @@ import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
 interface PartitionsCreatorFactory {
     /**
      * Returns a [PartitionsCreator] which will cause the READ to advance for the [Feed] for which
-     * the [FeedBootstrap] argument is associated to. The latter exposes a [StateQuerier] to obtain
-     * the current [OpaqueStateValue] for this [feed] but may also be used to peek at the state of
-     * other [Feed]s. This may be useful for synchronizing the READ for this [feed] by waiting for
-     * other [Feed]s to reach a desired state before proceeding; the waiting may be triggered by
+     * the [FeedBootstrap] argument is associated to. The latter exposes methods to obtain the
+     * current [OpaqueStateValue] for this [feed] but also to peek at the state of other [Feed]s.
+     * This may be useful for synchronizing the READ for this [feed] by waiting for other [Feed]s to
+     * reach a desired state before proceeding; the waiting may be triggered by
      * [PartitionsCreator.tryAcquireResources] or [PartitionReader.tryAcquireResources].
      *
      * Returns null when the factory is unable to generate a [PartitionsCreator]. This causes
      * another factory to be used instead.
      */
     fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator?
+
+    /**
+     * Default implementation is a no-op as most connectors do not require any resource for their
+     * [PartitionsCreatorFactory]. Postgres connector being the exception.
+     *
+     * On success returns [TryAcquireResourcesResult.ReadyToRun] carrying an [AutoCloseable] that
+     * the caller must close exactly once when the factory is done producing its [PartitionsCreator]
+     * . The handle is owned by the caller — implementations must not retain it on shared state, so
+     * concurrent calls from different feeds cannot overwrite one another.
+     */
+    fun tryAcquireResources(): TryAcquireResourcesResult =
+        TryAcquireResourcesResult.NO_RESOURCES_NEEDED
+
+    sealed interface TryAcquireResourcesResult {
+        data class ReadyToRun(val acquired: AutoCloseable) : TryAcquireResourcesResult
+
+        object RetryLater : TryAcquireResourcesResult
+
+        companion object {
+            val NO_RESOURCES_NEEDED: ReadyToRun = ReadyToRun(AutoCloseable {})
+        }
+    }
 }
+
+/**
+ * Interface to allow each toolkit to return the active [PartitionsCreatorFactory] class For
+ * [ReadOperation] to be able to iterator on active factories only.
+ */
+interface PartitionsCreatorFactorySupplier<T : PartitionsCreatorFactory> : Supplier<T>
 
 /**
  * A [PartitionsCreator] breaks down a [Feed] (a stream, or some global data feed) into zero, one or
@@ -148,12 +178,31 @@ interface PartitionReader {
      * not necessarily in the same thread as [tryAcquireResources], [run] or [checkpoint].
      */
     fun releaseResources()
+
+    // A thread safe auxilery queue shared by all parition reader that is used to emit over socket
+    // any
+    // pending state and stream status messages. This is done in order to better utilize sockets
+    // that are already
+    // Acquired for partitions readers.
+    companion object {
+        val pendingStates: ConcurrentLinkedQueue</*AirbyteStateMessage*/ Any> =
+            ConcurrentLinkedQueue()
+    }
 }
 
+// Records in socket mode bear a unique partition if so that a destination can associate records to
+// a state
+// That has the same partition id.
 data class PartitionReadCheckpoint(
     val opaqueStateValue: OpaqueStateValue,
     val numRecords: Long,
+    val partitionId: String? = null,
 )
 
 /** A [PartitionReader] with no time limit for its execution. */
 interface UnlimitedTimePartitionReader : PartitionReader
+
+private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+
+fun generatePartitionId(length: Int): String =
+    (1..length).map { charPool.random() }.joinToString("")

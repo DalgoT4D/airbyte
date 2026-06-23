@@ -1,10 +1,49 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
+import os
+import sys
 from copy import deepcopy
+from pathlib import Path
 
 from pytest import fixture
+
+from airbyte_cdk import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
+
+
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
+
+# These methods will be needed when the connector is converted into manifest-only
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+
+
+def get_source(config, state=None, config_path=None) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state, config_path=config_path)
+
+
+def find_stream(stream_name, config, state=None):
+    state = StateBuilder().build() if not state else state
+    streams = get_source(config, state).streams(config=config)
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
 
 
 @fixture(name="config")
@@ -40,42 +79,6 @@ def config_service_account_fixture(requests_mock):
     }
 
 
-@fixture(name="forbidden_error_message_json")
-def forbidden_error_message_json():
-    return {
-        "error": {
-            "code": 403,
-            "message": "User does not have sufficient permission for site 'https://test-site-test.com/'. See also: https://support.google.com/webmasters/answer/9999999.",
-            "errors": [
-                {
-                    "message": "User does not have sufficient permission for site 'https://test-site-test.com/'. See also: https://support.google.com/webmasters/answer/9999999.",
-                    "domain": "global",
-                    "reason": "forbidden",
-                }
-            ],
-        }
-    }
-
-
-@fixture(name="bad_aggregation_type")
-def bad_aggregation_type():
-    return {
-        "error": {
-            "code": 400,
-            "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
-            "errors": [
-                {
-                    "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
-                    "domain": "global",
-                    "reason": "invalidParameter",
-                    "location": "aggregation_type",
-                    "locationType": "parameter",
-                }
-            ],
-        }
-    }
-
-
 @fixture
 def config_gen(config):
     def inner(**kwargs):
@@ -85,3 +88,12 @@ def config_gen(config):
         return {k: v for k, v in new_config.items() if v is not ...}
 
     return inner
+
+
+@fixture(autouse=True)
+def clear_cache_before_each_test():
+    """Clear the HTTP request cache before each test to prevent test pollution."""
+    from airbyte_cdk.sources.streams.http import HttpStream
+
+    HttpStream._session = None
+    HttpStream._session_pool = {}

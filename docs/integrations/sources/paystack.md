@@ -61,6 +61,10 @@ The [Paystack API](https://paystack.com/docs/api) is compatible with the [JSONSc
 
 The Paystack connector should not run into Paystack API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -68,6 +72,35 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.1.31 | 2026-06-02 | [78886](https://github.com/airbytehq/airbyte/pull/78886) | Update dependencies |
+| 1.1.30 | 2026-04-28 | [77379](https://github.com/airbytehq/airbyte/pull/77379) | Update dependencies |
+| 1.1.29 | 2026-04-21 | [76699](https://github.com/airbytehq/airbyte/pull/76699) | Update dependencies |
+| 1.1.28 | 2026-03-31 | [75842](https://github.com/airbytehq/airbyte/pull/75842) | Update dependencies |
+| 1.1.27 | 2026-03-24 | [75399](https://github.com/airbytehq/airbyte/pull/75399) | Update dependencies |
+| 1.1.26 | 2026-03-10 | [74504](https://github.com/airbytehq/airbyte/pull/74504) | Update dependencies |
+| 1.1.25 | 2026-02-24 | [73876](https://github.com/airbytehq/airbyte/pull/73876) | Update dependencies |
+| 1.1.24 | 2026-02-17 | [73576](https://github.com/airbytehq/airbyte/pull/73576) | Update dependencies |
+| 1.1.23 | 2026-02-10 | [73167](https://github.com/airbytehq/airbyte/pull/73167) | Update dependencies |
+| 1.1.22 | 2026-01-20 | [71666](https://github.com/airbytehq/airbyte/pull/71666) | Update dependencies |
+| 1.1.21 | 2025-12-18 | [70493](https://github.com/airbytehq/airbyte/pull/70493) | Update dependencies |
+| 1.1.20 | 2025-11-25 | [69938](https://github.com/airbytehq/airbyte/pull/69938) | Update dependencies |
+| 1.1.19 | 2025-11-18 | [69661](https://github.com/airbytehq/airbyte/pull/69661) | Update dependencies |
+| 1.1.18 | 2025-10-29 | [68990](https://github.com/airbytehq/airbyte/pull/68990) | Update dependencies |
+| 1.1.17 | 2025-10-21 | [68325](https://github.com/airbytehq/airbyte/pull/68325) | Update dependencies |
+| 1.1.16 | 2025-10-14 | [67735](https://github.com/airbytehq/airbyte/pull/67735) | Update dependencies |
+| 1.1.15 | 2025-10-07 | [67352](https://github.com/airbytehq/airbyte/pull/67352) | Update dependencies |
+| 1.1.14 | 2025-09-30 | [66387](https://github.com/airbytehq/airbyte/pull/66387) | Update dependencies |
+| 1.1.13 | 2025-09-10 | [65780](https://github.com/airbytehq/airbyte/pull/65780) | Update dependencies |
+| 1.1.12 | 2025-08-23 | [65186](https://github.com/airbytehq/airbyte/pull/65186) | Update dependencies |
+| 1.1.11 | 2025-08-09 | [64765](https://github.com/airbytehq/airbyte/pull/64765) | Update dependencies |
+| 1.1.10 | 2025-08-02 | [64175](https://github.com/airbytehq/airbyte/pull/64175) | Update dependencies |
+| 1.1.9 | 2025-07-26 | [63885](https://github.com/airbytehq/airbyte/pull/63885) | Update dependencies |
+| 1.1.8 | 2025-07-19 | [63443](https://github.com/airbytehq/airbyte/pull/63443) | Update dependencies |
+| 1.1.7 | 2025-07-12 | [63266](https://github.com/airbytehq/airbyte/pull/63266) | Update dependencies |
+| 1.1.6 | 2025-07-05 | [62554](https://github.com/airbytehq/airbyte/pull/62554) | Update dependencies |
+| 1.1.5 | 2025-06-28 | [62402](https://github.com/airbytehq/airbyte/pull/62402) | Update dependencies |
+| 1.1.4 | 2025-06-21 | [61931](https://github.com/airbytehq/airbyte/pull/61931) | Update dependencies |
+| 1.1.3 | 2025-06-14 | [47786](https://github.com/airbytehq/airbyte/pull/47786) | Update dependencies |
 | 1.1.2 | 2024-10-28 | [47518](https://github.com/airbytehq/airbyte/pull/47518) | Update dependencies |
 | 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.1.0 | 2024-08-15 | [44101](https://github.com/airbytehq/airbyte/pull/44101) | Refactor connector to manifest-only format |

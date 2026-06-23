@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.db2;
@@ -119,7 +119,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
     return connection -> connection.prepareStatement(
-        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT'");
   }
 
   private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {

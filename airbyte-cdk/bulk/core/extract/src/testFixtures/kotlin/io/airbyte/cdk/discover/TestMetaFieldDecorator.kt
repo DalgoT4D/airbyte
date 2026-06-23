@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.discover
@@ -7,8 +7,9 @@ package io.airbyte.cdk.discover
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
@@ -36,17 +37,27 @@ class TestMetaFieldDecorator : MetaFieldDecorator {
         recordData: ObjectNode
     ) {
         recordData.putNull(CommonMetaField.CDC_DELETED_AT.id)
+        @Suppress("UNCHECKED_CAST")
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
-            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp)
+            (CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>).encode(timestamp)
         )
         recordData.set<JsonNode>(
             GlobalCursor.id,
             if (globalStateValue == null) {
-                Jsons.nullNode()
+                CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp)
             } else {
                 CdcStringMetaFieldType.jsonEncoder.encode(globalStateValue.toString())
             }
         )
+    }
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        // no-op
     }
 }

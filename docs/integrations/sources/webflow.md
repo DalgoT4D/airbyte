@@ -4,15 +4,19 @@ description: 'This connector extracts "collections" from Webflow'
 
 # Webflow
 
+:::warning
+This connector uses the Webflow v1 API, which was deprecated on March 31, 2025. While the v1 API may continue to function, it no longer receives maintenance, updates, or support from Webflow. For more information, see the [Webflow v1 API Deprecation Notice](https://developers.webflow.com/data/docs/webflow-v1-api-deprecation-notice).
+:::
+
 Webflow is a CMS system that is used for publishing websites and blogs. This connector returns data that is made available by [Webflow APIs](https://developers.webflow.com/).
 
-Webflow uses [Collections](https://developers.webflow.com/#collections) to store different kinds of information. A collection can be "Blog Posts", or "Blog Authors", etc. Collection names are not pre-defined, the number of collections is not known in advance, and the schema for each collection may be different.
+Webflow uses [Collections](https://developers.webflow.com/data/reference/cms) to store different kinds of information. A collection can be "Blog Posts", or "Blog Authors", etc. Collection names are not pre-defined, the number of collections is not known in advance, and the schema for each collection may be different.
 
 This connector dynamically figures out which collections are available, creates the schema for each collection based on data extracted from Webflow, and creates an [Airbyte Stream](https://docs.airbyte.com/connector-development/cdk-python/full-refresh-stream/) for each collection.
 
-# Webflow credentials
+## Webflow credentials
 
-You should be able to create a Webflow `API key` (aka `API token`) as described in [Intro to the Webflow API](https://university.webflow.com/lesson/intro-to-the-webflow-api). The Webflow connector uses the Webflow API v1 and therefore will require a legacy v1 API key.
+You should be able to create a Webflow `API key` (aka `API token`) as described in [Intro to the Webflow API](https://university.webflow.com/lesson/intro-to-the-webflow-api). This connector uses the Webflow v1 API and requires a legacy v1 API key. Webflow has discontinued creation of new v1 API Site Tokens, so you must use an existing v1 token.
 
 Once you have the `API Key`/`API token`, you can confirm a [list of available sites](https://developers.webflow.com/#sites) and get their `_id` by executing the following:
 
@@ -30,9 +34,13 @@ Which should respond with something similar to:
 
 You will need to provide the `Site ID` and `API key` to the Webflow connector in order for it to pull data from your Webflow site.
 
-# Related tutorial
+## Related tutorial
 
 If you are interested in learning more about the Webflow API and implementation details of this connector, you may wish to consult the [tutorial about how to build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -41,6 +49,18 @@ If you are interested in learning more about the Webflow API and implementation 
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.1.46 | 2025-05-24 | [59994](https://github.com/airbytehq/airbyte/pull/59994) | Update dependencies |
+| 0.1.45 | 2025-05-04 | [58958](https://github.com/airbytehq/airbyte/pull/58958) | Update dependencies |
+| 0.1.44 | 2025-04-19 | [58556](https://github.com/airbytehq/airbyte/pull/58556) | Update dependencies |
+| 0.1.43 | 2025-04-12 | [58011](https://github.com/airbytehq/airbyte/pull/58011) | Update dependencies |
+| 0.1.42 | 2025-04-05 | [57370](https://github.com/airbytehq/airbyte/pull/57370) | Update dependencies |
+| 0.1.41 | 2025-03-29 | [56853](https://github.com/airbytehq/airbyte/pull/56853) | Update dependencies |
+| 0.1.40 | 2025-03-22 | [56285](https://github.com/airbytehq/airbyte/pull/56285) | Update dependencies |
+| 0.1.39 | 2025-03-08 | [55612](https://github.com/airbytehq/airbyte/pull/55612) | Update dependencies |
+| 0.1.38 | 2025-03-01 | [55156](https://github.com/airbytehq/airbyte/pull/55156) | Update dependencies |
+| 0.1.37 | 2025-02-22 | [54505](https://github.com/airbytehq/airbyte/pull/54505) | Update dependencies |
+| 0.1.36 | 2025-02-15 | [54076](https://github.com/airbytehq/airbyte/pull/54076) | Update dependencies |
+| 0.1.35 | 2025-02-01 | [53089](https://github.com/airbytehq/airbyte/pull/53089) | Update dependencies |
 | 0.1.34 | 2025-01-25 | [52435](https://github.com/airbytehq/airbyte/pull/52435) | Update dependencies |
 | 0.1.33 | 2025-01-18 | [52027](https://github.com/airbytehq/airbyte/pull/52027) | Update dependencies |
 | 0.1.32 | 2025-01-11 | [51437](https://github.com/airbytehq/airbyte/pull/51437) | Update dependencies |

@@ -1,20 +1,20 @@
 const visit = require("unist-util-visit").visit;
-const { catalog, isPypiConnector } = require("../connector_registry");
+const {  isPypiConnector } = require("../scripts/connector_registry");
+const  { fetchRegistry } = require("../scripts/fetch-registry");
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
-
-    const registry = await catalog;
+    const registry = await fetchRegistry();
 
     visit(ast, "mdxJsxFlowElement", (node) => {
       if (node.name !== "PyAirbyteConnectors") return;
 
-        const connectors = registry.filter(isPypiConnector);
+      const connectors = registry.filter(isPypiConnector);
 
       node.attributes.push({
         type: "mdxJsxAttribute",
         name: "connectorsJSON",
-        value: JSON.stringify(connectors)
+        value: JSON.stringify(connectors),
       });
     });
   };

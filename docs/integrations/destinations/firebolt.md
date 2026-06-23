@@ -4,6 +4,12 @@ This page guides you through the process of setting up the Firebolt destination 
 
 ## Prerequisites
 
+1. Firebolt Account: You need an active Firebolt account. Sign up [here](https://www.firebolt.io/) if you don’t have one.
+2. Firebolt Database and Engine created: Follow the [guide](https://docs.firebolt.io/guides/operate-engines/working-with-engines-using-ddl) to create an engine if you don't have one in your Firebolt workspace.
+3. Service Account credentials: all programmatic access to Firebolt requires a service account to interact with the database. Create a service account as described in this [guide](https://docs.firebolt.io/guides/managing-your-organization/service-accounts) and note its ID and secret.
+
+## Replication strategies
+
 This Firebolt destination connector has two replication strategies:
 
 1. SQL: Replicates data via SQL INSERT queries. This leverages
@@ -16,24 +22,23 @@ This Firebolt destination connector has two replication strategies:
    [approach](https://docs.firebolt.io/godocs/Guides/loading-data/loading-data.html). Requires an S3 bucket and
    credentials in addition to Firebolt credentials.
 
-For SQL strategy:
+## Connection parameters
 
-- **Host**
-- **Username**
-- **Password**
-- **Database**
+- **Client ID**
+  - Your service account id.
+- **Client Secret**
+  - Your service account secret.
 - **Account**
+  - Your firebolt [account](https://docs.firebolt.io/guides/managing-your-organization/managing-accounts).
+- **Database**
+  - The database name where you want the data to be stored.
 - **Engine**
+  - Name of the engine that will run the queries.
+- **Host (optional)**
+  - Firebolt backend URL. Can be left blank for most usecases.
 
-Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
-is present, Airbyte will use the S3 strategy.
+Additionally, for S3 strategy:
 
-For S3 strategy:
-
-- **Username**
-- **Password**
-- **Database**
-- **Account**
 - **S3 Bucket Name**
   - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to
     create an S3 bucket.
@@ -48,10 +53,6 @@ For S3 strategy:
     to objects in the staging bucket.
 - **Secret Access Key**
   - Corresponding key to the above key id.
-- **Host (optional)**
-  - Firebolt backend URL. Can be left blank for most usecases.
-- **Engine (optional)**
-  - If connecting to a non-default engine you should specify its name or url here.
 
 ## Setup guide
 
@@ -70,11 +71,13 @@ For S3 strategy:
 
 ## Supported sync modes
 
-The Firebolt destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
-
-- Full Refresh
-- Incremental - Append Sync
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Connector-specific features & highlights
 
@@ -89,7 +92,11 @@ Firebolt. Each table will contain 3 columns:
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Firebolt is `TIMESTAMP`.
 - `_airbyte_data`: a json blob representing the event data. The column type in Firebolt is `VARCHAR`
-  but can be be parsed with JSON functions.
+  but can be parsed with JSON functions.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
@@ -98,6 +105,19 @@ Firebolt. Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.2.40 | 2025-05-24 | [59866](https://github.com/airbytehq/airbyte/pull/59866) | Update dependencies |
+| 0.2.39 | 2025-05-03 | [59316](https://github.com/airbytehq/airbyte/pull/59316) | Update dependencies |
+| 0.2.38 | 2025-04-26 | [58725](https://github.com/airbytehq/airbyte/pull/58725) | Update dependencies |
+| 0.2.37 | 2025-04-19 | [57623](https://github.com/airbytehq/airbyte/pull/57623) | Update dependencies |
+| 0.2.36 | 2025-04-05 | [57115](https://github.com/airbytehq/airbyte/pull/57115) | Update dependencies |
+| 0.2.35 | 2025-03-29 | [56607](https://github.com/airbytehq/airbyte/pull/56607) | Update dependencies |
+| 0.2.34 | 2025-03-22 | [56156](https://github.com/airbytehq/airbyte/pull/56156) | Update dependencies |
+| 0.2.33 | 2025-03-08 | [55391](https://github.com/airbytehq/airbyte/pull/55391) | Update dependencies |
+| 0.2.32 | 2025-03-01 | [54853](https://github.com/airbytehq/airbyte/pull/54853) | Update dependencies |
+| 0.2.31 | 2025-02-22 | [54217](https://github.com/airbytehq/airbyte/pull/54217) | Update dependencies |
+| 0.2.30 | 2025-02-15 | [53940](https://github.com/airbytehq/airbyte/pull/53940) | Update dependencies |
+| 0.2.29 | 2025-02-08 | [53427](https://github.com/airbytehq/airbyte/pull/53427) | Update dependencies |
+| 0.2.28 | 2025-02-01 | [52946](https://github.com/airbytehq/airbyte/pull/52946) | Update dependencies |
 | 0.2.27 | 2025-01-25 | [49292](https://github.com/airbytehq/airbyte/pull/49292) | Update dependencies |
 | 0.2.26 | 2025-01-17 | [51560](https://github.com/airbytehq/airbyte/pull/51560) | Fix connection issues |
 | 0.2.25 | 2024-11-25 | [48672](https://github.com/airbytehq/airbyte/pull/48672) | Update dependencies |

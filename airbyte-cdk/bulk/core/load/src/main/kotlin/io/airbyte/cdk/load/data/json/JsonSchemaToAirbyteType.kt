@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data.json
@@ -9,8 +9,29 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.data.*
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Property
+import javax.inject.Singleton
 
-class JsonSchemaToAirbyteType {
+@Singleton
+class JsonSchemaToAirbyteType(
+    @Property(name = "airbyte.destination.core.types.unions")
+    private val unionBehavior: UnionBehavior,
+) {
+    enum class UnionBehavior {
+        /**
+         * Treat `{"type": [...]}` and `{"oneOf": [...]}` differently. In particular, the `type`
+         * schema will be parsed into a [LegacyUnionType], whereas the `oneOf` schema will parse
+         * into a [UnionType].
+         */
+        LEGACY,
+
+        /**
+         * Treat `{"type": [...]}` and `{"oneOf": [...]}` identically. Both will parse into
+         * [UnionType].
+         */
+        DEFAULT,
+    }
+
     private val log = KotlinLogging.logger {}
 
     fun convert(schema: JsonNode): AirbyteType = convertInner(schema)!!
@@ -60,10 +81,25 @@ class JsonSchemaToAirbyteType {
             // {"oneOf": [...], ...} or {"anyOf": [...], ...} or {"allOf": [...], ...}
             val options = schema.get("oneOf") ?: schema.get("anyOf") ?: schema.get("allOf")
             return if (options != null) {
-                UnionType.of(options.mapNotNull { convertInner(it as ObjectNode) })
+                if (options.isArray) {
+                    // intentionally don't use the `unionOf()` utility method.
+                    // We know this is a non-legacy union.
+                    UnionType.of(
+                        options.mapNotNull { convertInner(it) },
+                        isLegacyUnion = false,
+                    )
+                } else {
+                    // options is supposed to be a list, but fallback to sane behavior if it's not.
+                    convertInner(options)
+                }
+            } else if (schema.has("properties") && schema is ObjectNode) {
+                // (technically `schema is ObjectNode` is implied by `schema` having any keys at
+                // all, but the smart cast lets us avoid an explicit cast)
+                // Default to object if no type and not a union type, but has properties
+                convertInner(schema.put("type", "object"))
             } else {
-                // Default to object if no type and not a union type
-                convertInner((schema as ObjectNode).put("type", "object"))
+                // Otherwise, give up
+                UnknownType(schema)
             }
         } else if (schema.isTextual) {
             // "<typename>"
@@ -109,10 +145,10 @@ class JsonSchemaToAirbyteType {
             if (items.isEmpty) {
                 return ArrayTypeWithoutSchema
             }
-            val itemType = UnionType.of(items.mapNotNull { convertInner(it) })
+            val itemType = unionOf(items.mapNotNull { convertInner(it) })
             return ArrayType(FieldType(itemType, true))
         }
-        return ArrayType(fieldFromSchema(items as ObjectNode))
+        return ArrayType(nodeToFieldType(items))
     }
 
     private fun fromObject(schema: ObjectNode): AirbyteType {
@@ -124,9 +160,13 @@ class JsonSchemaToAirbyteType {
             properties
                 .fields()
                 .asSequence()
-                .map { (name, node) -> name to fieldFromSchema(node as ObjectNode) }
+                .map { (name, node) -> name to nodeToFieldType(node) }
                 .toMap(LinkedHashMap())
-        return ObjectType(propertiesMapped)
+        val additionalProperties = schema.get("additionalProperties")?.asBoolean() ?: false
+        val required: List<String> =
+            schema.get("required")?.asSequence()?.map { it.asText() }?.toList()
+                ?: emptyList<String>()
+        return ObjectType(propertiesMapped, additionalProperties, required)
     }
 
     private fun fieldFromSchema(
@@ -155,6 +195,18 @@ class JsonSchemaToAirbyteType {
         if (unionOptions.isEmpty()) {
             return UnknownType(parentSchema)
         }
-        return UnionType.of(unionOptions)
+        return unionOf(unionOptions)
     }
+
+    private fun unionOf(options: List<AirbyteType>) =
+        when (unionBehavior) {
+            UnionBehavior.LEGACY -> UnionType.of(options, isLegacyUnion = true)
+            UnionBehavior.DEFAULT -> UnionType.of(options, isLegacyUnion = false)
+        }
+
+    private fun nodeToFieldType(node: JsonNode): FieldType =
+        when (node) {
+            is ObjectNode -> fieldFromSchema(node)
+            else -> FieldType(UnknownType(node), nullable = true)
+        }
 }

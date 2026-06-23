@@ -41,6 +41,10 @@ Thus, this source connector retrieves [all possible metrics](https://plausible.i
 
 The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per hour per API key, with higher capacities potentially available [upon request](https://plausible.io/contact).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -48,11 +52,25 @@ The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.15 | 2026-06-02 | [78893](https://github.com/airbytehq/airbyte/pull/78893) | Update dependencies |
+| 0.2.14 | 2025-05-24 | [60528](https://github.com/airbytehq/airbyte/pull/60528) | Update dependencies |
+| 0.2.13 | 2025-05-10 | [60098](https://github.com/airbytehq/airbyte/pull/60098) | Update dependencies |
+| 0.2.12 | 2025-05-03 | [59483](https://github.com/airbytehq/airbyte/pull/59483) | Update dependencies |
+| 0.2.11 | 2025-04-27 | [59083](https://github.com/airbytehq/airbyte/pull/59083) | Update dependencies |
+| 0.2.10 | 2025-04-19 | [58482](https://github.com/airbytehq/airbyte/pull/58482) | Update dependencies |
+| 0.2.9 | 2025-04-12 | [57854](https://github.com/airbytehq/airbyte/pull/57854) | Update dependencies |
+| 0.2.8 | 2025-04-05 | [57358](https://github.com/airbytehq/airbyte/pull/57358) | Update dependencies |
+| 0.2.7 | 2025-03-29 | [56803](https://github.com/airbytehq/airbyte/pull/56803) | Update dependencies |
+| 0.2.6 | 2025-03-22 | [56236](https://github.com/airbytehq/airbyte/pull/56236) | Update dependencies |
+| 0.2.5 | 2025-03-08 | [55536](https://github.com/airbytehq/airbyte/pull/55536) | Update dependencies |
+| 0.2.4 | 2025-03-01 | [55010](https://github.com/airbytehq/airbyte/pull/55010) | Update dependencies |
+| 0.2.3 | 2025-02-23 | [54559](https://github.com/airbytehq/airbyte/pull/54559) | Update dependencies |
+| 0.2.2 | 2025-02-15 | [48194](https://github.com/airbytehq/airbyte/pull/48194) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44085](https://github.com/airbytehq/airbyte/pull/44085) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43731](https://github.com/airbytehq/airbyte/pull/43731) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43680](https://github.com/airbytehq/airbyte/pull/43680) | Update dependencies |
-| 0.1.12 | 2024-08-06 | [42793](https://github.com/airbytehq/airbyte/pull/43048) | new API URL config option available |
+| 0.1.12 | 2024-08-06 | [43048](https://github.com/airbytehq/airbyte/pull/43048) | new API URL config option available |
 | 0.1.11 | 2024-08-03 | [43252](https://github.com/airbytehq/airbyte/pull/43252) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42793](https://github.com/airbytehq/airbyte/pull/42793) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [41918](https://github.com/airbytehq/airbyte/pull/41918) | Update dependencies |

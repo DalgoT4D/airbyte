@@ -4,8 +4,8 @@
 
 The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
-- [Airbyte Quickstart: An Introduction to Deploying and Syncing](../../using-airbyte/getting-started/readme.md)
-- [Airbyte CDK Speedrun: A Quick Primer on Building Source Connectors](../../connector-development/tutorials/cdk-speedrun.md)
+- [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
+- [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
 - [How to Build ETL Sources in Under 30 Minutes: A Video Tutorial](https://www.youtube.com/watch?v=kJ3hLoNfz_E&t=13s&ab_channel=Airbyte)
 
 ## Features
@@ -32,6 +32,10 @@ According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), pl
 
 The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -39,6 +43,56 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.58 | 2026-06-23 | [80588](https://github.com/airbytehq/airbyte/pull/80588) | Update dependencies |
+| 0.3.57 | 2026-06-16 | [79995](https://github.com/airbytehq/airbyte/pull/79995) | Update dependencies |
+| 0.3.56 | 2026-06-09 | [79458](https://github.com/airbytehq/airbyte/pull/79458) | Update dependencies |
+| 0.3.55 | 2026-06-02 | [78874](https://github.com/airbytehq/airbyte/pull/78874) | Update dependencies |
+| 0.3.54 | 2026-04-28 | [77372](https://github.com/airbytehq/airbyte/pull/77372) | Update dependencies |
+| 0.3.53 | 2026-04-21 | [76700](https://github.com/airbytehq/airbyte/pull/76700) | Update dependencies |
+| 0.3.52 | 2026-03-31 | [75872](https://github.com/airbytehq/airbyte/pull/75872) | Update dependencies |
+| 0.3.51 | 2026-03-24 | [75403](https://github.com/airbytehq/airbyte/pull/75403) | Update dependencies |
+| 0.3.50 | 2026-02-24 | [73837](https://github.com/airbytehq/airbyte/pull/73837) | Update dependencies |
+| 0.3.49 | 2026-02-10 | [73196](https://github.com/airbytehq/airbyte/pull/73196) | Update dependencies |
+| 0.3.48 | 2026-02-02 | [72538](https://github.com/airbytehq/airbyte/pull/72538) | Promoting release candidate 0.3.48-rc.1 to a main version. |
+| 0.3.48-rc.1 | 2026-01-30 | [72491](https://github.com/airbytehq/airbyte/pull/72491) | Enable progressive rollout for testing |
+| 0.3.47 | 2026-01-20 | [72186](https://github.com/airbytehq/airbyte/pull/72186) | Update dependencies |
+| 0.3.46 | 2026-01-14 | [71541](https://github.com/airbytehq/airbyte/pull/71541) | Update dependencies |
+| 0.3.45 | 2025-12-18 | [70514](https://github.com/airbytehq/airbyte/pull/70514) | Update dependencies |
+| 0.3.44 | 2025-11-25 | [69964](https://github.com/airbytehq/airbyte/pull/69964) | Update dependencies |
+| 0.3.43 | 2025-11-18 | [69659](https://github.com/airbytehq/airbyte/pull/69659) | Update dependencies |
+| 0.3.42 | 2025-10-29 | [68928](https://github.com/airbytehq/airbyte/pull/68928) | Update dependencies |
+| 0.3.41 | 2025-10-21 | [68252](https://github.com/airbytehq/airbyte/pull/68252) | Update dependencies |
+| 0.3.40 | 2025-10-14 | [67489](https://github.com/airbytehq/airbyte/pull/67489) | Update dependencies |
+| 0.3.39 | 2025-10-01 | [66956](https://github.com/airbytehq/airbyte/pull/66956) | Update dependencies |
+| 0.3.38 | 2025-09-23 | [66412](https://github.com/airbytehq/airbyte/pull/66412) | Update dependencies |
+| 0.3.37 | 2025-09-09 | [65871](https://github.com/airbytehq/airbyte/pull/65871) | Update dependencies |
+| 0.3.36 | 2025-08-23 | [65223](https://github.com/airbytehq/airbyte/pull/65223) | Update dependencies |
+| 0.3.35 | 2025-08-09 | [64702](https://github.com/airbytehq/airbyte/pull/64702) | Update dependencies |
+| 0.3.34 | 2025-08-02 | [64212](https://github.com/airbytehq/airbyte/pull/64212) | Update dependencies |
+| 0.3.33 | 2025-07-31 | [64147](https://github.com/airbytehq/airbyte/pull/64147) | Update dependencies |
+| 0.3.32 | 2025-07-26 | [63873](https://github.com/airbytehq/airbyte/pull/63873) | Update dependencies |
+| 0.3.31 | 2025-07-19 | [63428](https://github.com/airbytehq/airbyte/pull/63428) | Update dependencies |
+| 0.3.30 | 2025-07-12 | [63262](https://github.com/airbytehq/airbyte/pull/63262) | Update dependencies |
+| 0.3.29 | 2025-07-05 | [62562](https://github.com/airbytehq/airbyte/pull/62562) | Update dependencies |
+| 0.3.28 | 2025-06-28 | [62408](https://github.com/airbytehq/airbyte/pull/62408) | Update dependencies |
+| 0.3.27 | 2025-06-26 | [62103](https://github.com/airbytehq/airbyte/pull/62103) | Fix `nidoran` names |
+| 0.3.26 | 2025-06-21 | [61935](https://github.com/airbytehq/airbyte/pull/61935) | Update dependencies |
+| 0.3.25 | 2025-06-14 | [61063](https://github.com/airbytehq/airbyte/pull/61063) | Update dependencies |
+| 0.3.24 | 2025-05-24 | [60437](https://github.com/airbytehq/airbyte/pull/60437) | Update dependencies |
+| 0.3.23 | 2025-05-10 | [60084](https://github.com/airbytehq/airbyte/pull/60084) | Update dependencies |
+| 0.3.22 | 2025-05-03 | [59486](https://github.com/airbytehq/airbyte/pull/59486) | Update dependencies |
+| 0.3.21 | 2025-04-27 | [59102](https://github.com/airbytehq/airbyte/pull/59102) | Update dependencies |
+| 0.3.20 | 2025-04-19 | [58517](https://github.com/airbytehq/airbyte/pull/58517) | Update dependencies |
+| 0.3.19 | 2025-04-12 | [57849](https://github.com/airbytehq/airbyte/pull/57849) | Update dependencies |
+| 0.3.18 | 2025-04-05 | [57292](https://github.com/airbytehq/airbyte/pull/57292) | Update dependencies |
+| 0.3.17 | 2025-03-29 | [56733](https://github.com/airbytehq/airbyte/pull/56733) | Update dependencies |
+| 0.3.16 | 2025-03-22 | [56172](https://github.com/airbytehq/airbyte/pull/56172) | Update dependencies |
+| 0.3.15 | 2025-03-08 | [55569](https://github.com/airbytehq/airbyte/pull/55569) | Update dependencies |
+| 0.3.14 | 2025-03-01 | [55073](https://github.com/airbytehq/airbyte/pull/55073) | Update dependencies |
+| 0.3.13 | 2025-02-23 | [54598](https://github.com/airbytehq/airbyte/pull/54598) | Update dependencies |
+| 0.3.12 | 2025-02-15 | [54015](https://github.com/airbytehq/airbyte/pull/54015) | Update dependencies |
+| 0.3.11 | 2025-02-08 | [53472](https://github.com/airbytehq/airbyte/pull/53472) | Update dependencies |
+| 0.3.10 | 2025-02-01 | [52980](https://github.com/airbytehq/airbyte/pull/52980) | Update dependencies |
 | 0.3.9 | 2025-01-25 | [51878](https://github.com/airbytehq/airbyte/pull/51878) | Update dependencies |
 | 0.3.8 | 2025-01-11 | [51308](https://github.com/airbytehq/airbyte/pull/51308) | Update dependencies |
 | 0.3.7 | 2024-12-28 | [50708](https://github.com/airbytehq/airbyte/pull/50708) | Update dependencies |
@@ -68,7 +122,7 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 | 0.1.5 | 2022-05-18 | [12942](https://github.com/airbytehq/airbyte/pull/12942) | Fix example inputs |
 | 0.1.4 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
 | 0.1.3 | 2021-12-03 | [8432](https://github.com/airbytehq/airbyte/pull/8432) | Migrate from base_python to CDK, add SAT tests. |
-| 0.1.1   | 2020-06-29 | [1046](https://github.com/airbytehq/airbyte/pull/4410)   | Fix runtime UI error from GitHub store path.    |
-| 0.1.0   | 2020-05-04 | [1046](https://github.com/airbytehq/airbyte/pull/3149)   | Add source for PokeAPI.                         |
+| 0.1.1 | 2020-06-29 | [4410](https://github.com/airbytehq/airbyte/pull/4410) | Fix runtime UI error from GitHub store path. |
+| 0.1.0 | 2020-05-04 | [3149](https://github.com/airbytehq/airbyte/pull/3149) | Add source for PokeAPI. |
 
 </details>

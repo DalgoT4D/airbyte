@@ -7,11 +7,11 @@ data:
       - ${shop}.myshopify.com
       - shopify.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.6.1
+  dockerImageTag: 3.5.0
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
@@ -31,6 +31,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
@@ -78,11 +80,18 @@ data:
       2.6.1:
         message:
           "The `ProductsGraphQL` and the `CustomerSavedSearch` streams have been deprecated by Shopify and removed from Airbyte.
-          Please the `Products` stream instead. As of 2025-01-16, Spotify no longer provides data for the affected streams. More details here: https://github.com/airbytehq/airbyte/pull/51037."
+          Please use the `Products` stream instead. As of 2025-01-16, Shopify no longer provides data for the affected streams. More details here: https://github.com/airbytehq/airbyte/pull/51037."
         upgradeDeadline: "2025-01-16"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["products_graph_ql", "customer_saved_search"]
+      3.0.0:
+        message: "After upgrading to Source Shopify v3.0.0 latest v2025-01 API version will be used by the source. Due to API upgrade streams `Countries` and `Product Variants` contain schema changes that require Refreshing Source Schema and Clearing affected streams. Streams `Articles`, `Blogs` and `Pages` change value for field `admin_graphql_api_id`, if you rely on this value please Clear and Resync affected streams. See more details on https://docs.airbyte.com/integrations/sources/shopify-migrations."
+        upgradeDeadline: "2025-04-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["countries", "product_variants", "articles", "blogs", "pages"]
   suggestedStreams:
     streams:
       - customers
@@ -155,4 +164,29 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Shopify Admin API
+      url: https://shopify.dev/docs/api/admin-rest
+      type: api_reference
+    - title: Developer changelog
+      url: https://shopify.dev/changelog
+      type: api_release_history
+    - title: Shopify API changelog
+      url: https://shopify.dev/docs/api/release-notes
+      type: api_release_history
+    - title: Shopify authentication
+      url: https://shopify.dev/docs/apps/auth
+      type: authentication_guide
+    - title: Shopify Admin API OpenAPI specification
+      url: https://shopify.dev/docs/api/admin-rest
+      type: openapi_spec
+    - title: Shopify rate limits
+      url: https://shopify.dev/docs/api/usage/rate-limits
+      type: rate_limits
+    - title: Shopify API versioning and deprecation policy
+      url: https://shopify.dev/docs/api/usage/versioning
+      type: api_deprecations
+    - title: Shopify Status
+      url: https://www.shopifystatus.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -51,6 +51,10 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 | Incremental Sync  | No         |
 | Namespaces        | No         |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -58,6 +62,9 @@ The Postmarkapp source connector supports the following [sync modes](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
+| 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |
+| 0.2.8 | 2025-02-01 | [52967](https://github.com/airbytehq/airbyte/pull/52967) | Update dependencies |
 | 0.2.7 | 2025-01-25 | [51879](https://github.com/airbytehq/airbyte/pull/51879) | Update dependencies |
 | 0.2.6 | 2025-01-11 | [51372](https://github.com/airbytehq/airbyte/pull/51372) | Update dependencies |
 | 0.2.5 | 2024-12-28 | [50703](https://github.com/airbytehq/airbyte/pull/50703) | Update dependencies |

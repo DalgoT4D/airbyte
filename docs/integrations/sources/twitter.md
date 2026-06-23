@@ -29,10 +29,15 @@ The Twitter source connector supports the following [sync modes](https://docs.ai
 ## Supported Streams
 
 - [Tweets](https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/get-tweets-search-recent)
+- [Authors](https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/get-tweets-search-recent)
 
 ## Performance considerations
 
 Rate limiting is mentioned in the API [documentation](https://developer.twitter.com/en/docs/twitter-api/rate-limits)
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -41,6 +46,20 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.11 | 2025-05-10 | [60003](https://github.com/airbytehq/airbyte/pull/60003) | Update dependencies |
+| 0.3.10 | 2025-05-04 | [59620](https://github.com/airbytehq/airbyte/pull/59620) | Update dependencies |
+| 0.3.9 | 2025-04-27 | [58398](https://github.com/airbytehq/airbyte/pull/58398) | Update dependencies |
+| 0.3.8 | 2025-04-12 | [57944](https://github.com/airbytehq/airbyte/pull/57944) | Update dependencies |
+| 0.3.7 | 2025-04-05 | [57432](https://github.com/airbytehq/airbyte/pull/57432) | Update dependencies |
+| 0.3.6 | 2025-03-29 | [56810](https://github.com/airbytehq/airbyte/pull/56810) | Update dependencies |
+| 0.3.5 | 2025-03-22 | [56240](https://github.com/airbytehq/airbyte/pull/56240) | Update dependencies |
+| 0.3.4 | 2025-03-08 | [55609](https://github.com/airbytehq/airbyte/pull/55609) | Update dependencies |
+| 0.3.3 | 2025-03-01 | [55111](https://github.com/airbytehq/airbyte/pull/55111) | Update dependencies |
+| 0.3.2 | 2025-02-22 | [54484](https://github.com/airbytehq/airbyte/pull/54484) | Update dependencies |
+| 0.3.1 | 2025-02-15 | [54070](https://github.com/airbytehq/airbyte/pull/54070) | Update dependencies |
+| 0.3.0 | 2024-12-10 | [48870](https://github.com/airbytehq/airbyte/pull/48870) | Add new stream `authors` |
+| 0.2.8 | 2025-02-08 | [53515](https://github.com/airbytehq/airbyte/pull/53515) | Update dependencies |
+| 0.2.7 | 2025-02-01 | [53037](https://github.com/airbytehq/airbyte/pull/53037) | Update dependencies |
 | 0.2.6 | 2025-01-25 | [52432](https://github.com/airbytehq/airbyte/pull/52432) | Update dependencies |
 | 0.2.5 | 2025-01-18 | [51975](https://github.com/airbytehq/airbyte/pull/51975) | Update dependencies |
 | 0.2.4 | 2025-01-11 | [51426](https://github.com/airbytehq/airbyte/pull/51426) | Update dependencies |
@@ -63,6 +82,6 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 | 0.1.3 | 2024-05-21 | [38525](https://github.com/airbytehq/airbyte/pull/38525) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2023-03-06 | [23749](https://github.com/airbytehq/airbyte/pull/23749) | Spec and docs are improved for beta certification |
 | 0.1.1 | 2023-03-03 | [23661](https://github.com/airbytehq/airbyte/pull/23661) | Incremental added for the "tweets" stream |
-| 0.1.0   | 2022-11-01 | [18883](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter                            |
+| 0.1.0   | 2022-11-01 | [18858](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter                            |
 
 </details>

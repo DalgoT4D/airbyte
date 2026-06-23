@@ -33,6 +33,10 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 - Lemlist API key
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,23 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------- |
+| 0.3.27 | 2026-03-14 | [74773](https://github.com/airbytehq/airbyte/pull/74773) | Add pagination to campaigns, activities, and unsubscribes streams |
+| 0.3.26 | 2026-01-20 | [72006](https://github.com/airbytehq/airbyte/pull/72006) | Update dependencies |
+| 0.3.25 | 2026-01-14 | [61084](https://github.com/airbytehq/airbyte/pull/61084) | Update dependencies |
+| 0.3.24 | 2025-05-24 | [60672](https://github.com/airbytehq/airbyte/pull/60672) | Update dependencies |
+| 0.3.23 | 2025-05-10 | [59842](https://github.com/airbytehq/airbyte/pull/59842) | Update dependencies |
+| 0.3.22 | 2025-05-03 | [59271](https://github.com/airbytehq/airbyte/pull/59271) | Update dependencies |
+| 0.3.21 | 2025-04-26 | [58764](https://github.com/airbytehq/airbyte/pull/58764) | Update dependencies |
+| 0.3.20 | 2025-04-19 | [57731](https://github.com/airbytehq/airbyte/pull/57731) | Update dependencies |
+| 0.3.19 | 2025-04-05 | [57108](https://github.com/airbytehq/airbyte/pull/57108) | Update dependencies |
+| 0.3.18 | 2025-03-29 | [56697](https://github.com/airbytehq/airbyte/pull/56697) | Update dependencies |
+| 0.3.17 | 2025-03-22 | [56051](https://github.com/airbytehq/airbyte/pull/56051) | Update dependencies |
+| 0.3.16 | 2025-03-08 | [55430](https://github.com/airbytehq/airbyte/pull/55430) | Update dependencies |
+| 0.3.15 | 2025-03-01 | [54782](https://github.com/airbytehq/airbyte/pull/54782) | Update dependencies |
+| 0.3.14 | 2025-02-22 | [54305](https://github.com/airbytehq/airbyte/pull/54305) | Update dependencies |
+| 0.3.13 | 2025-02-15 | [53841](https://github.com/airbytehq/airbyte/pull/53841) | Update dependencies |
+| 0.3.12 | 2025-02-08 | [53276](https://github.com/airbytehq/airbyte/pull/53276) | Update dependencies |
+| 0.3.11 | 2025-02-01 | [52744](https://github.com/airbytehq/airbyte/pull/52744) | Update dependencies |
 | 0.3.10 | 2025-01-25 | [52228](https://github.com/airbytehq/airbyte/pull/52228) | Update dependencies |
 | 0.3.9 | 2025-01-18 | [51844](https://github.com/airbytehq/airbyte/pull/51844) | Update dependencies |
 | 0.3.8 | 2025-01-11 | [51194](https://github.com/airbytehq/airbyte/pull/51194) | Update dependencies |

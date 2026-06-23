@@ -4,16 +4,47 @@
 
 import json
 import os
+import sys
 from pathlib import Path
 
 import responses
 from pytest import fixture
 from responses import matchers
-from source_jira.source import SourceJira
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
+
+
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
 os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+
+
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    """
+    Create a YamlDeclarativeSource instance for testing.
+
+    This is the main entry point for running your connector in tests.
+    """
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 def delete_cache_files(cache_directory):
@@ -34,9 +65,12 @@ def clear_cache_before_each_test():
 @fixture
 def config():
     return {
-        "api_token": "token",
-        "domain": "domain",
-        "email": "email@email.com",
+        "credentials": {
+            "auth_type": "API Token",
+            "api_token": "token",
+            "email": "email@email.com",
+        },
+        "domain": "airbyteio.atlassian.net",
         "start_date": "2021-01-01T00:00:00Z",
         "projects": ["Project1"],
         "enable_experimental_streams": True,
@@ -319,7 +353,7 @@ def mock_projects_responses_additional_project(config, projects_response):
 def mock_issues_responses_with_date_filter(config, issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
@@ -334,7 +368,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
@@ -349,7 +383,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
@@ -365,7 +399,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
@@ -549,7 +583,11 @@ def mock_sprints_response(config, sprints_response):
 
 
 def find_stream(stream_name, config):
-    for stream in SourceJira(config=config, catalog=None, state=None).streams(config=config):
+    for stream in YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)).streams(config=config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+def read_full_refresh(stream_instance: Stream):
+    yield from stream_instance.read_only_records()

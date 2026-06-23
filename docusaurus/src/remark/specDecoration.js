@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog } = require("../connector_registry");
+const { fetchRegistry } = require("../scripts/fetch-registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {
@@ -11,16 +11,16 @@ const plugin = () => {
 };
 
 async function injectSpecSchema(ast) {
-  const registry = await catalog;
+  const registry = await fetchRegistry();
   visit(ast, "mdxJsxFlowElement", (node) => {
     if (node.name !== "SpecSchema" && node.name !== "PyAirbyteExample") return;
 
     const connectorName = node.attributes.find(
-      (attr) => attr.name === "connector"
+      (attr) => attr.name === "connector",
     ).value;
     const connectorSpec = registry.find(
-      (c) => c.dockerRepository_oss === `airbyte/${connectorName}`
-    ).spec_oss.connectionSpecification;
+      (c) => c.dockerRepository === `airbyte/${connectorName}`,
+    ).spec.connectionSpecification;
     node.attributes.push({
       type: "mdxJsxAttribute",
       name: "specJSON",
@@ -40,36 +40,40 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
   ) {
     return;
   }
-  const connectorName = registryEntry.dockerRepository_oss.split("/").pop();
-  const hasValidSpec = registryEntry.spec_oss && registryEntry.spec_oss.connectionSpecification;
+  const connectorName = registryEntry.dockerRepository.split("/").pop();
+  const hasValidSpec =
+    registryEntry.spec && registryEntry.spec.connectionSpecification;
 
   let added = false;
   visit(ast, "heading", (node, index, parent) => {
     if (!added && isChangelogHeading(node)) {
       added = true;
-      const referenceContent = hasValidSpec ? [
-        {
-          type: "mdxJsxFlowElement",
-          name: "SpecSchema",
-          attributes: [
+      const referenceContent = hasValidSpec
+        ? [
             {
-              type: "mdxJsxAttribute",
-              name: "connector",
-              value: connectorName,
+              type: "mdxJsxFlowElement",
+              name: "SpecSchema",
+              attributes: [
+                {
+                  type: "mdxJsxAttribute",
+                  name: "connector",
+                  value: connectorName,
+                },
+              ],
             },
-          ],
-        }
-      ] : [
-        {
-          type: "paragraph",
-          children: [
-            {
-              type: "text",
-              value: "No configuration specification is available for this connector."
-            }
           ]
-        }
-      ];
+        : [
+            {
+              type: "paragraph",
+              children: [
+                {
+                  type: "text",
+                  value:
+                    "No configuration specification is available for this connector.",
+                },
+              ],
+            },
+          ];
 
       parent.children.splice(
         index,
@@ -79,7 +83,7 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
           depth: 2,
           children: [{ type: "text", value: "Reference" }],
         },
-        ...referenceContent
+        ...referenceContent,
       );
     }
   });
@@ -97,7 +101,51 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
       visit(ast, "heading", (node, index, parent) => {
         if (index === firstH2Index) {
           added = true;
-          const referenceContent = hasValidSpec ? [
+          const referenceContent = hasValidSpec
+            ? [
+                {
+                  type: "mdxJsxFlowElement",
+                  name: "SpecSchema",
+                  attributes: [
+                    {
+                      type: "mdxJsxAttribute",
+                      name: "connector",
+                      value: connectorName,
+                    },
+                  ],
+                },
+              ]
+            : [
+                {
+                  type: "paragraph",
+                  children: [
+                    {
+                      type: "text",
+                      value:
+                        "No configuration specification is available for this connector.",
+                    },
+                  ],
+                },
+              ];
+
+          parent.children.splice(
+            index + 1,
+            0,
+            {
+              type: "heading",
+              depth: 2,
+              children: [{ type: "text", value: "Reference" }],
+            },
+            ...referenceContent,
+          );
+        }
+      });
+    }
+
+    // If still not added, append to end of document
+    if (!added) {
+      const referenceContent = hasValidSpec
+        ? [
             {
               type: "mdxJsxFlowElement",
               name: "SpecSchema",
@@ -108,58 +156,20 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
                   value: connectorName,
                 },
               ],
-            }
-          ] : [
+            },
+          ]
+        : [
             {
               type: "paragraph",
               children: [
                 {
                   type: "text",
-                  value: "No configuration specification is available for this connector."
-                }
-              ]
-            }
+                  value:
+                    "No configuration specification is available for this connector.",
+                },
+              ],
+            },
           ];
-
-          parent.children.splice(
-            index + 1,
-            0,
-            {
-              type: "heading",
-              depth: 2,
-              children: [{ type: "text", value: "Reference" }],
-            },
-            ...referenceContent
-          );
-        }
-      });
-    }
-
-    // If still not added, append to end of document
-    if (!added) {
-      const referenceContent = hasValidSpec ? [
-        {
-          type: "mdxJsxFlowElement",
-          name: "SpecSchema",
-          attributes: [
-            {
-              type: "mdxJsxAttribute",
-              name: "connector",
-              value: connectorName,
-            },
-          ],
-        }
-      ] : [
-        {
-          type: "paragraph",
-          children: [
-            {
-              type: "text",
-              value: "No configuration specification is available for this connector."
-            }
-          ]
-        }
-      ];
 
       ast.children.push(
         {
@@ -167,7 +177,7 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
           depth: 2,
           children: [{ type: "text", value: "Reference" }],
         },
-        ...referenceContent
+        ...referenceContent,
       );
     }
   }

@@ -4,6 +4,7 @@
 
 import concurrent.futures
 import logging
+import time
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
@@ -11,6 +12,7 @@ from requests import adapters as request_adapters
 from requests.exceptions import RequestException  # type: ignore[import]
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, StreamDescriptor
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -196,6 +198,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
+    "ActivityFieldHistory",
     "ApiEvent",
     "BulkApiResultEventStore",
     "ContentDocumentLink",
@@ -220,10 +223,69 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 
+#    When upgrading the API version, it must be changed in these locations as well:
+#    1. airbyte-integrations/connectors/source-salesforce/unit_tests/resource/http/response/job_response.json:
+#      {'apiVersion': 'v62.0'}
+#                      ^^^^^
+#
+#    2. airbyte-integrations/connectors/source-salesforce/integration_tests/expected_records.jsonl
+#      Streams:
+#          Account: {'data.attributes.url': '/services/data/v62.0/sobjects/Account/0014W000027f6V3QAI'}
+#                                                           ^^^^^
+#
+#          Asset: {'data.attributes.url': '/services/data/v62.0/sobjects/Asset/02i4W00000EkJsrQAF'}
+#                                                        ^^^^^
+API_VERSION = "v62.0"
+
+_TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
+
+logger = logging.getLogger("airbyte")
+
+
+class SalesforceTokenProvider(TokenProvider):
+    """Token provider that proactively refreshes the Salesforce access token.
+
+    The default InterpolatedStringTokenProvider captures the token as a static
+    string at initialization time and never refreshes it. For long-running Bulk
+    API syncs that exceed the Salesforce session timeout (default 2 hours), the
+    stale token causes INVALID_SESSION_ID errors.
+
+    This provider wraps the Salesforce API object and calls login() to obtain a
+    fresh token before the session is likely to expire.
+    """
+
+    def __init__(self, sf_api: "Salesforce") -> None:
+        self._sf_api = sf_api
+        self._last_refresh_time: float = time.monotonic()
+
+    def get_token(self) -> str:
+        elapsed = time.monotonic() - self._last_refresh_time
+        if elapsed >= _TOKEN_REFRESH_INTERVAL_SECONDS:
+            try:
+                logger.info("Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed)
+                self._sf_api.login()
+                self._last_refresh_time = time.monotonic()
+            except Exception:
+                logger.warning("Proactive token refresh failed; will use existing token", exc_info=True)
+        return self._sf_api.access_token
+
+    def force_refresh(self) -> None:
+        """Force an immediate token refresh.
+
+        Called by SalesforceErrorHandler when an INVALID_SESSION_ID response is
+        detected, so that subsequent requests use a valid access token.
+        """
+        try:
+            logger.info("Forcing Salesforce OAuth token refresh due to INVALID_SESSION_ID")
+            self._sf_api.login()
+            self._last_refresh_time = time.monotonic()
+        except Exception:
+            logger.error("Forced token refresh failed; subsequent requests will likely fail", exc_info=True)
+
 
 class Salesforce:
     logger = logging.getLogger("airbyte")
-    version = "v57.0"
+    version = API_VERSION
     parallel_tasks_size = 100
     # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
     # Request Size Limits

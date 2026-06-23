@@ -54,6 +54,10 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 | `array`             | `array`      |
 | `object`            | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -61,6 +65,19 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
+| 0.2.23 | 2026-06-02 | [79032](https://github.com/airbytehq/airbyte/pull/79032) | Update dependencies |
+| 0.2.22 | 2025-05-24 | [60757](https://github.com/airbytehq/airbyte/pull/60757) | Update dependencies |
+| 0.2.21 | 2025-05-10 | [59925](https://github.com/airbytehq/airbyte/pull/59925) | Update dependencies |
+| 0.2.20 | 2025-05-04 | [58536](https://github.com/airbytehq/airbyte/pull/58536) | Update dependencies |
+| 0.2.19 | 2025-04-13 | [58041](https://github.com/airbytehq/airbyte/pull/58041) | Update dependencies |
+| 0.2.18 | 2025-04-05 | [57446](https://github.com/airbytehq/airbyte/pull/57446) | Update dependencies |
+| 0.2.17 | 2025-03-29 | [56870](https://github.com/airbytehq/airbyte/pull/56870) | Update dependencies |
+| 0.2.16 | 2025-03-22 | [55577](https://github.com/airbytehq/airbyte/pull/55577) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [55105](https://github.com/airbytehq/airbyte/pull/55105) | Update dependencies |
+| 0.2.14 | 2025-02-22 | [54499](https://github.com/airbytehq/airbyte/pull/54499) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [54034](https://github.com/airbytehq/airbyte/pull/54034) | Update dependencies |
+| 0.2.12 | 2025-02-08 | [53532](https://github.com/airbytehq/airbyte/pull/53532) | Update dependencies |
+| 0.2.11 | 2025-02-01 | [53058](https://github.com/airbytehq/airbyte/pull/53058) | Update dependencies |
 | 0.2.10 | 2025-01-25 | [52386](https://github.com/airbytehq/airbyte/pull/52386) | Update dependencies |
 | 0.2.9 | 2025-01-18 | [52002](https://github.com/airbytehq/airbyte/pull/52002) | Update dependencies |
 | 0.2.8 | 2025-01-11 | [51386](https://github.com/airbytehq/airbyte/pull/51386) | Update dependencies |

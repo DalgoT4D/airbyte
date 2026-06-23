@@ -11,6 +11,7 @@ from requests.exceptions import ConnectionError, RequestException, SSLError
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
@@ -20,6 +21,7 @@ from .streams.streams import (
     Articles,
     BalanceTransactions,
     Blogs,
+    CollectionProducts,
     Collections,
     Collects,
     Countries,
@@ -27,7 +29,9 @@ from .streams.streams import (
     CustomerAddress,
     CustomerJourneySummary,
     Customers,
+    DeletedProducts,
     DiscountCodes,
+    DiscountCodesSync,
     Disputes,
     DraftOrders,
     FulfillmentOrders,
@@ -57,6 +61,7 @@ from .streams.streams import (
     ProductImages,
     Products,
     ProductVariants,
+    ProfileLocationGroups,
     Shop,
     SmartCollections,
     TenderTransactions,
@@ -106,6 +111,8 @@ class ConnectionCheckTest:
             return False, self.describe_error("index_error", shop_name, response)
         except MissingAccessTokenError:
             return False, self.describe_error("missing_token_error")
+        except (BaseBackoffException, AirbyteTracedException) as error:
+            return False, self.describe_error("connection_error", shop_name) or str(error)
 
     def get_shop_id(self) -> str:
         """
@@ -176,12 +183,14 @@ class SourceShopify(AbstractSource):
             Articles(config),
             BalanceTransactions(config),
             Blogs(config),
+            CollectionProducts(config),
             Collections(config),
             Collects(config),
             CustomCollections(config),
             CustomerJourneySummary(config),
             Customers(config),
             DiscountCodes(config),
+            DiscountCodesSync(config),
             Disputes(config),
             DraftOrders(config),
             FulfillmentOrders(config),
@@ -210,13 +219,14 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             ProductImages(config),
             Products(config),
+            DeletedProducts(config),
             ProductVariants(config),
             Shop(config),
             SmartCollections(config),
             TenderTransactions(config),
             self.select_transactions_stream(config),
             CustomerAddress(config),
-            Countries(config),
+            Countries(config=config, parent=ProfileLocationGroups(config)),
         ]
 
         return [

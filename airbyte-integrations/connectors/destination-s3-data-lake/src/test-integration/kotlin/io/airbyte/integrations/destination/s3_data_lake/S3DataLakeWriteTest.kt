@@ -1,123 +1,216 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
+import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
-import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
-import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
-import io.airbyte.cdk.load.write.StronglyTyped
-import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.integrations.destination.s3_data_lake.catalog.GlueTableIdGenerator
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeSpecification
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.nio.file.Files
 import java.util.Base64
+import kotlin.test.assertContains
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 
 abstract class S3DataLakeWriteTest(
     configContents: String,
-    destinationCleaner: DestinationCleaner,
-    envVars: Map<String, String> = emptyMap(),
+    tableIdGenerator: TableIdGenerator,
+    getCatalog:
+        (io.airbyte.cdk.command.ConfigurationSpecification) -> org.apache.iceberg.catalog.Catalog,
+    cleaner: DestinationCleaner = io.airbyte.cdk.load.test.util.NoopDestinationCleaner,
+    micronautProperties: Map<Property, String> = emptyMap(),
+    enableSpeed: Boolean = false,
 ) :
-    BasicFunctionalityIntegrationTest(
+    IcebergWriteTest(
         configContents,
         S3DataLakeSpecification::class.java,
-        S3DataLakeDataDumper,
-        destinationCleaner,
-        S3DataLakeExpectedRecordMapper,
-        isStreamSchemaRetroactive = true,
-        supportsDedup = true,
-        stringifySchemalessObjects = true,
-        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
-        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-        unionBehavior = UnionBehavior.STRINGIFY,
-        preserveUndeclaredFields = false,
-        commitDataIncrementally = false,
-        supportFileTransfer = false,
-        envVars = envVars,
-        allTypesBehavior =
-            StronglyTyped(
-                integerCanBeLarge = false,
-                // we stringify objects, so nested floats stay exact
-                nestedFloatLosesPrecision = false
-            ),
-        nullUnknownTypes = true,
-        nullEqualsUnset = true,
-    ) {
-    @Test
-    @Disabled(
-        "failing because we have an extra _pos column - that's probably fine, but problem for a different day"
+        getCatalog,
+        cleaner,
+        tableIdGenerator,
+        additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
+        micronautProperties = micronautProperties,
+        enableSpeed = enableSpeed,
     )
-    override fun testDedup() {
-        super.testDedup()
-    }
-
-    @Test
-    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
-    override fun testAppendSchemaEvolution() {
-        super.testAppendSchemaEvolution()
-    }
-
-    @Test
-    @Disabled("This is expected (dest-iceberg-v2 doesn't yet support schema evolution)")
-    override fun testDedupChangeCursor() {
-        super.testDedupChangeCursor()
-    }
-}
 
 class GlueWriteTest :
     S3DataLakeWriteTest(
-        Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        S3DataLakeDestinationCleaner(
+        configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
+        tableIdGenerator = GlueTableIdGenerator(null),
+        getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAWSSystemCredentials()
+                S3DataLakeTestUtil.getConfig(spec),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
-        )
+        },
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
     ) {
+    @Test
+    fun testNameConflicts() {
+        assumeTrue(verifyDataWriting)
+
+        fun makeStream(
+            name: String,
+            namespaceSuffix: String,
+        ) =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace + namespaceSuffix,
+                unmappedName = name,
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
+            )
+        // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
+        // So these two streams will collide.
+        val catalog =
+            DestinationCatalog(
+                listOf(
+                    makeStream("stream_with_spécial_character", "_foo"),
+                    makeStream("STREAM_WITH_SPÉCIAL_CHARACTER", "_FOO"),
+                ),
+            )
+
+        val failure = expectFailure { runSync(updatedConfig, catalog, messages = emptyList()) }
+        assertContains(failure.message, "Detected naming conflicts between streams")
+    }
 
     @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    /**
+     * Iceberg supports recursing into arrays, which is unusual from other connectors. Add a test
+     * that we correctly recurse through these values.
+     */
+    @Test
+    fun testNestedArrayCoercion() {
+        val nestedArraySchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to intType,
+                    "array" to
+                        FieldType(
+                            ArrayType(FieldType(NumberType, nullable = true)),
+                            nullable = true,
+                        ),
+                ),
+            )
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = makeTableSchema(nestedArraySchema, Append),
+            )
+
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    stream,
+                    """
+                    {
+                      "id": 1,
+                      "array": [42, "potato"]
+                    }
+                    """.trimIndent(),
+                    emittedAtMs = 100,
+                ),
+            ),
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    // 42 -> 42.0; potato -> null
+                    data = mapOf("id" to 1, "array" to listOf(42.0, null)),
+                    airbyteMeta =
+                        OutputRecord.Meta(
+                            syncId = 42,
+                            changes =
+                                listOf(
+                                    Meta.Change(
+                                        "array.1",
+                                        Change.NULLED,
+                                        Reason.DESTINATION_SERIALIZATION_ERROR,
+                                    ),
+                                ),
+                        ),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
     }
 }
 
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
-        Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        S3DataLakeDestinationCleaner(
+        configContents = Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
+        tableIdGenerator = GlueTableIdGenerator(null),
+        getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAWSSystemCredentials()
+                S3DataLakeTestUtil.getConfig(spec),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
-        ),
-        S3DataLakeTestUtil.getAWSSystemCredentialsAsMap()
-    ) {
-    @Test
-    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-}
+        },
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
+    )
 
-@Disabled(
-    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
-)
+@Disabled("Tests failing in master")
 class NessieMinioWriteTest :
     S3DataLakeWriteTest(
-        getConfig(),
-        // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
-        NoopDestinationCleaner
+        configContents = getConfig(),
+        tableIdGenerator = SimpleTableIdGenerator(),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
     ) {
-
     companion object {
         private fun getToken(): String {
             val client = OkHttpClient()
@@ -152,21 +245,22 @@ class NessieMinioWriteTest :
 
             val authToken = getToken()
             return """
-            {
-                "catalog_type": {
-                  "catalog_type": "NESSIE",
-                  "server_uri": "http://$nessieEndpoint:19120/api/v1",
-                  "access_token": "$authToken"
-                },
-                "s3_bucket_name": "demobucket",
-                "s3_bucket_region": "us-east-1",
-                "access_key_id": "minioadmin",
-                "secret_access_key": "minioadmin",
-                "s3_endpoint": "http://$minioEndpoint:9002",
-                "warehouse_location": "s3://demobucket/",
-                "main_branch_name": "main"
-            }
-            """.trimIndent()
+                {
+                    "catalog_type": {
+                      "catalog_type": "NESSIE",
+                      "server_uri": "http://$nessieEndpoint:19120/api/v1",
+                      "access_token": "$authToken",
+                      "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
+                    },
+                    "s3_bucket_name": "demobucket",
+                    "s3_bucket_region": "us-east-1",
+                    "access_key_id": "minioadmin",
+                    "secret_access_key": "minioadmin",
+                    "s3_endpoint": "http://$minioEndpoint:9002",
+                    "warehouse_location": "s3://demobucket/",
+                    "main_branch_name": "main"
+                }
+                """.trimIndent()
         }
 
         @JvmStatic
@@ -174,5 +268,129 @@ class NessieMinioWriteTest :
         fun setup() {
             NessieTestContainers.start()
         }
+    }
+}
+
+// the basic REST catalog behaves poorly with multithreading,
+// even across multiple streams.
+// so run singlethreaded.
+@Execution(ExecutionMode.SAME_THREAD)
+@Disabled("Tests failing in master")
+class RestWriteTest :
+    S3DataLakeWriteTest(
+        getConfig(),
+        SimpleTableIdGenerator(),
+        { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                null,
+            )
+        },
+    ) {
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
+    override val manyStreamCount = 5
+
+    @Disabled("This doesn't seem to work with concurrency, etc.")
+    @Test
+    override fun testManyStreamsCompletion() {
+        super.testManyStreamsCompletion()
+    }
+
+    companion object {
+        fun getConfig(): String {
+            // We retrieve the ephemeral host/port from the updated RestTestContainers
+            val minioEndpoint = RestTestContainers.testcontainers.getServiceHost("minio", 9000)
+            val restEndpoint = RestTestContainers.testcontainers.getServiceHost("rest", 8181)
+
+            return """
+                {
+                    "catalog_type": {
+                      "catalog_type": "REST",
+                      "server_uri": "http://$restEndpoint:8181",
+                      "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
+                    },
+                    "s3_bucket_name": "warehouse",
+                    "s3_bucket_region": "us-east-1",
+                    "access_key_id": "admin",
+                    "secret_access_key": "password",
+                    "s3_endpoint": "http://$minioEndpoint:9100",
+                    "warehouse_location": "s3://warehouse/",
+                    "main_branch_name": "main"
+                }
+                """.trimIndent()
+        }
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            // Start the testcontainers environment once before any tests run
+            RestTestContainers.start()
+        }
+    }
+}
+
+@Execution(ExecutionMode.SAME_THREAD)
+@Disabled("Tests failing in master")
+class PolarisWriteTest :
+    S3DataLakeWriteTest(
+        configContents = getConfig(),
+        tableIdGenerator = SimpleTableIdGenerator(),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                null,
+            )
+        },
+    ) {
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
+    companion object {
+        fun getConfig(): String = PolarisEnvironment.getConfig()
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            PolarisEnvironment.startServices()
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun stop() {
+            PolarisEnvironment.stopServices()
+        }
+    }
+}
+
+class GlueWriteTestProtoSocket :
+    S3DataLakeWriteTest(
+        configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
+        tableIdGenerator = GlueTableIdGenerator(null),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
+        enableSpeed = true,
+    ) {
+    // Use single socket for dedup tests to preserve record ordering in proto socket mode
+    override val useSingleSocketForDedup: Boolean = true
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
     }
 }

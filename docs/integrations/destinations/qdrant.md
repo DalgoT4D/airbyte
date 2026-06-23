@@ -2,19 +2,21 @@
 
 This page guides you through the process of setting up the [Qdrant](https://qdrant.tech/documentation/) destination connector.
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-
 #### Output Schema
 
 Only one stream will exist to collect payload and vectors (optional) from all source streams. This will be in a [collection](https://qdrant.tech/documentation/concepts/collections/) in [Qdrant](https://qdrant.tech/documentation/) whose name will be defined by the user. If the collection does not already exist in the Qdrant instance, a new collection with the same name will be created.
 
 For each [point](https://qdrant.tech/documentation/concepts/points/) in the collection, a UUID string is generated and used as the [point id](https://qdrant.tech/documentation/concepts/points/#point-ids). The embeddings generated as defined or extracted from the source stream will be stored as the point vectors. The point payload will contain primarily the record metadata. The text field will then be stored in a field (as defined in the config) in the point payload.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Getting Started
 
@@ -66,6 +68,10 @@ You should now have all the requirements needed to configure Qdrant as a destina
   - **Cohere API key** if using Cohere for embedding
   - Embedding **Field name** and **Embedding dimensions** if getting the embeddings from stream records
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -73,6 +79,19 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------- |
+| 0.1.41 | 2025-05-10 | [59814](https://github.com/airbytehq/airbyte/pull/59814) | Update dependencies |
+| 0.1.40 | 2025-05-03 | [58718](https://github.com/airbytehq/airbyte/pull/58718) | Update dependencies |
+| 0.1.39 | 2025-04-19 | [58282](https://github.com/airbytehq/airbyte/pull/58282) | Update dependencies |
+| 0.1.38 | 2025-04-12 | [57610](https://github.com/airbytehq/airbyte/pull/57610) | Update dependencies |
+| 0.1.37 | 2025-04-05 | [57162](https://github.com/airbytehq/airbyte/pull/57162) | Update dependencies |
+| 0.1.36 | 2025-03-29 | [56564](https://github.com/airbytehq/airbyte/pull/56564) | Update dependencies |
+| 0.1.35 | 2025-03-22 | [56159](https://github.com/airbytehq/airbyte/pull/56159) | Update dependencies |
+| 0.1.34 | 2025-03-08 | [55363](https://github.com/airbytehq/airbyte/pull/55363) | Update dependencies |
+| 0.1.33 | 2025-03-01 | [54889](https://github.com/airbytehq/airbyte/pull/54889) | Update dependencies |
+| 0.1.32 | 2025-02-22 | [54246](https://github.com/airbytehq/airbyte/pull/54246) | Update dependencies |
+| 0.1.31 | 2025-02-15 | [53939](https://github.com/airbytehq/airbyte/pull/53939) | Update dependencies |
+| 0.1.30 | 2025-02-08 | [53389](https://github.com/airbytehq/airbyte/pull/53389) | Update dependencies |
+| 0.1.29 | 2025-02-01 | [52917](https://github.com/airbytehq/airbyte/pull/52917) | Update dependencies |
 | 0.1.28 | 2025-01-25 | [52171](https://github.com/airbytehq/airbyte/pull/52171) | Update dependencies |
 | 0.1.27 | 2025-01-18 | [51716](https://github.com/airbytehq/airbyte/pull/51716) | Update dependencies |
 | 0.1.26 | 2025-01-11 | [51232](https://github.com/airbytehq/airbyte/pull/51232) | Update dependencies |

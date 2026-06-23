@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter
@@ -41,10 +41,11 @@ import jakarta.inject.Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
+
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
-    @JsonSchemaInject(json = """{"order":1}""")
     @JsonPropertyDescription("Hostname of the database.")
+    @JsonSchemaInject(json = """{"order":1}""")
     lateinit var host: String
 
     @JsonProperty("port")
@@ -74,6 +75,14 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
     lateinit var database: String
 
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Filters")
+    @JsonPropertyDescription(
+        "Optional filters to include only specific tables from the specified database."
+    )
+    @JsonSchemaInject(json = """{"order":7}""")
+    var tableFilters: List<TableFilter>? = null
+
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
@@ -81,7 +90,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
             "(example: key1=value1&key2=value2&key3=value3).",
     )
-    @JsonSchemaInject(json = """{"order":7}""")
+    @JsonSchemaInject(json = """{"order":8}""")
     var jdbcUrlParams: String? = null
 
     @JsonIgnore
@@ -98,9 +107,9 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("ssl_mode")
     @JsonSchemaTitle("Encryption")
     @JsonPropertyDescription(
-        "The encryption method with is used when communicating with the database.",
+        "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8}""")
+    @JsonSchemaInject(json = """{"order":9,"default":"required"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -120,7 +129,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
         "Whether to initiate an SSH tunnel before connecting to the database, " +
             "and if so, which kind of authentication to use.",
     )
-    @JsonSchemaInject(json = """{"order":9}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
@@ -138,23 +147,32 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"order":11,"display_type":"radio"}""")
     fun getIncrementalValue(): IncrementalConfigurationSpecification =
         replicationMethodJson ?: replicationMethod.asCursorMethodConfiguration()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":11}""")
+    @JsonSchemaInject(json = """{"order":12}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
-    @JsonSchemaInject(json = """{"order":12}""")
+    // Hidden and maintained for backwards compatibility.
+    @JsonSchemaInject(json = """{"order":13,"airbyte_hidden":true}""")
     @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
+
+    @JsonProperty("max_db_connections")
+    @JsonSchemaTitle("Max Concurrent Queries to Database")
+    @JsonSchemaInject(json = """{"order":13}""")
+    @JsonPropertyDescription(
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+    )
+    var max_db_connections: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
@@ -169,17 +187,49 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkPrivileges: Boolean? = true
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonProperty("treat_tinyint1_as_integer")
+    @JsonSchemaTitle("Treat TINYINT(1) Columns as Integers")
+    @JsonSchemaInject(json = """{"order":14}""")
+    @JsonSchemaDefault("false")
+    @JsonPropertyDescription(
+        "When enabled, TINYINT(1) columns are emitted as integers instead of booleans."
+    )
+    var treatTinyint1AsInteger: Boolean? = false
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
+
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
+}
+
+@JsonSchemaTitle("Table Filter")
+@JsonSchemaDescription("Inclusion filter configuration for table selection per database.")
+@JsonPropertyOrder("database_name", "table_name_patterns")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class TableFilter {
+    @JsonProperty("database_name", required = true)
+    @JsonSchemaTitle("Database Name")
+    @JsonPropertyDescription(
+        "The name of the database to apply this filter to. " +
+            "Should match the database defined in the \"Database\" field above."
+    )
+    @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
+    lateinit var databaseName: String
+
+    @JsonProperty("table_name_patterns", required = true)
+    @JsonSchemaTitle("Table Filter Patterns")
+    @JsonPropertyDescription(
+        "List of table name patterns to include. Should be a SQL LIKE pattern."
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true,"minItems":1}""")
+    lateinit var patterns: List<String>
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
@@ -285,7 +335,7 @@ class SslVerifyIdentity : EncryptionSpecification {
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.ssl_mode")
 class MicronautPropertiesFriendlyEncryptionSpecification {
-    var mode: String = "preferred"
+    var mode: String = "required"
     var sslCertificate: String? = null
 
     @JsonValue
@@ -321,7 +371,7 @@ data object UserDefinedCursor : IncrementalConfigurationSpecification
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
         "Incrementally reads new inserts, updates, and deletes using MySQL's <a href=" +
-        "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
+        "\"https://docs.airbyte.com/integrations/sources/mysql#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
 class Cdc : IncrementalConfigurationSpecification {
@@ -334,9 +384,9 @@ class Cdc : IncrementalConfigurationSpecification {
     var serverTimezone: String? = null
 
     @JsonProperty("invalid_cdc_cursor_position_behavior")
-    @JsonSchemaTitle("Configured server timezone for the MySQL source (Advanced)")
+    @JsonSchemaTitle("Invalid CDC Position Behavior (Advanced)")
     @JsonPropertyDescription(
-        "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
+        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(

@@ -74,6 +74,10 @@ Link to Northpass LMS API documentation [here](https://developers.northpass.com/
 
 - [Course Enrollments](https://developers.northpass.com/reference/get_v2-courses-course-uuid-enrollments)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -81,6 +85,20 @@ Link to Northpass LMS API documentation [here](https://developers.northpass.com/
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.25 | 2026-06-02 | [78807](https://github.com/airbytehq/airbyte/pull/78807) | Update dependencies |
+| 0.2.24 | 2025-05-10 | [60156](https://github.com/airbytehq/airbyte/pull/60156) | Update dependencies |
+| 0.2.23 | 2025-05-03 | [59487](https://github.com/airbytehq/airbyte/pull/59487) | Update dependencies |
+| 0.2.22 | 2025-04-27 | [58530](https://github.com/airbytehq/airbyte/pull/58530) | Update dependencies |
+| 0.2.21 | 2025-04-12 | [57915](https://github.com/airbytehq/airbyte/pull/57915) | Update dependencies |
+| 0.2.20 | 2025-04-05 | [57305](https://github.com/airbytehq/airbyte/pull/57305) | Update dependencies |
+| 0.2.19 | 2025-03-29 | [56727](https://github.com/airbytehq/airbyte/pull/56727) | Update dependencies |
+| 0.2.18 | 2025-03-22 | [56204](https://github.com/airbytehq/airbyte/pull/56204) | Update dependencies |
+| 0.2.17 | 2025-03-08 | [55515](https://github.com/airbytehq/airbyte/pull/55515) | Update dependencies |
+| 0.2.16 | 2025-03-01 | [54763](https://github.com/airbytehq/airbyte/pull/54763) | Update dependencies |
+| 0.2.15 | 2025-02-22 | [54294](https://github.com/airbytehq/airbyte/pull/54294) | Update dependencies |
+| 0.2.14 | 2025-02-15 | [53799](https://github.com/airbytehq/airbyte/pull/53799) | Update dependencies |
+| 0.2.13 | 2025-02-08 | [53287](https://github.com/airbytehq/airbyte/pull/53287) | Update dependencies |
+| 0.2.12 | 2025-02-01 | [52768](https://github.com/airbytehq/airbyte/pull/52768) | Update dependencies |
 | 0.2.11 | 2025-01-25 | [52223](https://github.com/airbytehq/airbyte/pull/52223) | Update dependencies |
 | 0.2.10 | 2025-01-18 | [51832](https://github.com/airbytehq/airbyte/pull/51832) | Update dependencies |
 | 0.2.9 | 2025-01-11 | [51219](https://github.com/airbytehq/airbyte/pull/51219) | Update dependencies |

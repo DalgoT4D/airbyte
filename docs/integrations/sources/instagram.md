@@ -8,16 +8,13 @@ This page contains the setup guide and reference information for the [Instagram]
 
 ## Prerequisites
 
-- [Meta for Developers account](https://developers.facebook.com)
-- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your
-  Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll
-  use this to configure Instagram as a source in Airbyte
+- A [Meta for Developers](https://developers.facebook.com) account
+- An [Instagram Business or Creator account](https://www.facebook.com/business/help/898752960195806) connected to a Facebook Page
 
 <!-- env:oss -->
 
-- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
+- A Facebook app with the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) enabled
+- An access token with these permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`
 
 <!-- /env:oss -->
 
@@ -35,9 +32,7 @@ This page contains the setup guide and reference information for the [Instagram]
 4. Enter a name for the Instagram connector.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
-   date will be replicated. If left blank, the start date will be set to 2 years before the present
-   date.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 8. Click **Set up source**.
 
 <!-- /env:cloud -->
@@ -50,14 +45,8 @@ This page contains the setup guide and reference information for the [Instagram]
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
-5. Enter **Access Token** generated
-   using [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-basic-display-api/getting-started/)
-   with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list,
-   pages_read_engagement.
-6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
-   date will be replicated. If left blank, the start date will be set to 2 years before the present
-   date.
+5. Enter the **Access Token** generated using the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) or a [Facebook app](https://developers.facebook.com/docs/instagram-platform/getting-started) with the required permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`.
+6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 7. Click **Set up source**.
 
 <!-- /env:oss -->
@@ -75,77 +64,120 @@ The Instagram source connector supports the following [sync modes](https://docs.
 
 :::note
 
-Incremental sync modes are only available for
-the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
-stream.
+Incremental sync modes are only available for the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) stream.
 
 :::
 
-## Supported Streams
+## Supported streams
 
-The Instagram source connector supports the following streams. For more information, see
-the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/)
-and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
+This connector uses the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) (v23.0) to sync data from Instagram Business and Creator accounts. For performance data related to Instagram Ads, use the Facebook Marketing source.
 
-- [User](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
-    - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
-- [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
-    - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
-- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
-    - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+The following streams are available:
 
-:::info
-The Instagram connector syncs data related to Users, Media, and Stories and their insights from
-the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data
-related to Instagram Ads, use the Facebook Marketing source.
-:::
+- [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user)—Profile information for each connected Instagram Business or Creator account.
+- [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Daily account-level metrics such as `follower_count`, `reach`, and `online_followers`. This is the only incremental stream; it uses the `date` field as its cursor.
+- [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Demographic breakdowns of followers by city, country, and age/gender.
+- [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)—All media objects (photos, videos, reels, carousel albums) published by each account. For carousel albums, the connector fetches detailed information for each child media item.
+- [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Per-media engagement metrics. The specific metrics requested vary by media type (Reels, Video, Carousel Album, or Image).
+- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)—Currently published stories. The Instagram API only returns stories that are live at the time of the sync; expired stories are not available.
+- [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Engagement metrics for currently published stories.
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
-## Data type map
+## Limitations and troubleshooting
 
-AirbyteRecords are required to conform to
-the [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) system.
-This means that all sources must produce schemas and records within these types and all destinations
-must handle records that conform to this type system.
+### Rate limiting
 
-| Integration Type | Airbyte Type |
-|:-----------------|:-------------|
-| `string`         | `string`     |
-| `number`         | `number`     |
-| `array`          | `array`      |
-| `object`         | `object`     |
+Instagram limits the number of API requests per hour. The connector retries automatically with exponential backoff when rate limits are hit. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
 
-## Limitations & Troubleshooting
+### Instagram API limitations
 
-<details>
-<summary>
-Expand to see details about Instagram connector limitations and troubleshooting.
-</summary>
+- **Data delay**: Metrics data from the Instagram API may be delayed by up to 48 hours.
+- **Minimum follower count**: The `follower_count` and `online_followers` metrics require at least 100 followers on the Instagram Business or Creator account.
+- **Data retention**: The `online_followers` metric is only available for the last 30 days. User Insights data is available for up to 30 days in the past.
+- **Demographic metrics**: Demographic metric calculations only include the top 45 entries and only count viewers for whom Instagram has demographic data.
+- **Stories availability**: The Instagram API only returns stories that are currently live (not yet expired). Stories typically expire 24 hours after posting.
+- **Carousel children errors**: If a child media item within a carousel album is unavailable (for example, deleted or restricted), the connector skips that child and continues syncing the remaining children. A warning is logged for each skipped child.
 
-### Connector limitations
+### User Insights and UTC+ timezones
 
-#### Rate limiting
-
-Instagram limits the number of requests that can be made at a time. See
-Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api)
-for more information.
+For accounts in UTC+ timezones, the Instagram API returns `end_time` values at the account's day boundary expressed in UTC. This can result in timestamps that are slightly ahead of the current UTC time. The connector handles this by applying a one-day lookback window and gracefully skipping any time slices with future `since` dates. These skipped slices are picked up on the next sync.
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Instagram source connector on
-  our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
-</details>
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.32 | 2026-06-23 | [80500](https://github.com/airbytehq/airbyte/pull/80500) | Update dependencies |
+| 4.2.31 | 2026-06-16 | [79913](https://github.com/airbytehq/airbyte/pull/79913) | Update dependencies |
+| 4.2.30 | 2026-06-09 | [78774](https://github.com/airbytehq/airbyte/pull/78774) | Update dependencies |
+| 4.2.29 | 2026-06-02 | [79099](https://github.com/airbytehq/airbyte/pull/79099) | Promoted release candidate to GA |
+| 4.2.29-rc.2 | 2026-05-26 | [78440](https://github.com/airbytehq/airbyte/pull/78440) | Add HTTPAPIBudget for rate limit protection |
+| 4.2.29-rc.1 | 2026-05-26 | [78440](https://github.com/airbytehq/airbyte/pull/78440) | Enable progressive rollout for concurrency tuning |
+| 4.2.28 | 2026-04-28 | [77272](https://github.com/airbytehq/airbyte/pull/77272) | Update dependencies |
+| 4.2.27 | 2026-04-21 | [76627](https://github.com/airbytehq/airbyte/pull/76627) | Update dependencies |
+| 4.2.26 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 4.2.25 | 2026-04-02 | [74721](https://github.com/airbytehq/airbyte/pull/74721) | Handle errors when fetching carousel children media to prevent sync failures |
+| 4.2.24 | 2026-04-02 | [76027](https://github.com/airbytehq/airbyte/pull/76027) | Improved error handling for Instagram rate limit responses with descriptive error messages |
+| 4.2.23 | 2026-03-24 | [75344](https://github.com/airbytehq/airbyte/pull/75344) | Update dependencies |
+| 4.2.22 | 2026-03-19 | [75206](https://github.com/airbytehq/airbyte/pull/75206) | Handle Instagram API 'since param is not valid' error gracefully for user_insights stream |
+| 4.2.21 | 2026-03-12 | [74800](https://github.com/airbytehq/airbyte/pull/74800) | Add lookback window and filter future-dated records in user_insights to prevent cursor from advancing past current UTC |
+| 4.2.20 | 2026-03-10 | [74502](https://github.com/airbytehq/airbyte/pull/74502) | Update dependencies |
+| 4.2.19 | 2026-03-03 | [73045](https://github.com/airbytehq/airbyte/pull/73045) | Update dependencies |
+| 4.2.18 | 2026-02-24 | [74006](https://github.com/airbytehq/airbyte/pull/74006) | Fix user_insights end_datetime to cover current day for UTC+ accounts |
+| 4.2.17 | 2026-02-24 | [72266](https://github.com/airbytehq/airbyte/pull/72266) | Add views metric and timestamp to media_insights stream |
+| 4.2.16 | 2026-01-20 | [71966](https://github.com/airbytehq/airbyte/pull/71966) | Update dependencies |
+| 4.2.15 | 2026-01-14 | [71406](https://github.com/airbytehq/airbyte/pull/71406) | Update dependencies |
+| 4.2.14 | 2025-12-18 | [70530](https://github.com/airbytehq/airbyte/pull/70530) | Update dependencies |
+| 4.2.13 | 2025-11-25 | [70157](https://github.com/airbytehq/airbyte/pull/70157) | Update dependencies |
+| 4.2.12 | 2025-11-18 | [69536](https://github.com/airbytehq/airbyte/pull/69536) | Update dependencies |
+| 4.2.11 | 2025-10-29 | [68761](https://github.com/airbytehq/airbyte/pull/68761) | Update dependencies |
+| 4.2.10 | 2025-10-21 | [68506](https://github.com/airbytehq/airbyte/pull/68506) | Update dependencies |
+| 4.2.9 | 2025-10-14 | [67975](https://github.com/airbytehq/airbyte/pull/67975) | Update dependencies |
+| 4.2.8 | 2025-10-07 | [67366](https://github.com/airbytehq/airbyte/pull/67366) | Update dependencies |
+| 4.2.7 | 2025-09-30 | [66800](https://github.com/airbytehq/airbyte/pull/66800) | Update dependencies |
+| 4.2.6 | 2025-09-09 | [66045](https://github.com/airbytehq/airbyte/pull/66045) | Update dependencies |
+| 4.2.5 | 2025-08-25 | [65119](https://github.com/airbytehq/airbyte/pull/65119) | Migrate to API v23 |
+| 4.2.4 | 2025-08-23 | [65316](https://github.com/airbytehq/airbyte/pull/65316) | Update dependencies |
+| 4.2.3 | 2025-08-09 | [64640](https://github.com/airbytehq/airbyte/pull/64640) | Update dependencies |
+| 4.2.2 | 2025-08-02 | [64281](https://github.com/airbytehq/airbyte/pull/64281) | Update dependencies |
+| 4.2.1 | 2025-07-19 | [60614](https://github.com/airbytehq/airbyte/pull/60614) | Update dependencies |
+| 4.2.0 | 2025-07-17 | [63358](https://github.com/airbytehq/airbyte/pull/63358) | Promoting release candidate 4.2.0-rc.1 to a main version. |
+| 4.2.0-rc.1 | 2025-07-16 | [62954](https://github.com/airbytehq/airbyte/pull/62954) | Migrate to manifest-only format. |
+| 4.1.0 | 2025-07-14 | [63289](https://github.com/airbytehq/airbyte/pull/63289) | Promoting release candidate 4.1.0-rc.3 to a main version. |
+| 4.1.0-rc.3 | 2025-07-10 | [62902](https://github.com/airbytehq/airbyte/pull/62902) | Revert add `views` metric to `StoryInsights` and `MediaInsights` streams. |
+| 4.1.0-rc.2 | 2025-07-09 | [62844](https://github.com/airbytehq/airbyte/pull/62844) | Migrate `UserInsights` stream to low-code |
+| 4.1.0-rc.1 | 2025-05-27 | [60848](https://github.com/airbytehq/airbyte/pull/60848) | Add `views` metric to `StoryInsights` and `MediaInsights` streams. |
+| 4.0.5 | 2025-05-10 | [59798](https://github.com/airbytehq/airbyte/pull/59798) | Update dependencies |
+| 4.0.4 | 2025-05-03 | [59243](https://github.com/airbytehq/airbyte/pull/59243) | Update dependencies |
+| 4.0.3 | 2025-04-26 | [58773](https://github.com/airbytehq/airbyte/pull/58773) | Update dependencies |
+| 4.0.2 | 2025-04-19 | [58167](https://github.com/airbytehq/airbyte/pull/58167) | Update dependencies |
+| 4.0.1 | 2025-04-12 | [57704](https://github.com/airbytehq/airbyte/pull/57704) | Update dependencies |
+| 4.0.0 | 2025-04-07 | [55860](https://github.com/airbytehq/airbyte/pull/55860) | Remove deprecated metrics from `StoryInsights`, `UserInsights` and `MediaInsights` streams. |
+| 3.2.5 | 2025-04-05 | [57069](https://github.com/airbytehq/airbyte/pull/57069) | Update dependencies |
+| 3.2.4 | 2025-03-29 | [56666](https://github.com/airbytehq/airbyte/pull/56666) | Update dependencies |
+| 3.2.3 | 2025-03-22 | [56020](https://github.com/airbytehq/airbyte/pull/56020) | Update dependencies |
+| 3.2.2 | 2025-03-10 | [55685](https://github.com/airbytehq/airbyte/pull/55685) | Disable cache for InstagramMediaChildrenTransformation |
+| 3.2.1 | 2025-03-08 | [55463](https://github.com/airbytehq/airbyte/pull/55463) | Update dependencies |
+| 3.2.0 | 2025-02-28 | [54364](https://github.com/airbytehq/airbyte/pull/54364) | Update to CDK v6 |
+| 3.1.9 | 2025-03-01 | [54789](https://github.com/airbytehq/airbyte/pull/54789) | Update dependencies |
+| 3.1.8 | 2025-02-22 | [54364](https://github.com/airbytehq/airbyte/pull/54364) | Update dependencies |
+| 3.1.7 | 2025-02-15 | [53846](https://github.com/airbytehq/airbyte/pull/53846) | Update dependencies |
+| 3.1.6 | 2025-02-08 | [53291](https://github.com/airbytehq/airbyte/pull/53291) | Update dependencies |
+| 3.1.5 | 2025-02-06 | [53171](https://github.com/airbytehq/airbyte/pull/53171) | Fix missing OAuth fields |
+| 3.1.4 | 2025-02-01 | [52260](https://github.com/airbytehq/airbyte/pull/52260) | Update dependencies |
+| 3.1.3 | 2025-01-20 | [52035](https://github.com/airbytehq/airbyte/pull/52035) | Upgrade to API v21.0 |
 | 3.1.2 | 2025-01-11 | [44223](https://github.com/airbytehq/airbyte/pull/44223) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.1.1 | 2025-01-09 | [51018](https://github.com/airbytehq/airbyte/pull/51018) | Remove deprecated metrics from `StoryInsights` and `MediaInsights` streams. |
 | 3.1.0 | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams. |

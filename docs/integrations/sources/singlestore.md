@@ -168,11 +168,16 @@ SingleStore data types are mapped to the following data types when synchronizing
 | `GEOGRAPHY`           | string                 |       |
 | `VECTOR`              | string                 |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject                          |
-|:--------|:-----------|:-------------------------------------------------------|:---------------------------------|
-| 0.1.2 | 2025-01-10 | [51501](https://github.com/airbytehq/airbyte/pull/51501) | Use a non root base image |
-| 0.1.1 | 2024-12-18 | [49862](https://github.com/airbytehq/airbyte/pull/49862) | Use a base image: airbyte/java-connector-base:1.0.0 |
-| 0.1.0 | 2024-04-16 | [37337](https://github.com/airbytehq/airbyte/pull/37337) | Add SingleStore source connector |
- 
+| Version | Date       | Pull Request                                             | Subject                                             |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 0.1.4   | 2025-07-10 | [62925](https://github.com/airbytehq/airbyte/pull/62925) | Convert to new gradle build flow                   |
+| 0.1.3   | 2025-05-08 | [59722](https://github.com/airbytehq/airbyte/pull/59722) | Consolidate gradle setup.                           |
+| 0.1.2   | 2025-01-10 | [51501](https://github.com/airbytehq/airbyte/pull/51501) | Use a non root base image                           |
+| 0.1.1   | 2024-12-18 | [49862](https://github.com/airbytehq/airbyte/pull/49862) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.1.0   | 2024-04-16 | [37337](https://github.com/airbytehq/airbyte/pull/37337) | Add SingleStore source connector                    |

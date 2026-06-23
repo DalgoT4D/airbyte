@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 
 /**
@@ -31,9 +30,11 @@ interface JdbcPartition<S : JdbcStreamState<*>> {
         streamState.sharedState.tryAcquireResourcesForCreator()
 
     /** Tries to acquire resources for [JdbcPartitionReader]. */
-    fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? =
+    fun tryAcquireResourcesForReader(
+        resourceTypes: List<ResourceType>
+    ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? =
         // Acquire global resources by default.
-        streamState.sharedState.tryAcquireResourcesForReader()
+        streamState.sharedState.tryAcquireResourcesForReader(resourceTypes)
 }
 
 /** A [JdbcPartition] which can be subdivided. */
@@ -43,7 +44,7 @@ interface JdbcSplittablePartition<S : JdbcStreamState<*>> : JdbcPartition<S> {
     fun resumableQuery(limit: Long): SelectQuery
 
     /** State value to emit when the partition is read up to (and including) [lastRecord]. */
-    fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue
+    fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue
 }
 
 /** A [JdbcPartition] which allows cursor-based incremental reads. */

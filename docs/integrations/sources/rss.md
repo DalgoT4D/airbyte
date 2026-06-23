@@ -31,6 +31,10 @@ Only the `url` of an RSS feed is required.
 
 None
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,7 @@ None
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.0.31 | 2025-02-01 | [51897](https://github.com/airbytehq/airbyte/pull/51897) | Update dependencies |
 | 1.0.30 | 2025-01-11 | [51334](https://github.com/airbytehq/airbyte/pull/51334) | Update dependencies |
 | 1.0.29 | 2025-01-04 | [50935](https://github.com/airbytehq/airbyte/pull/50935) | Update dependencies |
 | 1.0.28 | 2024-12-28 | [50731](https://github.com/airbytehq/airbyte/pull/50731) | Update dependencies |

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
 import io.micronaut.context.annotation.Factory
@@ -19,6 +19,11 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     /** Reader concurrency configuration. */
     val maxConcurrency: Int
     val resourceAcquisitionHeartbeat: Duration
+
+    /** Whether it's a CDC configuration. Default to global state */
+    fun isCdc(): Boolean {
+        return global
+    }
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and

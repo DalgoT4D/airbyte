@@ -90,7 +90,13 @@
                 "description": "SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.",
                 "type": "string",
                 "default": "PLAIN",
-                "enum": ["PLAIN"]
+                "enum": [
+                  "GSSAPI",
+                  "OAUTHBEARER",
+                  "SCRAM-SHA-256",
+                  "SCRAM-SHA-512",
+                  "PLAIN"
+                ]
               },
               "sasl_jaas_config": {
                 "title": "SASL JAAS Config",
@@ -198,7 +204,7 @@
         "title": "Buffer Memory",
         "description": "The total bytes of memory the producer can use to buffer records waiting to be sent to the server.",
         "type": "string",
-        "examples": 33554432
+        "examples": [33554432]
       },
       "max_request_size": {
         "title": "Max Request Size",

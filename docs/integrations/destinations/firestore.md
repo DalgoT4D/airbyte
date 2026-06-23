@@ -4,6 +4,16 @@ This destination writes data to Google Firestore.
 
 Google Firestore, officially known as Cloud Firestore, is a flexible, scalable database for mobile, web, and server development from Firebase and Google Cloud. It is commonly used for developing applications as a NoSQL database that provides real-time data syncing across user devices.
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
 ## Getting started
 
 ### Requirements
@@ -23,14 +33,9 @@ Google Firestore, officially known as Cloud Firestore, is a flexible, scalable d
 
 Each stream will be output into a BigQuery table.
 
-#### Features
+## Namespace support
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | ✅                   |       |
-| Incremental - Append Sync      | ✅                   |       |
-| Incremental - Append + Deduped | ✅                   |       |
-| Namespaces                     | ✅                   |       |
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
@@ -39,6 +44,19 @@ Each stream will be output into a BigQuery table.
 
 | Version | Date       | Pull Request                                           | Subject                       |
 |:--------| :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.2.22 | 2025-05-10 | [59845](https://github.com/airbytehq/airbyte/pull/59845) | Update dependencies |
+| 0.2.21 | 2025-05-03 | [59334](https://github.com/airbytehq/airbyte/pull/59334) | Update dependencies |
+| 0.2.20 | 2025-04-26 | [58266](https://github.com/airbytehq/airbyte/pull/58266) | Update dependencies |
+| 0.2.19 | 2025-04-12 | [57626](https://github.com/airbytehq/airbyte/pull/57626) | Update dependencies |
+| 0.2.18 | 2025-04-05 | [57167](https://github.com/airbytehq/airbyte/pull/57167) | Update dependencies |
+| 0.2.17 | 2025-03-29 | [56569](https://github.com/airbytehq/airbyte/pull/56569) | Update dependencies |
+| 0.2.16 | 2025-03-22 | [56127](https://github.com/airbytehq/airbyte/pull/56127) | Update dependencies |
+| 0.2.15 | 2025-03-08 | [55399](https://github.com/airbytehq/airbyte/pull/55399) | Update dependencies |
+| 0.2.14 | 2025-03-01 | [54831](https://github.com/airbytehq/airbyte/pull/54831) | Update dependencies |
+| 0.2.13 | 2025-03-01 | [54739](https://github.com/airbytehq/airbyte/pull/54739) | Update airbyte-cdk to ^6.0.0 in destination-firestore |
+| 0.2.12 | 2025-02-22 | [54230](https://github.com/airbytehq/airbyte/pull/54230) | Update dependencies |
+| 0.2.11 | 2025-02-15 | [53881](https://github.com/airbytehq/airbyte/pull/53881) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [52890](https://github.com/airbytehq/airbyte/pull/52890) | Update dependencies |
 | 0.2.9 | 2025-01-25 | [52152](https://github.com/airbytehq/airbyte/pull/52152) | Update dependencies |
 | 0.2.8 | 2025-01-11 | [51229](https://github.com/airbytehq/airbyte/pull/51229) | Update dependencies |
 | 0.2.7 | 2025-01-04 | [50911](https://github.com/airbytehq/airbyte/pull/50911) | Update dependencies |

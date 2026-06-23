@@ -2,16 +2,15 @@
   "list": [
     {
       "hosted_page": {
-        "created_at": 1517678804,
-        "embed": false,
-        "expires_at": 1517682404,
-        "id": "__test__yRVH4Pr8siRXJEPsjeJXlcd8Aq1fDqVzd",
-        "object": "hosted_page",
-        "resource_version": 1517678804000,
+        "id": "hosted_page_001",
+        "type": "checkout_new",
+        "url": "https://test-site.chargebee.com/pages/v3/hosted_page_001",
         "state": "created",
-        "type": "claim_gift",
-        "updated_at": 1517678804,
-        "url": "https://yourapp.chargebee.com/pages/v3/__test__yRVH4Pr8siRXJEPsjeJXlcd8Aq1fDqVzd/claim_gift"
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "hosted_page",
+        "cf_page_template": "Standard",
+        "cf_tracking_id": "UTM12345"
       }
     }
   ]

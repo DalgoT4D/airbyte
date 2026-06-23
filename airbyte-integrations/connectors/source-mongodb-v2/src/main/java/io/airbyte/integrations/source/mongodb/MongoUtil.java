@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -13,6 +13,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_M
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bson.Document;
@@ -118,10 +120,11 @@ public class MongoUtil {
   public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient,
                                                       final String databaseName,
                                                       final Integer sampleSize,
-                                                      final boolean isSchemaEnforced) {
+                                                      final boolean isSchemaEnforced,
+                                                      final Integer discoverTimeout) {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     return authorizedCollections.parallelStream()
-        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced))
+        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .map(stream -> stream.withIsResumable(true))
@@ -299,7 +302,8 @@ public class MongoUtil {
                                                         final MongoClient mongoClient,
                                                         final String databaseName,
                                                         final Integer sampleSize,
-                                                        final boolean isSchemaEnforced) {
+                                                        final boolean isSchemaEnforced,
+                                                        final Integer discoverTimeout) {
     /*
      * Fetch the keys/types from the first N documents and the last N documents from the collection.
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
@@ -307,11 +311,11 @@ public class MongoUtil {
     final Set<Field> discoveredFields;
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
     if (isSchemaEnforced) {
-      discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
+      discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize, discoverTimeout));
     } else {
       // In schemaless mode, we only sample one record as we're only interested in the _id field (which
       // exists on every record).
-      discoveredFields = new HashSet<>(getFieldsForSchemaless(mongoCollection));
+      discoveredFields = new HashSet<>(getFieldsForSchemaless(mongoCollection, discoverTimeout));
     }
     return Optional
         .ofNullable(
@@ -319,7 +323,9 @@ public class MongoUtil {
                 : null);
   }
 
-  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection, final Integer sampleSize) {
+  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection,
+                                                  final Integer sampleSize,
+                                                  final Integer discoverTimeout) {
     final Set<Field> discoveredFields = new HashSet<>();
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
@@ -348,8 +354,7 @@ public class MongoUtil {
      * "$$each.v" } } } } } } }, { "$unwind" : "$fields" }, { "$group" : { "_id" : $fields } } ] )
      */
     final AggregateIterable<Document> output = collection.aggregate(aggregateList);
-
-    try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
+    try (final MongoCursor<Document> cursor = output.allowDiskUse(true).maxTime(discoverTimeout, TimeUnit.SECONDS).cursor()) {
       while (cursor.hasNext()) {
         @SuppressWarnings("unchecked")
         final Map<String, String> fields = (Map<String, String>) cursor.next().get("_id");
@@ -357,26 +362,28 @@ public class MongoUtil {
             .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))
             .collect(Collectors.toSet()));
       }
+    } catch (Exception e) {
+      LOGGER.warn("Running discovery for document: {}. Error processing cursor: {}", collection.getNamespace().getFullName(), e.getMessage());
     }
-
     return discoveredFields;
   }
 
-  private static Set<Field> getFieldsForSchemaless(final MongoCollection<Document> collection) {
+  private static Set<Field> getFieldsForSchemaless(final MongoCollection<Document> collection, final Integer discoverTimeout) {
     final Set<Field> discoveredFields = new HashSet<>();
-
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         Aggregates.sample(1), // Selects one random document
         Aggregates.project(Projections.fields(
             Projections.excludeId(), // Excludes the _id field from the result
             Projections.computed("_idType", new Document("$type", "$_id")) // Gets the type of the _id field
         ))));
-
-    try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
+    LOGGER.info("Stream discover timeout value (seconds): " + discoverTimeout);
+    try (final MongoCursor<Document> cursor = output.allowDiskUse(true).maxTime(discoverTimeout, TimeUnit.SECONDS).cursor()) {
       while (cursor.hasNext()) {
         final JsonSchemaType schemaType = convertToSchemaType((String) cursor.next().get("_idType"));
         discoveredFields.add(new MongoField(MongoConstants.ID_FIELD, schemaType));
       }
+    } catch (Exception e) {
+      LOGGER.warn("Running discovery for document: {}. Error processing cursor: {}", collection.getNamespace().getFullName(), e.getMessage());
     }
 
     return discoveredFields;
@@ -395,6 +402,34 @@ public class MongoUtil {
 
   private static boolean isSupportedCollection(final String collectionName) {
     return IGNORED_COLLECTIONS.stream().noneMatch(collectionName::startsWith);
+  }
+
+  /**
+   * Checks if the given exception is caused by a BSONObjectTooLarge error (MongoDB error code 10334).
+   * This error occurs when a BSON document exceeds the 16MB size limit, which can happen during CDC
+   * (Change Data Capture) operations when change stream events become too large.
+   *
+   * @param exception The exception to check.
+   * @return true if the exception is caused by a BSONObjectTooLarge error, false otherwise.
+   */
+  public static boolean isBsonObjectTooLargeException(final Throwable exception) {
+    Throwable current = exception;
+    while (current != null) {
+      if (current instanceof MongoCommandException mongoException) {
+        if (mongoException.getErrorCode() == MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_CODE) {
+          return true;
+        }
+      }
+      // Also check the error message for cases where the error code might not be directly accessible
+      if (current.getMessage() != null &&
+          (current.getMessage().contains("BSONObjectTooLarge") ||
+              current.getMessage().contains("BSONObj size") ||
+              current.getMessage().contains("error 10334"))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 
   /**

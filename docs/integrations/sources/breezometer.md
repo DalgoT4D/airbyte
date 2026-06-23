@@ -32,6 +32,10 @@ The Breezometer connector supports full sync refresh.
 - [Wildfire - Burnt Area](https://docs.breezometer.com/api-documentation/wildfire-tracker-api/v1/#burnt-area-api)
 - [Wildfire - Locate](https://docs.breezometer.com/api-documentation/wildfire-tracker-api/v1/#current-conditions)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -39,6 +43,19 @@ The Breezometer connector supports full sync refresh.
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.2.24 | 2025-05-10 | [59868](https://github.com/airbytehq/airbyte/pull/59868) | Update dependencies |
+| 0.2.23 | 2025-05-03 | [59319](https://github.com/airbytehq/airbyte/pull/59319) | Update dependencies |
+| 0.2.22 | 2025-04-26 | [58734](https://github.com/airbytehq/airbyte/pull/58734) | Update dependencies |
+| 0.2.21 | 2025-04-19 | [58255](https://github.com/airbytehq/airbyte/pull/58255) | Update dependencies |
+| 0.2.20 | 2025-04-12 | [57640](https://github.com/airbytehq/airbyte/pull/57640) | Update dependencies |
+| 0.2.19 | 2025-04-05 | [57179](https://github.com/airbytehq/airbyte/pull/57179) | Update dependencies |
+| 0.2.18 | 2025-03-29 | [56555](https://github.com/airbytehq/airbyte/pull/56555) | Update dependencies |
+| 0.2.17 | 2025-03-22 | [56113](https://github.com/airbytehq/airbyte/pull/56113) | Update dependencies |
+| 0.2.16 | 2025-03-08 | [55389](https://github.com/airbytehq/airbyte/pull/55389) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [54884](https://github.com/airbytehq/airbyte/pull/54884) | Update dependencies |
+| 0.2.14 | 2025-02-22 | [54277](https://github.com/airbytehq/airbyte/pull/54277) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [53931](https://github.com/airbytehq/airbyte/pull/53931) | Update dependencies |
+| 0.2.12 | 2025-02-08 | [52936](https://github.com/airbytehq/airbyte/pull/52936) | Update dependencies |
 | 0.2.11 | 2025-01-25 | [52160](https://github.com/airbytehq/airbyte/pull/52160) | Update dependencies |
 | 0.2.10 | 2025-01-18 | [51747](https://github.com/airbytehq/airbyte/pull/51747) | Update dependencies |
 | 0.2.9 | 2025-01-11 | [51250](https://github.com/airbytehq/airbyte/pull/51250) | Update dependencies |

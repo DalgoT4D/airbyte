@@ -1,10 +1,11 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mysql.cj.MysqlType
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
@@ -34,6 +35,8 @@ import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
@@ -63,7 +66,7 @@ import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
-import io.airbyte.cdk.read.cdc.DebeziumState
+import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -85,6 +88,41 @@ class MySqlSourceOperations :
             MySqlSourceCdcMetaFields.CDC_LOG_POS
         )
 
+    @Suppress("UNCHECKED_CAST")
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        recordData[CommonMetaField.CDC_UPDATED_AT.id] =
+            FieldValueEncoder(
+                timestamp,
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+            )
+        recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
+            FieldValueEncoder(
+                0.toDouble(),
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
+        if (globalStateValue == null) {
+            return
+        }
+        val offset: DebeziumOffset =
+            MySqlSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue).offset
+        val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
+        recordData[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
+            FieldValueEncoder(
+                position.fileName,
+                MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>
+            )
+        recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
+            FieldValueEncoder(
+                position.position.toDouble(),
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
+    }
+
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
@@ -102,10 +140,9 @@ class MySqlSourceOperations :
         if (globalStateValue == null) {
             return
         }
-        val debeziumState: DebeziumState =
-            MySqlSourceDebeziumOperations.deserializeDebeziumState(globalStateValue)
-        val position: MySqlSourceCdcPosition =
-            MySqlSourceDebeziumOperations.position(debeziumState.offset)
+        val offset: DebeziumOffset =
+            MySqlSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue).offset
+        val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
         recordData.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
             CdcStringMetaFieldType.jsonEncoder.encode(position.fileName),
@@ -138,11 +175,10 @@ class MySqlSourceOperations :
             MysqlType.BIGINT -> LongFieldType
             MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
             MysqlType.FLOAT,
-            MysqlType.FLOAT_UNSIGNED,
-            MysqlType.DOUBLE,
-            MysqlType.DOUBLE_UNSIGNED -> {
+            MysqlType.FLOAT_UNSIGNED, ->
                 if ((type.precision ?: 0) <= 23) FloatFieldType else DoubleFieldType
-            }
+            MysqlType.DOUBLE,
+            MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType
             MysqlType.DECIMAL,
             MysqlType.DECIMAL_UNSIGNED -> {
                 if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
@@ -202,27 +238,8 @@ class MySqlSourceOperations :
         when (this) {
             NoFrom -> ""
             is From -> if (this.namespace == null) "FROM `$name`" else "FROM `$namespace`.`$name`"
-            is FromSample -> {
-                val from: String = From(name, namespace).sql()
-                // On a table that is very big we limit sampling to no less than 0.05%
-                // chance of a row getting picked. This comes at a price of bias to the beginning
-                // of table on very large tables ( > 100s million of rows)
-                val greatestRate: String = 0.00005.toString()
-                // We only do a full count in case information schema contains no row count.
-                // This is the case for views.
-                val fullCount = "SELECT COUNT(*) FROM `$namespace`.`$name`"
-                // Quick approximation to "select count(*) from table" which doesn't require
-                // full table scan. However, note this could give delayed summary info about a table
-                // and thus a new table could be treated as empty despite we recently added rows.
-                // To prevent that from happening and resulted for skipping the table altogether,
-                // the minimum count is set to 10.
-                val quickCount =
-                    "SELECT GREATEST(10, COALESCE(table_rows, ($fullCount))) FROM information_schema.tables WHERE table_schema = '$namespace' AND table_name = '$name'"
-                val greatest = "GREATEST($greatestRate, $sampleSize / ($quickCount))"
-                // Rand returns a value between 0 and 1
-                val where = "WHERE RAND() < $greatest "
-                "$from $where"
-            }
+            // just return the first sample_size of rows from the table for the best performance
+            is FromSample -> From(name, namespace).sql()
         }
 
     fun WhereNode.sql(): String =

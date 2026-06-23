@@ -4,9 +4,9 @@ This page contains the setup guide and reference information for the Timely sour
 
 ## Prerequisites
 
-1. Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain `Bearer_token` for your account.
-2. Login into your `https://app.timelyapp.com` portal, fetch the `account-id` present in the URL (example: URL `https://app.timelyapp.com/12345/calendar` and account-id `12345`).
-3. Get a start-date to your events. Dateformat `YYYY-MM-DD`.
+1. Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain `Bearer Token` for your account.
+2. Login into your `https://app.timelyapp.com` portal, fetch the `Account ID` present in the URL (example: URL `https://app.timelyapp.com/12345/calendar` and account-id `12345`).
+3. Get a start-date to your events. Date format `YYYY-MM-DDTHH:mm:ssZ`.
 
 ## Setup guide
 
@@ -17,7 +17,7 @@ This page contains the setup guide and reference information for the Timely sour
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Timely connector and select **Timely** from the Source type dropdown.
-4. Enter your `Bearer_token`, `account-id`, and `start-date`.
+4. Enter your `Bearer Token`, `Account ID`, and `Start Date`.
 5. Select `Authenticate your account`.
 6. Click **Set up source**.
 
@@ -26,17 +26,67 @@ This page contains the setup guide and reference information for the Timely sour
 The Timely source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
-| :---------------- | :--------- |
+| :---------------- |:-----------|
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date      | Pull Request                                             | Subject                                                                         |
-| :------ | :-------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 1.0.43 | 2026-06-16 | [80055](https://github.com/airbytehq/airbyte/pull/80055) | Update dependencies |
+| 1.0.42 | 2026-06-09 | [79522](https://github.com/airbytehq/airbyte/pull/79522) | Update dependencies |
+| 1.0.41 | 2026-06-02 | [79052](https://github.com/airbytehq/airbyte/pull/79052) | Update dependencies |
+| 1.0.40 | 2026-04-28 | [77464](https://github.com/airbytehq/airbyte/pull/77464) | Update dependencies |
+| 1.0.39 | 2026-04-21 | [76756](https://github.com/airbytehq/airbyte/pull/76756) | Update dependencies |
+| 1.0.38 | 2026-03-17 | [75043](https://github.com/airbytehq/airbyte/pull/75043) | Update dependencies |
+| 1.0.37 | 2026-03-10 | [74549](https://github.com/airbytehq/airbyte/pull/74549) | Update dependencies |
+| 1.0.36 | 2026-02-24 | [73848](https://github.com/airbytehq/airbyte/pull/73848) | Update dependencies |
+| 1.0.35 | 2026-02-17 | [73510](https://github.com/airbytehq/airbyte/pull/73510) | Update dependencies |
+| 1.0.34 | 2026-02-10 | [73100](https://github.com/airbytehq/airbyte/pull/73100) | Update dependencies |
+| 1.0.33 | 2026-02-03 | [72755](https://github.com/airbytehq/airbyte/pull/72755) | Update dependencies |
+| 1.0.32 | 2026-01-20 | [72031](https://github.com/airbytehq/airbyte/pull/72031) | Update dependencies |
+| 1.0.31 | 2026-01-14 | [71408](https://github.com/airbytehq/airbyte/pull/71408) | Update dependencies |
+| 1.0.30 | 2025-12-18 | [70741](https://github.com/airbytehq/airbyte/pull/70741) | Update dependencies |
+| 1.0.29 | 2025-11-25 | [69850](https://github.com/airbytehq/airbyte/pull/69850) | Update dependencies |
+| 1.0.28 | 2025-11-18 | [69705](https://github.com/airbytehq/airbyte/pull/69705) | Update dependencies |
+| 1.0.27 | 2025-10-29 | [68855](https://github.com/airbytehq/airbyte/pull/68855) | Update dependencies |
+| 1.0.26 | 2025-10-21 | [68562](https://github.com/airbytehq/airbyte/pull/68562) | Update dependencies |
+| 1.0.25 | 2025-10-14 | [67863](https://github.com/airbytehq/airbyte/pull/67863) | Update dependencies |
+| 1.0.24 | 2025-10-07 | [67514](https://github.com/airbytehq/airbyte/pull/67514) | Update dependencies |
+| 1.0.23 | 2025-09-30 | [66838](https://github.com/airbytehq/airbyte/pull/66838) | Update dependencies |
+| 1.0.22 | 2025-09-24 | [66601](https://github.com/airbytehq/airbyte/pull/66601) | Update dependencies |
+| 1.0.21 | 2025-09-09 | [65705](https://github.com/airbytehq/airbyte/pull/65705) | Update dependencies |
+| 1.0.20 | 2025-08-24 | [65443](https://github.com/airbytehq/airbyte/pull/65443) | Update dependencies |
+| 1.0.19 | 2025-08-10 | [64834](https://github.com/airbytehq/airbyte/pull/64834) | Update dependencies |
+| 1.0.18 | 2025-08-02 | [64446](https://github.com/airbytehq/airbyte/pull/64446) | Update dependencies |
+| 1.0.17 | 2025-07-19 | [63636](https://github.com/airbytehq/airbyte/pull/63636) | Update dependencies |
+| 1.0.16 | 2025-07-12 | [63091](https://github.com/airbytehq/airbyte/pull/63091) | Update dependencies |
+| 1.0.15 | 2025-06-28 | [62210](https://github.com/airbytehq/airbyte/pull/62210) | Update dependencies |
+| 1.0.14 | 2025-06-14 | [61296](https://github.com/airbytehq/airbyte/pull/61296) | Update dependencies |
+| 1.0.13 | 2025-05-25 | [60502](https://github.com/airbytehq/airbyte/pull/60502) | Update dependencies |
+| 1.0.12 | 2025-05-10 | [60144](https://github.com/airbytehq/airbyte/pull/60144) | Update dependencies |
+| 1.0.11 | 2025-05-04 | [59595](https://github.com/airbytehq/airbyte/pull/59595) | Update dependencies |
+| 1.0.10 | 2025-04-27 | [58974](https://github.com/airbytehq/airbyte/pull/58974) | Update dependencies |
+| 1.0.9 | 2025-04-19 | [58409](https://github.com/airbytehq/airbyte/pull/58409) | Update dependencies |
+| 1.0.8 | 2025-04-12 | [57933](https://github.com/airbytehq/airbyte/pull/57933) | Update dependencies |
+| 1.0.7 | 2025-04-05 | [57442](https://github.com/airbytehq/airbyte/pull/57442) | Update dependencies |
+| 1.0.6 | 2025-03-29 | [56868](https://github.com/airbytehq/airbyte/pull/56868) | Update dependencies |
+| 1.0.5 | 2025-03-22 | [56290](https://github.com/airbytehq/airbyte/pull/56290) | Update dependencies |
+| 1.0.4 | 2025-03-08 | [55633](https://github.com/airbytehq/airbyte/pull/55633) | Update dependencies |
+| 1.0.3 | 2025-03-01 | [55084](https://github.com/airbytehq/airbyte/pull/55084) | Update dependencies |
+| 1.0.2 | 2025-02-22 | [54528](https://github.com/airbytehq/airbyte/pull/54528) | Update dependencies |
+| 1.0.1 | 2025-02-15 | [54055](https://github.com/airbytehq/airbyte/pull/54055) | Update dependencies |
+| 1.0.0 | 2025-01-07 | [45925](https://github.com/airbytehq/airbyte/pull/45925) | Add new streams, add incremental syncs, tidy inputs |
+| 0.4.13 | 2025-02-08 | [53561](https://github.com/airbytehq/airbyte/pull/53561) | Update dependencies |
+| 0.4.12 | 2025-02-01 | [53061](https://github.com/airbytehq/airbyte/pull/53061) | Update dependencies |
 | 0.4.11 | 2025-01-25 | [52384](https://github.com/airbytehq/airbyte/pull/52384) | Update dependencies |
 | 0.4.10 | 2025-01-18 | [52012](https://github.com/airbytehq/airbyte/pull/52012) | Update dependencies |
 | 0.4.9 | 2025-01-11 | [51398](https://github.com/airbytehq/airbyte/pull/51398) | Update dependencies |

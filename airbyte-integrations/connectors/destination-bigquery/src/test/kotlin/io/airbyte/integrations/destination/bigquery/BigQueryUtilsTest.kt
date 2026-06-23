@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.integrations.destination.bigquery
 
 import com.google.common.collect.ImmutableMap
-import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils.getDatasetId
+import io.airbyte.protocol.models.Jsons.jsonNode
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach

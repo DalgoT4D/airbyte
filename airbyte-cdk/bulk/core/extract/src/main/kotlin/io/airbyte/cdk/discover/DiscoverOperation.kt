@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.Operation
@@ -28,7 +28,7 @@ class DiscoverOperation(
                 listOf<String?>(null) + metadataQuerier.streamNamespaces()
             for (namespace in namespaces) {
                 for (streamID in metadataQuerier.streamNames(namespace)) {
-                    val fields: List<Field> = metadataQuerier.fields(streamID)
+                    val fields: List<EmittedField> = metadataQuerier.fields(streamID)
                     if (fields.isEmpty()) {
                         log.info {
                             "Ignoring stream '${streamID.name}' in '${namespace ?: ""}' because no fields were discovered."
@@ -38,11 +38,7 @@ class DiscoverOperation(
                     val primaryKey: List<List<String>> = metadataQuerier.primaryKey(streamID)
                     val discoveredStream = DiscoveredStream(streamID, fields, primaryKey)
                     val airbyteStream: AirbyteStream =
-                        if (config.global) {
-                            airbyteStreamFactory.createGlobal(discoveredStream)
-                        } else {
-                            airbyteStreamFactory.createNonGlobal(discoveredStream)
-                        }
+                        airbyteStreamFactory.create(config, discoveredStream)
                     airbyteStreams.add(airbyteStream)
                 }
             }

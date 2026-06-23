@@ -12,15 +12,15 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.6@sha256:a86098c6af1cf9d0b4484f33c973981a4d4f16740924ce9325b01ee4c8ca33df
   connectorSubtype: api
   connectorType: source
   definitionId: 2bf6c581-bec5-4e32-891d-de33036bd631
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.26
   dockerRepository: airbyte/source-oura
   githubIssueLabel: source-oura
   icon: oura.svg
-  license: MIT
+  license: ELv2
   name: Oura
   releaseDate: 2022-10-20
   releaseStage: alpha
@@ -32,4 +32,11 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  externalDocumentationUrls:
+    - title: Oura API documentation
+      url: https://cloud.ouraring.com/docs/
+      type: api_reference
+    - title: Oura authentication
+      url: https://cloud.ouraring.com/docs/authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

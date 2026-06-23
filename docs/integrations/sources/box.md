@@ -31,6 +31,10 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 | trashed_items | id | DefaultPaginator | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,18 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2026-04-21 | [76536](https://github.com/airbytehq/airbyte/pull/76536) | Update dependencies |
+| 0.0.20 | 2025-05-24 | [60665](https://github.com/airbytehq/airbyte/pull/60665) | Update dependencies |
+| 0.0.19 | 2025-04-26 | [58701](https://github.com/airbytehq/airbyte/pull/58701) | Update dependencies |
+| 0.0.18 | 2025-04-19 | [58259](https://github.com/airbytehq/airbyte/pull/58259) | Update dependencies |
+| 0.0.17 | 2025-04-05 | [57131](https://github.com/airbytehq/airbyte/pull/57131) | Update dependencies |
+| 0.0.16 | 2025-03-22 | [56147](https://github.com/airbytehq/airbyte/pull/56147) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55361](https://github.com/airbytehq/airbyte/pull/55361) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54833](https://github.com/airbytehq/airbyte/pull/54833) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54236](https://github.com/airbytehq/airbyte/pull/54236) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [53877](https://github.com/airbytehq/airbyte/pull/53877) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53399](https://github.com/airbytehq/airbyte/pull/53399) | Update dependencies |
+| 0.0.10 | 2025-02-01 | [52888](https://github.com/airbytehq/airbyte/pull/52888) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52167](https://github.com/airbytehq/airbyte/pull/52167) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51757](https://github.com/airbytehq/airbyte/pull/51757) | Update dependencies |
 | 0.0.7 | 2025-01-11 | [51291](https://github.com/airbytehq/airbyte/pull/51291) | Update dependencies |

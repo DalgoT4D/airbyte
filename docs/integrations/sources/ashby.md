@@ -1,16 +1,52 @@
 # Ashby
 
-## Sync overview
+<HideInUI>
 
-The Ashby source supports both Full Refresh only.
+This page contains the setup guide and reference information for the [Ashby](https://www.ashbyhq.com/) source connector.
 
-This source can sync data for the [Ashby API](https://developers.ashbyhq.com/reference).
+</HideInUI>
 
-### Output schema
+## Prerequisites
 
-This Source is capable of syncing the following core Streams:
+- An Ashby account
+- An Ashby API key with the appropriate permissions for the streams you want to sync. See the [Ashby authentication docs](https://developers.ashbyhq.com/reference/authentication) for details on how to create an API key.
+
+Your API key must have read permissions enabled for the modules that correspond to the streams you want to sync:
+
+| Ashby permission module | Streams |
+| :--- | :--- |
+| Candidates | `applications`, `application_criteria_evaluations`, `candidates` |
+| Interviews | `interviews`, `interview_stages`, `interview_schedules` |
+| Jobs | `jobs`, `job_postings` |
+| Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `sources` |
+| Organization *(always required)* | `departments`, `locations`, `users` — The connection check validates connectivity using the `users` stream, so you must enable this permission even if you only intend to sync streams from other modules. Without it, the check fails with a `403 missing_endpoint_permission` error. |
+| Offers | `offers` |
+
+:::note
+The `application_criteria_evaluations` stream requires the AI Application Review feature to be enabled for your Ashby organization. If this feature is not enabled, the stream returns empty results.
+:::
+
+## Setup guide
+
+1. Log in to your Ashby account.
+2. Generate an API key following the [Ashby authentication guide](https://developers.ashbyhq.com/reference/authentication). Grant the API key read permissions for the modules listed in the prerequisites. At minimum, you must enable the **Organization** read permission (required for the connection check) plus read permissions for any additional modules whose streams you want to sync.
+3. In Airbyte, create a new Ashby source.
+4. Enter your **API key**.
+5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector only replicates data created on or after this date for the `applications` and `interview_schedules` streams.
+
+## Supported sync modes
+
+| Feature | Supported |
+| :--- | :--- |
+| Full Refresh | Yes |
+| Incremental - Append | No |
+
+## Supported streams
+
+This source syncs the following streams:
 
 - [applications](https://developers.ashbyhq.com/reference/applicationlist)
+- [application_criteria_evaluations](https://developers.ashbyhq.com/reference/applicationlistcriteriaevaluations) (substream of applications)
 - [archive_reasons](https://developers.ashbyhq.com/reference/archivereasonlist)
 - [candidate_tags](https://developers.ashbyhq.com/reference/candidatetaglist)
 - [candidates](https://developers.ashbyhq.com/reference/candidatelist)
@@ -18,6 +54,8 @@ This Source is capable of syncing the following core Streams:
 - [departments](https://developers.ashbyhq.com/reference/departmentlist)
 - [feedback_form_definitions](https://developers.ashbyhq.com/reference/feedbackformdefinitionlist)
 - [interview_schedules](https://developers.ashbyhq.com/reference/interviewschedulelist)
+- [interviews](https://developers.ashbyhq.com/reference/interviewlist)
+- [interview_stages](https://developers.ashbyhq.com/reference/interviewstagelist)
 - [job_postings](https://developers.ashbyhq.com/reference/jobpostinglist)
 - [jobs](https://developers.ashbyhq.com/reference/joblist)
 - [locations](https://developers.ashbyhq.com/reference/locationlist)
@@ -25,21 +63,15 @@ This Source is capable of syncing the following core Streams:
 - [sources](https://developers.ashbyhq.com/reference/sourcelist)
 - [users](https://developers.ashbyhq.com/reference/userlist)
 
-### Features
+The `application_criteria_evaluations` stream fetches AI-generated criteria evaluations for applications that are in the Application Review interview stage and have an active status. It uses the `applicationId` from the parent `applications` stream.
 
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | No                   |       |
-| Namespaces                | No                   |       |
+## Performance considerations
 
-### Performance considerations
+Ashby limits standard API endpoints to 1,000 requests per minute per API key. The connector enforces this request budget and reads streams concurrently with a default of 2 worker threads. You can tune **Number of concurrent threads** if your API key has enough headroom, but higher values increase the risk of rate-limit responses.
 
-The Ashby connector should not run into Ashby API limitations under normal usage.
+## IP allow list
 
-## Requirements
-
-- **Ashby API key**. See the [Ashby docs](https://developers.ashbyhq.com/reference/authentication) for information on how to obtain an API key.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -48,6 +80,30 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 0.3.8-rc.3 | 2026-05-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Decrease default concurrency to 2 and add explicit worker count plus API request budget for the next rollout. |
+| 0.3.8-rc.2 | 2026-05-21 | [78307](https://github.com/airbytehq/airbyte/pull/78307) | Decrease default concurrency to 3 after Phase 1 rollout monitoring found source-read regressions and a 429 retry warning. |
+| 0.3.8-rc.1 | 2026-05-18 | [77048](https://github.com/airbytehq/airbyte/pull/77048) | Add concurrency support with default_concurrency=4 for concurrent stream reads |
+| 0.3.7 | 2026-04-28 | [77144](https://github.com/airbytehq/airbyte/pull/77144) | Update dependencies |
+| 0.3.6 | 2026-04-21 | [76510](https://github.com/airbytehq/airbyte/pull/76510) | Update dependencies |
+| 0.3.5 | 2026-03-31 | [75881](https://github.com/airbytehq/airbyte/pull/75881) | Update dependencies |
+| 0.3.4 | 2026-03-24 | [75325](https://github.com/airbytehq/airbyte/pull/75325) | Update dependencies |
+| 0.3.3 | 2026-03-10 | [74490](https://github.com/airbytehq/airbyte/pull/74490) | Update dependencies |
+| 0.3.2 | 2026-02-24 | [73805](https://github.com/airbytehq/airbyte/pull/73805) | Update dependencies |
+| 0.3.1 | 2026-02-17 | [60692](https://github.com/airbytehq/airbyte/pull/60692) | Update dependencies |
+| 0.3.0 | 2026-02-13 | [73244](https://github.com/airbytehq/airbyte/pull/73244) | Add interviews, interview_stages, and application_criteria_evaluations streams |
+| 0.2.23 | 2025-05-10 | [59853](https://github.com/airbytehq/airbyte/pull/59853) | Update dependencies |
+| 0.2.22 | 2025-05-03 | [59322](https://github.com/airbytehq/airbyte/pull/59322) | Update dependencies |
+| 0.2.21 | 2025-04-26 | [58746](https://github.com/airbytehq/airbyte/pull/58746) | Update dependencies |
+| 0.2.20 | 2025-04-19 | [58271](https://github.com/airbytehq/airbyte/pull/58271) | Update dependencies |
+| 0.2.19 | 2025-04-12 | [57150](https://github.com/airbytehq/airbyte/pull/57150) | Update dependencies |
+| 0.2.18 | 2025-03-29 | [56594](https://github.com/airbytehq/airbyte/pull/56594) | Update dependencies |
+| 0.2.17 | 2025-03-22 | [56140](https://github.com/airbytehq/airbyte/pull/56140) | Update dependencies |
+| 0.2.16 | 2025-03-08 | [55387](https://github.com/airbytehq/airbyte/pull/55387) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [54888](https://github.com/airbytehq/airbyte/pull/54888) | Update dependencies |
+| 0.2.14 | 2025-02-22 | [54234](https://github.com/airbytehq/airbyte/pull/54234) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [53874](https://github.com/airbytehq/airbyte/pull/53874) | Update dependencies |
+| 0.2.12 | 2025-02-08 | [53407](https://github.com/airbytehq/airbyte/pull/53407) | Update dependencies |
+| 0.2.11 | 2025-02-01 | [52893](https://github.com/airbytehq/airbyte/pull/52893) | Update dependencies |
 | 0.2.10 | 2025-01-25 | [52162](https://github.com/airbytehq/airbyte/pull/52162) | Update dependencies |
 | 0.2.9 | 2025-01-18 | [51710](https://github.com/airbytehq/airbyte/pull/51710) | Update dependencies |
 | 0.2.8 | 2025-01-11 | [51292](https://github.com/airbytehq/airbyte/pull/51292) | Update dependencies |

@@ -43,7 +43,7 @@ After creating your account you will be able to get your `Client ID` and `Secret
 
 By default, syncs are run with a slice period of 7 days. If you see errors with the message `Result set size is greater than the maximum limit` or an error code like `RESULTSET_TOO_LARGE`:
 
-- Try lower the the size of the slice period in your optional parameters in your connection configuration.
+- Try lower the size of the slice period in your optional parameters in your connection configuration.
 - You can try to lower the scheduling sync window in case a day slice period is not enough. Lowering the sync period it may help avoid reaching the 10K limit.
 
 :::
@@ -257,6 +257,10 @@ The below table contains the configuraiton parameters available for this connect
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -264,6 +268,44 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.37 | 2026-06-23 | [80610](https://github.com/airbytehq/airbyte/pull/80610) | Update dependencies |
+| 2.6.36 | 2026-06-16 | [79986](https://github.com/airbytehq/airbyte/pull/79986) | Update dependencies |
+| 2.6.35 | 2026-06-09 | [79456](https://github.com/airbytehq/airbyte/pull/79456) | Update dependencies |
+| 2.6.34 | 2026-06-02 | [78907](https://github.com/airbytehq/airbyte/pull/78907) | Update dependencies |
+| 2.6.33 | 2026-04-28 | [77335](https://github.com/airbytehq/airbyte/pull/77335) | Update dependencies |
+| 2.6.32 | 2026-04-21 | [76710](https://github.com/airbytehq/airbyte/pull/76710) | Update dependencies |
+| 2.6.31 | 2026-04-07 | [76135](https://github.com/airbytehq/airbyte/pull/76135) | Fix undefined `security_context` variable in payments generator utility script |
+| 2.6.30 | 2026-03-31 | [75850](https://github.com/airbytehq/airbyte/pull/75850) | Update dependencies |
+| 2.6.29 | 2026-03-24 | [75396](https://github.com/airbytehq/airbyte/pull/75396) | Update dependencies |
+| 2.6.28 | 2026-03-10 | [74484](https://github.com/airbytehq/airbyte/pull/74484) | Update dependencies |
+| 2.6.27 | 2026-03-03 | [73875](https://github.com/airbytehq/airbyte/pull/73875) | Update dependencies |
+| 2.6.26 | 2026-02-26 | [74027](https://github.com/airbytehq/airbyte/pull/74027) | Fix INVALID_DATE_TIME_FORMAT error on disputes stream by using 3-digit milliseconds |
+| 2.6.25 | 2026-02-17 | [73574](https://github.com/airbytehq/airbyte/pull/73574) | Update dependencies |
+| 2.6.24 | 2026-02-10 | [73171](https://github.com/airbytehq/airbyte/pull/73171) | Update dependencies |
+| 2.6.23 | 2026-02-03 | [72637](https://github.com/airbytehq/airbyte/pull/72637) | Update dependencies |
+| 2.6.22 | 2026-01-22 | [70967](https://github.com/airbytehq/airbyte/pull/70967) | Update HTTP response action for 400 error transactions from IGNORE to FAIL |
+| 2.6.21 | 2026-01-20 | [71652](https://github.com/airbytehq/airbyte/pull/71652) | Update dependencies |
+| 2.6.20 | 2025-12-18 | [70505](https://github.com/airbytehq/airbyte/pull/70505) | Update dependencies |
+| 2.6.19 | 2025-11-25 | [69974](https://github.com/airbytehq/airbyte/pull/69974) | Update dependencies |
+| 2.6.18 | 2025-11-18 | [69668](https://github.com/airbytehq/airbyte/pull/69668) | Update dependencies |
+| 2.6.17 | 2025-10-29 | [69044](https://github.com/airbytehq/airbyte/pull/69044) | Update dependencies |
+| 2.6.16 | 2025-10-21 | [68286](https://github.com/airbytehq/airbyte/pull/68286) | Update dependencies |
+| 2.6.15 | 2025-10-14 | [67760](https://github.com/airbytehq/airbyte/pull/67760) | Update dependencies |
+| 2.6.14 | 2025-10-07 | [67348](https://github.com/airbytehq/airbyte/pull/67348) | Update dependencies |
+| 2.6.13 | 2025-09-30 | [66378](https://github.com/airbytehq/airbyte/pull/66378) | Update dependencies |
+| 2.6.12 | 2025-09-09 | [65835](https://github.com/airbytehq/airbyte/pull/65835) | Update dependencies |
+| 2.6.11 | 2025-08-23 | [65171](https://github.com/airbytehq/airbyte/pull/65171) | Update dependencies |
+| 2.6.10 | 2025-08-09 | [64716](https://github.com/airbytehq/airbyte/pull/64716) | Update dependencies |
+| 2.6.9 | 2025-08-02 | [64258](https://github.com/airbytehq/airbyte/pull/64258) | Update dependencies |
+| 2.6.8 | 2025-07-26 | [63821](https://github.com/airbytehq/airbyte/pull/63821) | Update dependencies |
+| 2.6.7 | 2025-07-19 | [63449](https://github.com/airbytehq/airbyte/pull/63449) | Update dependencies |
+| 2.6.6 | 2025-07-12 | [63255](https://github.com/airbytehq/airbyte/pull/63255) | Update dependencies |
+| 2.6.5 | 2025-07-05 | [62625](https://github.com/airbytehq/airbyte/pull/62625) | Update dependencies |
+| 2.6.4 | 2025-06-28 | [62390](https://github.com/airbytehq/airbyte/pull/62390) | Update dependencies |
+| 2.6.3 | 2025-06-21 | [61932](https://github.com/airbytehq/airbyte/pull/61932) | Update dependencies |
+| 2.6.2 | 2025-06-14 | [51848](https://github.com/airbytehq/airbyte/pull/51848) | Update dependencies |
+| 2.6.1 | 2025-06-05 | [58674](https://github.com/airbytehq/airbyte/pull/58674) | Update CDK to fix complex datatype errors with interpolation |
+| 2.6.0 | 2024-10-23 | [47282](https://github.com/airbytehq/airbyte/pull/47282) | Migrate to Manifest-only |
 | 2.5.8 | 2025-01-11 | [43797](https://github.com/airbytehq/airbyte/pull/43797) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.5.7 | 2024-06-25 | [40269](https://github.com/airbytehq/airbyte/pull/40269) | Update dependencies |
 | 2.5.6 | 2024-06-22 | [40110](https://github.com/airbytehq/airbyte/pull/40110) | Update dependencies |

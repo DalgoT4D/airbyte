@@ -2,13 +2,14 @@
   "list": [
     {
       "site_migration_detail": {
-        "entity_id": "__test__KyVnHhSBWT9AW8j",
-        "entity_id_at_other_site": "__test__KyVnHhSBWT9AW8j",
+        "entity_id": "smd_001",
         "entity_type": "customer",
-        "migrated_at": 1600704658,
+        "other_site_name": "old-site",
+        "entity_id_at_other_site": "old_cust_001",
+        "migrated_at": 1705312800,
         "object": "site_migration_detail",
-        "other_site_name": "mannar",
-        "status": "moved_in"
+        "cf_migration_batch": "Batch001",
+        "cf_migration_status": "Completed"
       }
     }
   ]

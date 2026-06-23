@@ -88,6 +88,10 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 The Railz connector should gracefully handle Railz API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -95,6 +99,19 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.2.11 | 2025-05-24 | [60560](https://github.com/airbytehq/airbyte/pull/60560) | Update dependencies |
+| 0.2.10 | 2025-05-10 | [60145](https://github.com/airbytehq/airbyte/pull/60145) | Update dependencies |
+| 0.2.9 | 2025-05-03 | [59502](https://github.com/airbytehq/airbyte/pull/59502) | Update dependencies |
+| 0.2.8 | 2025-04-27 | [59087](https://github.com/airbytehq/airbyte/pull/59087) | Update dependencies |
+| 0.2.7 | 2025-04-19 | [58477](https://github.com/airbytehq/airbyte/pull/58477) | Update dependencies |
+| 0.2.6 | 2025-04-12 | [57878](https://github.com/airbytehq/airbyte/pull/57878) | Update dependencies |
+| 0.2.5 | 2025-04-05 | [57324](https://github.com/airbytehq/airbyte/pull/57324) | Update dependencies |
+| 0.2.4 | 2025-03-29 | [56792](https://github.com/airbytehq/airbyte/pull/56792) | Update dependencies |
+| 0.2.3 | 2025-03-22 | [56177](https://github.com/airbytehq/airbyte/pull/56177) | Update dependencies |
+| 0.2.2 | 2025-03-08 | [53971](https://github.com/airbytehq/airbyte/pull/53971) | Update dependencies |
+| 0.2.1 | 2025-02-24 | [54164](https://github.com/airbytehq/airbyte/pull/54164) | Remove stream_state interpolation from record filter |
+| 0.2.0 | 2025-02-05 | [47244](https://github.com/airbytehq/airbyte/pull/47244) | Migrate to manifest only format |
+| 0.1.26 | 2025-02-01 | [52978](https://github.com/airbytehq/airbyte/pull/52978) | Update dependencies |
 | 0.1.25 | 2025-01-25 | [52519](https://github.com/airbytehq/airbyte/pull/52519) | Update dependencies |
 | 0.1.24 | 2025-01-18 | [51928](https://github.com/airbytehq/airbyte/pull/51928) | Update dependencies |
 | 0.1.23 | 2025-01-11 | [51318](https://github.com/airbytehq/airbyte/pull/51318) | Update dependencies |

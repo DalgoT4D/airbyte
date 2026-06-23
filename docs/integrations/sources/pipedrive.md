@@ -108,10 +108,18 @@ Apart from `Fields` streams, all other streams support incremental.
 
 The Pipedrive connector will gracefully handle rate limits. For more information, see [the Pipedrive docs for rate limitations](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.0 | 2025-02-28 | [54716](https://github.com/airbytehq/airbyte/pull/54716) | Refactor: Optimize Parameters, remove redundant code and Improve Manifest Readability |
+| 2.3.8 | 2025-02-22 | [47292](https://github.com/airbytehq/airbyte/pull/47292) | Migrate to manifest only format |
+| 2.3.7 | 2025-02-08 | [53488](https://github.com/airbytehq/airbyte/pull/53488) | Update dependencies |
+| 2.3.6 | 2025-02-01 | [52986](https://github.com/airbytehq/airbyte/pull/52986) | Update dependencies |
 | 2.3.5 | 2025-01-25 | [52477](https://github.com/airbytehq/airbyte/pull/52477) | Update dependencies |
 | 2.3.4 | 2025-01-18 | [51922](https://github.com/airbytehq/airbyte/pull/51922) | Update dependencies |
 | 2.3.3 | 2025-01-11 | [51305](https://github.com/airbytehq/airbyte/pull/51305) | Update dependencies |

@@ -3,11 +3,11 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.33"
+version = "0.1.45"
 name = "destination-timeplus"
 description = "Destination implementation for Timeplus."
 authors = ["Airbyte <jove@timeplus.io>"]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/destinations/timeplus"
 homepage = "https://airbyte.com"
@@ -26,3 +26,11 @@ destination-timeplus = "destination_timeplus.run:run"
 requests-mock = "*"
 pytest-mock = "*"
 pytest = "*"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

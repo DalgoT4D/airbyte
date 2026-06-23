@@ -11,6 +11,16 @@ seamlessly embedded in their product. Cumul.io's intuitive, low-code interface e
 users with insight-driven actions in record time **without straining engineering resources from the
 core product**.
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
 ## Getting started
 
 In order to use the Cumul.io destination, you'll first need to **create a
@@ -43,16 +53,15 @@ _If you have any questions or want to get started with Cumul.io, don't hesitate 
 
 | [Sync modes](https://docs.airbyte.com/understanding-airbyte/connections/#sync-modes)                                     | Supported?\(Yes/No\) | Notes                                                 |
 | :----------------------------------------------------------------------------------------------------------------------- | :------------------- | :---------------------------------------------------- |
-| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)                 | Yes                  | /                                                     |
-| [Full Refresh - Replace](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)             | Yes                  | /                                                     |
-| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)              | Yes                  | /                                                     |
-| [Incremental - Append + Deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append/)                 | Yes                  | /                                                     |
+| [Full Refresh - Replace](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)             | Yes                  | /                                                     |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append/)              | Yes                  | /                                                     |
+| [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
 
 ### Airbyte Features support
 
 | Feature                                                                  | Supported?\(Yes/No\) | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
 | :----------------------------------------------------------------------- | :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Namespaces](https://docs.airbyte.com/understanding-airbyte/namespaces/) | Yes                  | (**_Highly recommended_**) A **concatenation of the namespace and stream name** will be used as a unique identifier for the related Cumul.io dataset (using [Tags](https://academy.cumul.io/article/mam7lkdt)) and ensures next synchronizations can target the same dataset. Use this property to **ensure identically named destination streams** from different connections **do not coincide**! |
 | [Clear data](https://docs.airbyte.com/operator-guides/clear)             | Yes                  | **Existing data** in a dataset is **not deleted** upon resetting a stream in Airbyte, however the next synchronization batch will replace all existing data. This ensures that the dataset is never empty (e.g. upon disabling the synchronization), which would otherwise result in "No data" upon querying it.                                                                                    |
 
 ### Airbyte data types support
@@ -154,6 +163,10 @@ data less frequently** rather than _smaller amounts of data more frequently_!
     5. From there on out, you can replace/append data for this dataset based on the tag (already
        implemented).
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -161,6 +174,17 @@ data less frequently** rather than _smaller amounts of data more frequently_!
 
 | Version | Date       | Pull Request                                              | Subject                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.41 | 2025-05-10 | [59772](https://github.com/airbytehq/airbyte/pull/59772) | Update dependencies |
+| 0.1.40 | 2025-05-03 | [59333](https://github.com/airbytehq/airbyte/pull/59333) | Update dependencies |
+| 0.1.39 | 2025-04-26 | [58722](https://github.com/airbytehq/airbyte/pull/58722) | Update dependencies |
+| 0.1.38 | 2025-04-12 | [57628](https://github.com/airbytehq/airbyte/pull/57628) | Update dependencies |
+| 0.1.37 | 2025-04-05 | [57145](https://github.com/airbytehq/airbyte/pull/57145) | Update dependencies |
+| 0.1.36 | 2025-03-29 | [56586](https://github.com/airbytehq/airbyte/pull/56586) | Update dependencies |
+| 0.1.35 | 2025-03-22 | [56101](https://github.com/airbytehq/airbyte/pull/56101) | Update dependencies |
+| 0.1.34 | 2025-03-08 | [54909](https://github.com/airbytehq/airbyte/pull/54909) | Update dependencies |
+| 0.1.33 | 2025-02-22 | [54208](https://github.com/airbytehq/airbyte/pull/54208) | Update dependencies |
+| 0.1.32 | 2025-02-15 | [53866](https://github.com/airbytehq/airbyte/pull/53866) | Update dependencies |
+| 0.1.31 | 2025-02-01 | [52937](https://github.com/airbytehq/airbyte/pull/52937) | Update dependencies |
 | 0.1.30 | 2025-01-25 | [51767](https://github.com/airbytehq/airbyte/pull/51767) | Update dependencies |
 | 0.1.29 | 2025-01-11 | [51261](https://github.com/airbytehq/airbyte/pull/51261) | Update dependencies |
 | 0.1.28 | 2024-12-28 | [50504](https://github.com/airbytehq/airbyte/pull/50504) | Update dependencies |

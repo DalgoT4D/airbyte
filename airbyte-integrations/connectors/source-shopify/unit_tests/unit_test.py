@@ -8,7 +8,7 @@ import pytest
 import requests
 from source_shopify.run import run
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
+from source_shopify.streams.streams import BalanceTransactions, Countries, DiscountCodes, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
 
 
@@ -52,7 +52,6 @@ def test_get_next_page_token(requests_mock, auth_config):
                 "shop",
                 "tender_transactions",
                 "transactions",
-                "countries",
             ],
         ),
         (
@@ -70,7 +69,6 @@ def test_get_next_page_token(requests_mock, auth_config):
                 "shop",
                 "tender_transactions",
                 "transactions",
-                "countries",
             ],
         ),
     ],
@@ -90,16 +88,8 @@ def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_
 
 @pytest.mark.parametrize(
     "stream, slice, status_code, json_response",
-    [
-        (BalanceTransactions, None, 404, {"errors": "Not Found"}),
-        (PriceRules, None, 403, {"errors": "Forbidden"}),
-        (FulfillmentOrders, {"order_id": 123}, 500, {"errors": "Internal Server Error"}),
-    ],
-    ids=[
-        "Stream not found (404)",
-        "No permissions (403)",
-        "Internal Server Error for slice (500)",
-    ],
+    [(BalanceTransactions, None, 404, {"errors": "Not Found"}), (PriceRules, None, 403, {"errors": "Forbidden"})],
+    ids=["Stream not found (404)", "No permissions (403)"],
 )
 def test_unavailable_stream(
     requests_mock, auth_config, stream, slice: Optional[Mapping[str, Any]], status_code: int, json_response: Mapping[str, Any]
@@ -137,3 +127,49 @@ def test_run_module_emits_spec():
     with patch("sys.argv", ["", "spec"]):
         # dummy test for the spec
         assert run() is None
+
+
+@pytest.mark.parametrize(
+    "parent_slices, expected_slices",
+    [
+        pytest.param(
+            [{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}],
+            [{"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}}],
+            id="slice_with_non_empty_profile_location_groups_is_kept",
+        ),
+        pytest.param(
+            [{"parent": {"profile_location_groups": []}}],
+            [],
+            id="slice_with_empty_profile_location_groups_is_filtered",
+        ),
+        pytest.param(
+            [{"parent": {}}],
+            [],
+            id="slice_with_missing_profile_location_groups_is_filtered",
+        ),
+        pytest.param(
+            [
+                {"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}},
+                {"parent": {"profile_location_groups": []}},
+                {"parent": {"profile_location_groups": [{"locationGroup": {"id": "456"}}]}},
+            ],
+            [
+                {"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}},
+                {"parent": {"profile_location_groups": [{"locationGroup": {"id": "456"}}]}},
+            ],
+            id="mixed_slices_filters_only_empty_profile_location_groups",
+        ),
+    ],
+)
+def test_countries_stream_slices_filters_empty_profile_location_groups(mocker, auth_config, parent_slices, expected_slices):
+    """
+    Test that Countries.stream_slices filters out slices where profile_location_groups is empty.
+    This prevents IndexError when request_body_json tries to access profile_location_groups[0].
+    """
+    mocker.patch(
+        "source_shopify.streams.streams.HttpSubStream.stream_slices",
+        return_value=iter(parent_slices),
+    )
+    stream = Countries(parent=mocker.MagicMock(), config=auth_config)
+    result = list(stream.stream_slices())
+    assert result == expected_slices

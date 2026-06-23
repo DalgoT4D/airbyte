@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -7,7 +7,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.util.Jsons
 
 /**
@@ -26,38 +26,50 @@ data class DefaultJdbcStreamStateValue(
 
         /** Value representing the progress of a ongoing snapshot not involving cursor columns. */
         fun snapshotCheckpoint(
-            primaryKey: List<Field>,
+            primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue =
-            Jsons.valueToTree(
-                DefaultJdbcStreamStateValue(
-                    primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
-                )
-            )
+            when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        DefaultJdbcStreamStateValue(
+                            primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
+                        )
+                    )
+            }
 
         /** Value representing the progress of an ongoing snapshot involving cursor columns. */
         fun snapshotWithCursorCheckpoint(
-            primaryKey: List<Field>,
+            primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
-            cursor: Field,
+            cursor: EmittedField,
             cursorUpperBound: JsonNode,
         ): OpaqueStateValue =
-            Jsons.valueToTree(
-                DefaultJdbcStreamStateValue(
-                    primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
-                    cursors = mapOf(cursor.id to cursorUpperBound),
-                )
-            )
+            when (primaryKeyCheckpoint.first().isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        DefaultJdbcStreamStateValue(
+                            primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
+                            cursors = mapOf(cursor.id to cursorUpperBound),
+                        )
+                    )
+            }
 
         /** Value representing the progress of an ongoing incremental cursor read. */
         fun cursorIncrementalCheckpoint(
-            cursor: Field,
+            cursor: EmittedField,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue =
-            Jsons.valueToTree(
-                DefaultJdbcStreamStateValue(
-                    cursors = mapOf(cursor.id to cursorCheckpoint),
-                )
-            )
+            when (cursorCheckpoint.isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        DefaultJdbcStreamStateValue(
+                            cursors = mapOf(cursor.id to cursorCheckpoint),
+                        )
+                    )
+            }
     }
 }

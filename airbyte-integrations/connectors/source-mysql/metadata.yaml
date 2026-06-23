@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 3.11.0
+  dockerImageTag: 3.52.3
   dockerRepository: airbyte/source-mysql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql
@@ -18,7 +18,12 @@ data:
   maxSecondsBetweenMessages: 7200
   name: MySQL
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
+    baseImage: docker.io/airbyte/java-connector-base:2.0.4@sha256:5f343797cfcf021ca98ba9bdf5970ef66cbf6222d8cc17b0d61d13860a5bcc2b
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   registryOverrides:
     cloud:
       enabled: true
@@ -73,4 +78,14 @@ data:
         upgradeDeadline: "2023-08-17"
     rolloutConfiguration:
       enableProgressiveRollout: false
+  externalDocumentationUrls:
+    - title: MySQL documentation
+      url: https://dev.mysql.com/doc/
+      type: api_reference
+    - title: MySQL Release Notes
+      url: https://dev.mysql.com/doc/relnotes/mysql/en/
+      type: api_release_history
+    - title: MySQL authentication
+      url: https://dev.mysql.com/doc/refman/8.0/en/access-control.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"

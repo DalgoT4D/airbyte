@@ -1,4 +1,158 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Amazon Ads Migration Guide
+
+## Upgrading to 9.0.0
+
+The `sponsored_product_ad_group_suggested_keywords` stream has been migrated from the deprecated V2 Suggested Keywords API to the [Keyword Recommendations API](https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Keyword-Recommendations). Amazon shut off the V2 endpoints on June 1, 2026.
+
+### What changed
+
+| Aspect | Before (v2) | After (v4 Keyword Recommendations) |
+|--------|-------------|-------------------------------------|
+| Endpoint | `GET /v2/sp/adGroups/{adGroupId}/suggested/keywords` | `POST /sp/targets/keywords/recommendations` |
+| Response fields | `suggestedKeywords[].keywordText`, `suggestedKeywords[].matchType` | `keyword`, `recId`, `bidInfo[]`, `searchTermImpressionShare`, `searchTermImpressionRank`, `translation`, `userSelectedKeyword` |
+
+### Affected streams
+
+- `sponsored_product_ad_group_suggested_keywords`
+
+### Refresh affected schemas and reset data
+
+1. Select **Connections** in the main nav bar.
+   1. Select the connection(s) affected by the update.
+1. Select the **Schema** tab.
+   1. Select **Refresh source schema**.
+   1. Select **OK**.
+
+:::note
+Any detected schema changes will be listed for your review.
+:::
+
+1. Select **Save changes** at the top right of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+
+:::note
+Depending on destination type you may not be prompted to reset your data.
+:::
+
+1. Select **Save connection**.
+
+:::note
+This will reset the data in your destination and initiate a fresh sync.
+:::
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+## Upgrading to 8.0.0
+
+Daily report streams now use the `date` field from the Amazon Ads API response as the cursor and primary key instead of the synthetic `reportDate` field.
+
+Previously, all rows within a 30-day reporting window were incorrectly assigned the same `reportDate` value (the stream interval end date), causing approximately 96% of data to be lost during deduplication when using incremental + dedup sync mode. This version fixes the issue by using the actual `date` field returned by the API.
+
+### Affected streams
+
+All daily report streams are affected:
+
+- `sponsored_brands_v3_report_stream_daily`
+- `sponsored_display_campaigns_report_stream_daily`
+- `sponsored_display_adgroups_report_stream_daily`
+- `sponsored_display_productads_report_stream_daily`
+- `sponsored_display_targets_report_stream_daily`
+- `sponsored_display_asins_report_stream_daily`
+- `sponsored_products_campaigns_report_stream_daily`
+- `sponsored_products_adgroups_report_stream_daily`
+- `sponsored_products_keywords_report_stream_daily`
+- `sponsored_products_targets_report_stream_daily`
+- `sponsored_products_productads_report_stream_daily`
+- `sponsored_products_asins_keywords_report_stream_daily`
+- `sponsored_products_asins_targets_report_stream_daily`
+
+### Primary key and cursor changes
+
+| Change | Before | After |
+|--------|--------|-------|
+| Cursor field | `reportDate` (synthetic) | `date` (from API response) |
+| Primary key date component | `reportDate` | `date` |
+
+Non-daily (SUMMARY) report streams are **not affected** and continue to use `reportDate`.
+
+:::note
+The `reportDate` field is still present on daily stream records but is no longer used as the primary key or cursor. After this upgrade, `reportDate` on daily streams reflects the stream interval end date rather than the actual report date. Use the `date` field instead for accurate daily date values. Downstream queries or dashboards that reference `reportDate` on daily streams should be updated to use `date`.
+:::
+
+### Refresh affected schemas and reset data
+
+1. Select **Connections** in the main nav bar.
+   1. Select the connection(s) affected by the update.
+1. Select the **Schema** tab.
+   1. Select **Refresh source schema**.
+   1. Select **OK**.
+
+:::note
+Any detected schema changes will be listed for your review.
+:::
+
+1. Select **Save changes** at the top right of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+
+:::note
+Depending on destination type you may not be prompted to reset your data.
+:::
+
+1. Select **Save connection**.
+
+:::note
+This will reset the data in your destination and initiate a fresh sync.
+:::
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+## Upgrading to 7.0.0
+
+- The stream SponsoredDisplayReportStream is split into five:
+
+  - sponsored_display_campaigns_report_stream
+  - sponsored_display_adgroups_report_stream
+  - sponsored_display_productads_report_stream
+  - sponsored_display_targets_report_stream
+  - sponsored_display_asins_report_stream
+
+- The stream SponsoredProductsReportStream is split into seven:
+
+  - sponsored_products_campaigns_report_stream
+  - sponsored_products_adgroups_report_stream
+  - sponsored_products_keywords_report_stream
+  - sponsored_products_targets_report_stream
+  - sponsored_products_productads_report_stream
+  - sponsored_products_asins_keywords_report_stream
+  - sponsored_products_asins_targets_report_stream
+
+- Changes for all *-report streams:
+
+  - They have new primary keys (see the following table).
+  - metrics have been moved to the root of the schema.
+  - metrics have been reset to the proper field type (previously, they were all stored as strings).
+
+### Primary Key changes
+
+| Stream Name                                       | Old Primary Key                                       | New Primary key                               |
+|---------------------------------------------------|-------------------------------------------------------|-----------------------------------------------|
+| sponsored_brands_v3_report_stream                 | ["profileId", "recordType", "reportDate", "recordId"] | ["profileId", "reportDate", "purchasedAsin"]  |
+| SponsoredDisplayReportStream (deprecated)         | ["profileId", "recordType", "reportDate", "recordId"] |                                               |
+| - sponsored_display_campaigns_report_stream       |                                                       | ["profileId", "reportDate", "campaignId"]     |
+| - sponsored_display_adgroups_report_stream        |                                                       | ["profileId", "reportDate", "adGroupId"]      |
+| - sponsored_display_productads_report_stream      |                                                       | ["profileId", "reportDate", "adId"]           |
+| - sponsored_display_targets_report_stream         |                                                       | ["profileId", "reportDate", "targetingId"]    |
+| - sponsored_display_asins_report_stream           |                                                       | ["profileId", "reportDate", "promotedAsin"]   |
+| SponsoredProductsReportStream (deprecated)        | ["profileId", "recordType", "reportDate", "recordId"] |                                               |
+| - sponsored_products_campaigns_report_stream      |                                                       | ["profileId", "reportDate", "campaignId"]     |
+| - sponsored_products_adgroups_report_stream       |                                                       | ["profileId", "reportDate", "adGroupId"]      |
+| - sponsored_products_keywords_report_stream       |                                                       | ["profileId", "reportDate", "keywordId"]      |
+| - sponsored_products_targets_report_stream        |                                                       | ["profileId", "reportDate", "keywordId"]      |
+| - sponsored_products_productads_report_stream     |                                                       | ["profileId", "reportDate", "adId"]           |
+| - sponsored_products_asins_keywords_report_stream |                                                       | ["profileId", "reportDate", "advertisedAsin"] |
+| - sponsored_products_asins_targets_report_stream  |                                                       | ["profileId", "reportDate", "advertisedAsin"] |
 
 
 ## Upgrading to 6.0.0
@@ -36,7 +190,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 
 ## Upgrading to 5.0.0
@@ -51,7 +205,7 @@ The following streams have updated schemas due to a change with the Amazon Ads A
 ### Schema Changes - Removed/Added Fields
 
 | Stream Name                                  | Removed Fields                                                                                                               | Added Fields                                                                                |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+|----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | `SponsoredBrandsCampaigns`                   | `serviceStatus`, `bidOptimization`, `bidMultiplier`, `adFormat`, `bidAdjustments`, `creative`, `landingPage`, `supplySource` | `ruleBasedBudget`, `bidding`, `productLocation`, `costType`, `smartDefault`, `extendedData` |
 | `SponsoredBrandsAdGroups`                    | `bid`, `keywordId`, `keywordText`, `nativeLanuageKeyword`, `matchType`                                                       | `extendedData`                                                                              |
 | `SponsoredProductsCampaigns`                 | `campaignType`, `dailyBudget`, `ruleBasedBudget`, `premiumBidAdjustment`, `networks`                                         | `dynamicBidding`, `budget`, `extendedData`                                                  |
@@ -82,7 +236,7 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 4.0.0
 
@@ -113,9 +267,13 @@ Depending on destination type you may not be prompted to reset your data.
 This will reset the data in your destination and initiate a fresh sync.
 ```
 
-For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
 ## Upgrading to 3.0.0
 
 A major update of attribution report stream schemas.
 For a smooth migration, a data reset and a schema refresh are needed.
+
+## Connector upgrade guide
+
+<MigrationGuide />

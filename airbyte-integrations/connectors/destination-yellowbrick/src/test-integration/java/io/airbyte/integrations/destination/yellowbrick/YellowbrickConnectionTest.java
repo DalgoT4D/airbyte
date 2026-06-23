@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.integrations.destination.yellowbrick;
 
@@ -25,7 +25,7 @@ public class YellowbrickConnectionTest {
     ((ObjectNode) config).put("password", "fake");
     status = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: XX000;"));
+    assertTrue(status.getMessage().contains("State code: 28P01;"));
   }
 
   @Test

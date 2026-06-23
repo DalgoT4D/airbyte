@@ -1,13 +1,37 @@
-import { faArrowRight, faCloud, faDownload, faLock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowRight,
+  faBook,
+  faCloud,
+  faCode,
+  faDownload,
+  faGear,
+  faLightbulb,
+  faLock,
+  faPlug,
+  faPuzzlePiece,
+  faRobot,
+  faRocket,
+  faWindowMaximize,
+} from "@fortawesome/free-solid-svg-icons";
+import { faPython } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "./Card.module.css";
 import { CloudIcon, EnterpriseIcon, OssIcon } from "./CustomIcons";
 
 const FA_ICONS = {
+  "fa-book": faBook,
   "fa-cloud": faCloud,
+  "fa-code": faCode,
   "fa-download": faDownload,
+  "fa-gear": faGear,
+  "fa-lightbulb": faLightbulb,
   "fa-lock": faLock,
-
+  "fa-plug": faPlug,
+  "fa-puzzle-piece": faPuzzlePiece,
+  "fa-python": faPython,
+  "fa-robot": faRobot,
+  "fa-rocket": faRocket,
+  "fa-window-maximize": faWindowMaximize,
 };
 
 const CUSTOM_ICONS = {
@@ -21,19 +45,17 @@ const Link = ({ children, href, variant = "primary" }) => {
     variant === "secondary" ? styles.cardCtaSecondary : styles.cardCtaPrimary;
 
   return (
-    <div className={`${styles.cardCta} ${linkClass}`}>
-      <a href={href}>{children}</a>
+    <a className={`${styles.cardCta} ${linkClass}`} href={href}>
+      {children}
       <FontAwesomeIcon icon={faArrowRight} />
-    </div>
+    </a>
   );
 };
 
 const Icon = ({ name }) => {
   const IconComponent = FA_ICONS[name] || CUSTOM_ICONS[name];
   if (name in FA_ICONS) {
-    return (
-      <FontAwesomeIcon icon={FA_ICONS[name]} />
-    );
+    return <FontAwesomeIcon icon={FA_ICONS[name]} />;
   }
   if (name in CUSTOM_ICONS) {
     return <IconComponent />;
@@ -52,11 +74,19 @@ export const CardWithIcon = ({
   return (
     <div className={styles.card}>
       <div className={styles.cardContent}>
-      {icon && <div className={styles.cardIcon}><Icon name={icon} /></div>}
+        {icon && (
+          <div className={styles.cardIcon}>
+            <Icon name={icon} />
+          </div>
+        )}
         <h2>{title}</h2>
         <p>{description}</p>
       </div>
-      {ctaText && <Link href={ctaLink} variant={ctaVariant}>{ctaText}</Link>}
+      {ctaText && (
+        <Link href={ctaLink} variant={ctaVariant}>
+          {ctaText}
+        </Link>
+      )}
     </div>
   );
 };

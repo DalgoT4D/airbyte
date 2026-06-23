@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
@@ -59,17 +60,43 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
-        final String databaseName = sourceConfig.getDatabaseName();
+        final List<String> databaseNames = sourceConfig.getDatabaseNames();
+
+        if (databaseNames.isEmpty()) {
+          return new AirbyteConnectionStatus()
+              .withMessage("No databases specified in the configuration.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+
         /*
          * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
          * needs to actually execute a command in order to fetch the cluster description. Querying for the
          * authorized collections guarantees that the cluster description will be available to the driver.
          */
-        if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
+        boolean hasAuthorizedCollections = false;
+        List<String> databasesWithoutPermission = new ArrayList<>();
+
+        for (String databaseName : databaseNames) {
+          if (!MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
+            hasAuthorizedCollections = true;
+            LOGGER.info("Found authorized collections in database: {}", databaseName);
+          } else {
+            databasesWithoutPermission.add(databaseName);
+            LOGGER.warn("No authorized collections found in database: {}", databaseName);
+          }
+        }
+
+        if (!databasesWithoutPermission.isEmpty()) {
+          LOGGER.warn("The following databases have no authorized collections: {}", String.join(", ", databasesWithoutPermission));
+        }
+
+        if (!hasAuthorizedCollections) {
           return new AirbyteConnectionStatus()
-              .withMessage("Target MongoDB database does not contain any authorized collections.")
+              .withMessage("Target MongoDB databases do not contain any authorized collections. Databases without permissions: "
+                  + String.join(", ", databasesWithoutPermission))
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
+
         if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
           LOGGER.error("Target MongoDB instance is not a replica set cluster.");
           return new AirbyteConnectionStatus()
@@ -102,11 +129,19 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
-        final String databaseName = sourceConfig.getDatabaseName();
+        final List<String> databaseNames = sourceConfig.getDatabaseNames();
         final Integer sampleSize = sourceConfig.getSampleSize();
         final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
-        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced);
-        return new AirbyteCatalog().withStreams(streams);
+        final Integer discoverTimeout = sourceConfig.getStreamDiscoveryTimeoutSeconds();
+
+        List<AirbyteStream> allStreams = new ArrayList<>();
+        for (String databaseName : databaseNames) {
+          LOGGER.info("Discovering collections in database: {}", databaseName);
+          List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout);
+          allStreams.addAll(streams);
+        }
+
+        return new AirbyteCatalog().withStreams(allStreams);
       }
     } catch (final IllegalArgumentException e) {
       LOGGER.error("Unable to perform schema discovery operation.", e);
@@ -148,7 +183,10 @@ public class MongoDbSource extends BaseConnector implements Source {
           iterators
               .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
         }
-        return AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
+        final AutoCloseableIterator<AirbyteMessage> baseIterator =
+            AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
+        // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
+        return wrapIteratorWithBsonErrorHandling(baseIterator);
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
@@ -157,6 +195,54 @@ public class MongoDbSource extends BaseConnector implements Source {
       LOGGER.error("Unable to perform sync read operation.", e);
       throw e;
     }
+  }
+
+  /**
+   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
+   * actionable error messages to users.
+   *
+   * @param iterator The base iterator to wrap.
+   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   */
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
+                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
+    return new AutoCloseableIterator<>() {
+
+      @Override
+      public boolean hasNext() {
+        try {
+          return iterator.hasNext();
+        } catch (final Exception e) {
+          throw handlePotentialBsonTooLargeError(e);
+        }
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        try {
+          return iterator.next();
+        } catch (final Exception e) {
+          throw handlePotentialBsonTooLargeError(e);
+        }
+      }
+
+      @Override
+      public void close() throws Exception {
+        iterator.close();
+      }
+
+      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+        if (MongoUtil.isBsonObjectTooLargeException(e)) {
+          LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
+        }
+        if (e instanceof RuntimeException) {
+          throw (RuntimeException) e;
+        }
+        throw new RuntimeException(e);
+      }
+
+    };
   }
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
@@ -172,15 +258,26 @@ public class MongoDbSource extends BaseConnector implements Source {
     if (stateManager.getCdcState() == null) {
       stateManager.updateCdcState(new MongoDbCdcState(null, sourceConfig.getEnforceSchema()));
     }
-    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators = initialSnapshotHandler.getIterators(
-        streams,
-        stateManager,
-        mongoClient.getDatabase(sourceConfig.getDatabaseName()),
-        sourceConfig,
-        true,
-        true,
-        emmitedAt,
-        Optional.empty());
+
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators = new ArrayList<>();
+
+    for (String databaseName : sourceConfig.getDatabaseNames()) {
+      List<ConfiguredAirbyteStream> databaseStreams = streams.stream()
+          .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
+          .toList();
+      if (!databaseStreams.isEmpty()) {
+        LOGGER.info("Processing full refresh for database: {} with {} streams", databaseName, databaseStreams.size());
+        fullRefreshIterators.addAll(initialSnapshotHandler.getIterators(
+            databaseStreams,
+            stateManager,
+            mongoClient.getDatabase(databaseName),
+            sourceConfig,
+            true,
+            true,
+            emmitedAt,
+            Optional.empty()));
+      }
+    }
 
     return fullRefreshIterators;
   }

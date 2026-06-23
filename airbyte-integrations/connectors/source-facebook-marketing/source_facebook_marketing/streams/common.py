@@ -6,10 +6,10 @@ import http.client
 import logging
 import re
 import sys
+from datetime import timedelta
 from typing import Any
 
 import backoff
-import pendulum
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
@@ -36,7 +36,7 @@ FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_CONNECTION_RESET_ERROR_CODE = 104
-DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
+DEFAULT_SLEEP_INTERVAL = timedelta(minutes=1)
 
 logger = logging.getLogger("airbyte")
 
@@ -66,12 +66,12 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if (
             details.get("kwargs", {}).get("params", {}).get("limit")
             and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
-            and exc.api_error_message() in error_patterns
+            and (exc.api_error_message() or "") in error_patterns
         ):
             # reduce the existing request `limit` param by a half and retry
             details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
             # set the flag to the api class that the last api call failed
-            details.get("args")[0].last_api_call_is_successfull = False
+            details.get("args")[0].last_api_call_is_successful = True
             # set the flag to the api class that the `limit` param was reduced
             details.get("args")[0].request_record_limit_is_reduced = True
 
@@ -83,7 +83,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         """
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
         # set the flag to the api class that the last api call was successful
-        details.get("args")[0].last_api_call_is_successfull = True
+        details.get("args")[0].last_api_call_is_successful = False
         # set the flag to the api class that the `limit` param is restored
         details.get("args")[0].request_record_limit_is_reduced = False
 
@@ -95,7 +95,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
         According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry."""
         pattern = r"Cannot include .* in summary param because they weren't there while creating the report run."
-        return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message()))
+        return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message() or ""))
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
@@ -148,6 +148,11 @@ def deep_merge(a: Any, b: Any) -> Any:
         return a if b is None else b
 
 
+FACEBOOK_CONFIG_ERRORS_TO_CATCH = [  # list of tuples (code, error_subcode)
+    (100, 2446289),
+]
+
+
 def traced_exception(fb_exception: FacebookRequestError):
     """Add user-friendly message for FacebookRequestError
 
@@ -156,7 +161,16 @@ def traced_exception(fb_exception: FacebookRequestError):
     """
     msg = fb_exception.api_error_message() or fb_exception.get_message()
 
-    if "Error validating access token" in msg:
+    if "Invalid OAuth access token" in msg:
+        failure_type = FailureType.config_error
+        friendly_msg = (
+            "The access token for this connection is invalid or corrupted. "
+            "Please re-authenticate your Facebook connection in Airbyte. "
+            "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
+            "remove the Airbyte app, and then re-authenticate again."
+        )
+
+    elif "Error validating access token" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
 
@@ -192,6 +206,9 @@ def traced_exception(fb_exception: FacebookRequestError):
     elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Please set the start date of your sync to be within the last 3 years."
+    elif (fb_exception.api_error_code(), fb_exception.api_error_subcode()) in FACEBOOK_CONFIG_ERRORS_TO_CATCH:
+        failure_type = FailureType.config_error
+        friendly_msg = msg
     elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
         return AirbyteTracedException(
             message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",

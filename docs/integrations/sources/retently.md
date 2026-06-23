@@ -42,6 +42,10 @@ Retently supports two types of authentication: by API Token or using Retently oA
 You can get the API Token for Retently [here](https://app.retently.com/settings/api/tokens).
 OAuth application is [here](https://app.retently.com/settings/oauth).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -49,6 +53,48 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.49 | 2026-06-23 | [80631](https://github.com/airbytehq/airbyte/pull/80631) | Update dependencies |
+| 0.3.48 | 2026-06-16 | [80025](https://github.com/airbytehq/airbyte/pull/80025) | Update dependencies |
+| 0.3.47 | 2026-06-09 | [79509](https://github.com/airbytehq/airbyte/pull/79509) | Update dependencies |
+| 0.3.46 | 2026-06-02 | [78938](https://github.com/airbytehq/airbyte/pull/78938) | Update dependencies |
+| 0.3.45 | 2026-04-28 | [77398](https://github.com/airbytehq/airbyte/pull/77398) | Update dependencies |
+| 0.3.44 | 2026-04-21 | [76743](https://github.com/airbytehq/airbyte/pull/76743) | Update dependencies |
+| 0.3.43 | 2026-03-24 | [75350](https://github.com/airbytehq/airbyte/pull/75350) | Update dependencies |
+| 0.3.42 | 2026-03-10 | [74680](https://github.com/airbytehq/airbyte/pull/74680) | Update dependencies |
+| 0.3.41 | 2026-02-24 | [73769](https://github.com/airbytehq/airbyte/pull/73769) | Update dependencies |
+| 0.3.40 | 2026-02-10 | [73156](https://github.com/airbytehq/airbyte/pull/73156) | Update dependencies |
+| 0.3.39 | 2026-01-20 | [71499](https://github.com/airbytehq/airbyte/pull/71499) | Update dependencies |
+| 0.3.38 | 2025-12-18 | [70588](https://github.com/airbytehq/airbyte/pull/70588) | Update dependencies |
+| 0.3.37 | 2025-11-25 | [70023](https://github.com/airbytehq/airbyte/pull/70023) | Update dependencies |
+| 0.3.36 | 2025-11-18 | [69585](https://github.com/airbytehq/airbyte/pull/69585) | Update dependencies |
+| 0.3.35 | 2025-10-29 | [68865](https://github.com/airbytehq/airbyte/pull/68865) | Update dependencies |
+| 0.3.34 | 2025-10-21 | [68358](https://github.com/airbytehq/airbyte/pull/68358) | Update dependencies |
+| 0.3.33 | 2025-10-14 | [67865](https://github.com/airbytehq/airbyte/pull/67865) | Update dependencies |
+| 0.3.32 | 2025-10-08 | [67542](https://github.com/airbytehq/airbyte/pull/67542) | Update dependencies |
+| 0.3.31 | 2025-09-30 | [66438](https://github.com/airbytehq/airbyte/pull/66438) | Update dependencies |
+| 0.3.30 | 2025-09-09 | [66120](https://github.com/airbytehq/airbyte/pull/66120) | Update dependencies |
+| 0.3.29 | 2025-08-24 | [65428](https://github.com/airbytehq/airbyte/pull/65428) | Update dependencies |
+| 0.3.28 | 2025-08-16 | [65020](https://github.com/airbytehq/airbyte/pull/65020) | Update dependencies |
+| 0.3.27 | 2025-08-02 | [64461](https://github.com/airbytehq/airbyte/pull/64461) | Update dependencies |
+| 0.3.26 | 2025-07-12 | [63036](https://github.com/airbytehq/airbyte/pull/63036) | Update dependencies |
+| 0.3.25 | 2025-06-28 | [62256](https://github.com/airbytehq/airbyte/pull/62256) | Update dependencies |
+| 0.3.24 | 2025-06-21 | [61801](https://github.com/airbytehq/airbyte/pull/61801) | Update dependencies |
+| 0.3.23 | 2025-06-14 | [61316](https://github.com/airbytehq/airbyte/pull/61316) | Update dependencies |
+| 0.3.22 | 2025-05-24 | [60443](https://github.com/airbytehq/airbyte/pull/60443) | Update dependencies |
+| 0.3.21 | 2025-05-11 | [60206](https://github.com/airbytehq/airbyte/pull/60206) | Update dependencies |
+| 0.3.20 | 2025-05-04 | [59628](https://github.com/airbytehq/airbyte/pull/59628) | Update dependencies |
+| 0.3.19 | 2025-04-27 | [58971](https://github.com/airbytehq/airbyte/pull/58971) | Update dependencies |
+| 0.3.18 | 2025-04-19 | [58382](https://github.com/airbytehq/airbyte/pull/58382) | Update dependencies |
+| 0.3.17 | 2025-04-12 | [57989](https://github.com/airbytehq/airbyte/pull/57989) | Update dependencies |
+| 0.3.16 | 2025-04-05 | [57323](https://github.com/airbytehq/airbyte/pull/57323) | Update dependencies |
+| 0.3.15 | 2025-03-29 | [56762](https://github.com/airbytehq/airbyte/pull/56762) | Update dependencies |
+| 0.3.14 | 2025-03-22 | [56214](https://github.com/airbytehq/airbyte/pull/56214) | Update dependencies |
+| 0.3.13 | 2025-03-08 | [55568](https://github.com/airbytehq/airbyte/pull/55568) | Update dependencies |
+| 0.3.12 | 2025-03-01 | [55001](https://github.com/airbytehq/airbyte/pull/55001) | Update dependencies |
+| 0.3.11 | 2025-02-23 | [54582](https://github.com/airbytehq/airbyte/pull/54582) | Update dependencies |
+| 0.3.10 | 2025-02-15 | [53995](https://github.com/airbytehq/airbyte/pull/53995) | Update dependencies |
+| 0.3.9 | 2025-02-08 | [53490](https://github.com/airbytehq/airbyte/pull/53490) | Update dependencies |
+| 0.3.8 | 2025-02-01 | [53019](https://github.com/airbytehq/airbyte/pull/53019) | Update dependencies |
 | 0.3.7 | 2025-01-25 | [52463](https://github.com/airbytehq/airbyte/pull/52463) | Update dependencies |
 | 0.3.6 | 2025-01-18 | [51873](https://github.com/airbytehq/airbyte/pull/51873) | Update dependencies |
 | 0.3.5 | 2025-01-11 | [51346](https://github.com/airbytehq/airbyte/pull/51346) | Update dependencies |

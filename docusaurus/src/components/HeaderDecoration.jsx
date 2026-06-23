@@ -1,10 +1,9 @@
-import React from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import styles from "./HeaderDecoration.module.css";
-import { Chip } from "./Chip";
 import { Callout } from "./Callout";
-import { getSupportLevelDisplay } from "../connector_registry";
+import { Chip } from "./Chip";
+import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
+import styles from "./HeaderDecoration.module.css";
 
 // Extend Day.js with the relativeTime plugin
 dayjs.extend(relativeTime);
@@ -12,20 +11,20 @@ dayjs.extend(relativeTime);
 // ICONS
 
 const CHECK_ICON = (
-  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512">
     <title>Available</title>
     <path
       fill="currentColor"
-      d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
+      d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"
     />
   </svg>
 );
 const CROSS_ICON = (
-  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+  <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512">
     <title>Not available</title>
     <path
       fill="currentColor"
-      d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"
+      d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
     />
   </svg>
 );
@@ -194,6 +193,21 @@ const boolStringToBool = (boolString) => {
   return null;
 };
 
+const getSupportLevelDisplay = (rawSupportLevel) => {
+  switch (rawSupportLevel) {
+    case "certified":
+      return "Airbyte";
+    case "community":
+      return "Marketplace";
+    case "enterprise":
+      return "Enterprise";
+    case "archived":
+      return "Archived";
+    default:
+      return null;
+  }
+};
+
 // COMPONENTS
 
 const MetricIcon = ({ iconComponent, level }) => {
@@ -213,7 +227,7 @@ const MetricIcon = ({ iconComponent, level }) => {
 
 const MetadataStat = ({ label, children }) => (
   <div className={styles.metadataStat}>
-    <dt className={styles.metadataStatLabel}>{`${label}: `}</dt>
+    <dt className={styles.metadataStatLabel}>{`${label}`}</dt>
     <dd className={styles.metadataStatValue}>{children}</dd>
   </div>
 );
@@ -234,47 +248,66 @@ const ConnectorMetadataCallout = ({
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
+  definitionId,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
       <MetadataStat label="Availability">
         <div className={styles.availability}>
-          {isEnterprise ? (
-            <>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Enterprise License
-              </Chip>
-            </>
-          ) : (
-            <>
-              <Chip className={isCloud ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isCloud} /> Airbyte Cloud
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Airbyte OSS
-              </Chip>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> PyAirbyte
-              </Chip>
-            </>
-          )}
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> Core
+          </Chip>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Standard
+          </Chip>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Plus
+          </Chip>
+          <Chip
+            className={
+              isEnterprise || isCloud ? styles.available : styles.unavailable
+            }
+          >
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Pro
+          </Chip>
+          <Chip
+            className={
+              isEnterprise || isCloud ? styles.available : styles.unavailable
+            }
+          >
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
+          </Chip>
+          <Chip
+            className={
+              isEnterprise || isOss ? styles.available : styles.unavailable
+            }
+          >
+            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed
+            Enterprise
+          </Chip>
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> PyAirbyte
+          </Chip>
         </div>
       </MetadataStat>
       <MetadataStat label="Support Level">
         <a href="/integrations/connector-support-levels/">
-          <Chip>{getSupportLevelDisplay(supportLevel)}</Chip>
+          {getSupportLevelDisplay(supportLevel)}
         </a>
       </MetadataStat>
       {supportLevel !== "archived" && (
         <MetadataStat label="Connector Version">
-          <a href={github_url} target="_blank">
-            {dockerImageTag}
-          </a>
+          {!isEnterprise && github_url ? (
+            <a href={github_url} target="_blank">
+              {dockerImageTag}&nbsp;
+            </a>
+          ) : (
+            <span>{dockerImageTag}</span>
+          )}
           {lastUpdated && (
-            <span className={styles.deemphasizeText}>{`(Last updated ${dayjs(
-              lastUpdated,
-            ).fromNow()})`}</span>
+            <span>{`(last updated ${dayjs(lastUpdated).fromNow()})`}</span>
           )}
         </MetadataStat>
       )}
@@ -283,7 +316,7 @@ const ConnectorMetadataCallout = ({
           <a target="_blank" href={cdkVersionUrl}>
             {cdkVersion}
           </a>
-          {isLatestCDK && <span className={styles.deemphasizeText}>{"(Latest)"}</span>}
+          {isLatestCDK && <span>{"(Latest)"}</span>}
         </MetadataStat>
       )}
       {syncSuccessRate && (
@@ -296,14 +329,49 @@ const ConnectorMetadataCallout = ({
           <MetricIcon iconComponent={USAGE_ICON} level={usageRate} />
         </MetadataStat>
       )}
+      {defaultDataWorkers && (
+        <MetadataStat label="Data workers used">
+          <span title="Applies to Airbyte Cloud plans on capacity-based pricing. Actual usage can vary if your organization has custom resource overrides.">
+            {defaultDataWorkers} per sync
+          </span>
+          {" ("}
+          <a href="/platform/cloud/managing-airbyte-cloud/manage-data-workers#data-worker-consumption-by-source-type">
+            Learn more
+          </a>
+          {")"}
+        </MetadataStat>
+      )}
+      {isEnterprise && (
+        <MetadataStat label="Enterprise Connector">
+          <strong>
+            This premium connector is available to Enterprise customers at an
+            additional cost
+          </strong>
+          .{" "}
+          <a href="https://airbyte.com/company/talk-to-sales" target="_blank">
+            Talk to Sales{" "}
+          </a>
+          .
+        </MetadataStat>
+      )}
+      {definitionId && (
+        <MetadataStat label="Definition ID">
+          <code>{definitionId}</code>
+        </MetadataStat>
+      )}
     </dl>
   </Callout>
 );
 
-const ConnectorTitle = ({ iconUrl, originalTitle, originalId, isArchived }) => (
+const ConnectorTitle = ({
+  iconUrl,
+  originalTitle,
+  isArchived,
+  enterpriseConnector,
+}) => (
   <div className={styles.header}>
     <img src={iconUrl} alt="" className={styles.connectorIcon} />
-    <h1 id={originalId}>
+    <h1 data-enterprise-connector={enterpriseConnector}>
       {isArchived ? (
         <span>
           {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
@@ -323,14 +391,16 @@ export const HeaderDecoration = ({
   supportLevel,
   iconUrl,
   originalTitle,
-  originalId,
   github_url,
   cdkVersion,
   isLatestCDKString,
   cdkVersionUrl,
   syncSuccessRate,
   usageRate,
+  defaultDataWorkers,
   lastUpdated,
+  definitionId,
+  "enterprise-connector": enterpriseConnector,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -340,12 +410,17 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <ConnectorTitle
-        iconUrl={iconUrl}
-        originalTitle={originalTitle}
-        originalId={originalId}
-        isArchived={isArchived}
-      />
+      <div className={styles.connectorHeader}>
+        <ConnectorTitle
+          iconUrl={iconUrl}
+          originalTitle={originalTitle}
+          isArchived={isArchived}
+          enterpriseConnector={enterpriseConnector}
+        />
+        <div className={styles.connectorHeaderActions}>
+          <CopyPageButton />
+        </div>
+      </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
         isOss={isOss}
@@ -358,7 +433,9 @@ export const HeaderDecoration = ({
         isLatestCDK={isLatestCDK}
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
+        defaultDataWorkers={defaultDataWorkers}
         lastUpdated={lastUpdated}
+        definitionId={definitionId}
       />
     </>
   );

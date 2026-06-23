@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.cdk.load.data.iceberg.parquet
 
@@ -16,9 +16,7 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnknownValue
 import java.time.ZoneOffset
-import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types.TimestampType
@@ -65,11 +63,19 @@ class AirbyteValueToIcebergRecord {
             is DateValue -> return airbyteValue.value
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
-            is NumberValue -> return airbyteValue.value.toDouble()
+            is NumberValue ->
+                return when (type.typeId()) {
+                    // PK NumberType fields are mapped to StringType in Iceberg.
+                    Type.TypeID.STRING -> airbyteValue.value.toPlainString()
+                    else -> airbyteValue.value.toDouble()
+                }
             is StringValue -> return airbyteValue.value
             is TimeWithTimezoneValue ->
                 return when (type.typeId()) {
-                    Type.TypeID.TIME -> airbyteValue.value.toLocalTime()
+                    // Iceberg doesn't have a time_tz type.
+                    // So just convert this value to UTC, and then drop the offset.
+                    Type.TypeID.TIME ->
+                        airbyteValue.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
                     else ->
                         throw IllegalArgumentException(
                             "${type.typeId()} type is not allowed for TimeValue"
@@ -117,19 +123,6 @@ class AirbyteValueToIcebergRecord {
                             "${type.typeId()} type is not allowed for TimestampValue"
                         )
                 }
-            is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }
-}
-
-fun ObjectValue.toIcebergRecord(schema: Schema): GenericRecord {
-    val record = GenericRecord.create(schema)
-    val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-    schema.asStruct().fields().forEach { field ->
-        val value = this.values[field.name()]
-        if (value != null) {
-            record.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
-        }
-    }
-    return record
 }

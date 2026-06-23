@@ -67,13 +67,52 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.26 | 2026-06-23 | [80487](https://github.com/airbytehq/airbyte/pull/80487) | Update dependencies |
+| 0.7.25 | 2026-06-16 | [79888](https://github.com/airbytehq/airbyte/pull/79888) | Update dependencies |
+| 0.7.24 | 2026-06-09 | [79354](https://github.com/airbytehq/airbyte/pull/79354) | Update dependencies |
+| 0.7.23 | 2026-06-02 | [78766](https://github.com/airbytehq/airbyte/pull/78766) | Update dependencies |
+| 0.7.22 | 2026-05-15 | [78119](https://github.com/airbytehq/airbyte/pull/78119) | Set the default concurrency to 2 and expose the number of concurrent threads as a user-configurable option. |
+| 0.7.22-rc.3 | 2026-05-12 | [78052](https://github.com/airbytehq/airbyte/pull/78052) | Reduce default_concurrency to 3 for concurrency tuning after rate-limit failures at higher settings. |
+| 0.7.22-rc.2 | 2026-05-08 | [78006](https://github.com/airbytehq/airbyte/pull/78006) | Concurrency tuning iteration: bump default_concurrency to 5 |
+| 0.7.22-rc.1 | 2026-05-06 | [77826](https://github.com/airbytehq/airbyte/pull/77826) | Start concurrency tuning at default_concurrency=4 (Path A) and enable progressive rollout |
+| 0.7.21 | 2026-04-28 | [77287](https://github.com/airbytehq/airbyte/pull/77287) | Update dependencies |
+| 0.7.20 | 2026-04-21 | [76637](https://github.com/airbytehq/airbyte/pull/76637) | Update dependencies |
+| 0.7.19 | 2026-03-31 | [75729](https://github.com/airbytehq/airbyte/pull/75729) | Update dependencies |
+| 0.7.18 | 2026-03-17 | [74919](https://github.com/airbytehq/airbyte/pull/74919) | Update dependencies |
+| 0.7.17 | 2026-03-10 | [74688](https://github.com/airbytehq/airbyte/pull/74688) | Update dependencies |
+| 0.7.16 | 2026-03-03 | [74176](https://github.com/airbytehq/airbyte/pull/74176) | Update dependencies |
+| 0.7.15 | 2026-02-10 | [73107](https://github.com/airbytehq/airbyte/pull/73107) | Update dependencies |
+| 0.7.14 | 2026-02-03 | [72661](https://github.com/airbytehq/airbyte/pull/72661) | Update dependencies |
+| 0.7.13 | 2026-01-20 | [71894](https://github.com/airbytehq/airbyte/pull/71894) | Update dependencies |
+| 0.7.12 | 2026-01-14 | [71700](https://github.com/airbytehq/airbyte/pull/71700) | Update dependencies |
+| 0.7.11 | 2025-12-18 | [70503](https://github.com/airbytehq/airbyte/pull/70503) | Update dependencies |
+| 0.7.10 | 2025-11-25 | [70056](https://github.com/airbytehq/airbyte/pull/70056) | Update dependencies |
+| 0.7.9 | 2025-11-18 | [69420](https://github.com/airbytehq/airbyte/pull/69420) | Update dependencies |
+| 0.7.8 | 2025-10-29 | [68823](https://github.com/airbytehq/airbyte/pull/68823) | Update dependencies |
+| 0.7.7 | 2025-10-21 | [68226](https://github.com/airbytehq/airbyte/pull/68226) | Update dependencies |
+| 0.7.6 | 2025-10-14 | [67896](https://github.com/airbytehq/airbyte/pull/67896) | Update dependencies |
+| 0.7.5 | 2025-10-07 | [67399](https://github.com/airbytehq/airbyte/pull/67399) | Update dependencies |
+| 0.7.4 | 2025-09-30 | [66408](https://github.com/airbytehq/airbyte/pull/66408) | Update dependencies |
+| 0.7.3 | 2025-09-09 | [65896](https://github.com/airbytehq/airbyte/pull/65896) | Update dependencies |
+| 0.7.2 | 2025-08-28 | [64973](https://github.com/airbytehq/airbyte/pull/64973) | Update dependencies |
+| 0.7.1 | 2025-08-26 | [65510](https://github.com/airbytehq/airbyte/pull/65510) | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component |
+| 0.7.0 | 2025-07-07 | [62830](https://github.com/airbytehq/airbyte/pull/62830) | Promoting release candidate 0.7.0-rc.1 to a main version. |
+| 0.7.0-rc.1 | 2025-06-29 | [47283](https://github.com/airbytehq/airbyte/pull/47283) | Migrate to Manifest-only |
+| 0.6.1 | 2025-03-22 | [53800](https://github.com/airbytehq/airbyte/pull/53800) | Update dependencies |
+| 0.6.0 | 2025-03-14 | [55774](https://github.com/airbytehq/airbyte/pull/55774) | Promoting release candidate 0.6.0-rc.1 to a main version. |
+| 0.6.0-rc.1 | 2025-03-14 | [54702](https://github.com/airbytehq/airbyte/pull/54702) | Update to latest airbyte-cdk, remove custom cursors. |
+| 0.5.32 | 2025-02-01 | [52724](https://github.com/airbytehq/airbyte/pull/52724) | Update dependencies |
 | 0.5.31 | 2025-01-25 | [51842](https://github.com/airbytehq/airbyte/pull/51842) | Update dependencies |
 | 0.5.30 | 2025-01-11 | [51214](https://github.com/airbytehq/airbyte/pull/51214) | Update dependencies |
 | 0.5.29 | 2024-12-28 | [50632](https://github.com/airbytehq/airbyte/pull/50632) | Update dependencies |

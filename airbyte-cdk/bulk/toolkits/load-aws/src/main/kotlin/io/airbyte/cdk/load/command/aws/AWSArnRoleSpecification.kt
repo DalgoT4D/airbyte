@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.command.aws
@@ -10,7 +10,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 
 interface AWSArnRoleSpecification {
     @get:JsonSchemaTitle("Role ARN")
-    @get:JsonPropertyDescription("The Role ARN.")
+    @get:JsonPropertyDescription("The ARN of the AWS role to assume. Only usable in Airbyte Cloud.")
     @get:JsonProperty("role_arn")
     val roleArn: String?
 

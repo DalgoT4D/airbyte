@@ -2,25 +2,14 @@
   "list": [
     {
       "coupon": {
-        "apply_discount_on": "not_applicable",
-        "apply_on": "each_specified_item",
-        "created_at": 1517495314,
-        "discount_percentage": 10,
+        "id": "coupon_001",
+        "name": "Test Coupon",
         "discount_type": "percentage",
-        "duration_type": "forever",
-        "id": "summer_offer",
-        "item_constraints": [
-          {
-            "constraint": "all",
-            "item_type": "plan"
-          }
-        ],
-        "name": "Summer Offer",
-        "object": "coupon",
-        "redemptions": 0,
-        "resource_version": 1517495314967,
+        "discount_percentage": 10.0,
         "status": "active",
-        "updated_at": 1517495314
+        "updated_at": 1705312800,
+        "cf_department": "Marketing",
+        "cf_campaign_id": "SUMMER2024"
       }
     }
   ]

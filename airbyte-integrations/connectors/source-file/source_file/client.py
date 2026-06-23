@@ -265,7 +265,7 @@ class Client:
         self._provider = provider
         self._reader_format = format or "csv"
         self._reader_options = reader_options or {}
-        self._is_zip = url.endswith(".zip")
+        self._is_zip = url.lower().endswith(".zip")
         self.binary_source = self._reader_format in self.binary_formats or self._is_zip
         self.encoding = self._reader_options.get("encoding")
 
@@ -423,6 +423,7 @@ class Client:
                 elif self._reader_format == "yaml":
                     fields = set(fields) if fields else None
                     df = self.load_yaml(fp)
+                    df.columns = df.columns.astype(str)
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df = df.where(pd.notnull(df), None)
                     yield from df[list(columns)].to_dict(orient="records")
@@ -433,6 +434,7 @@ class Client:
                     if self._is_zip:
                         fp = self._unzip(fp)
                     for df in self.load_dataframes(fp):
+                        df.columns = df.columns.astype(str)
                         columns = fields.intersection(set(df.columns)) if fields else df.columns
                         df.replace({np.nan: None}, inplace=True)
                         yield from df[list(columns)].to_dict(orient="records")

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a mock source for testing the Airbyte pipeline. It can generate arbitrary data streams. It is a subset of what is in [End-to-End Testing Source](e2e-test.md) in Open Source to avoid Airbyte Cloud users accidentally in curring a huge bill.
+This is a mock source for testing the Airbyte pipeline. It can generate arbitrary data streams. It is a subset of what is in [End-to-End Testing Source](e2e-test) in Open Source to avoid Airbyte Cloud users accidentally in curring a huge bill.
 
 ## Mode
 
@@ -23,6 +23,10 @@ Here is its configuration:
 | Both              | max records         | integer | yes      | 100                 | The number of record messages to emit from this connector. Min 1. Max 100 billion.                                                                      |
 |                   | random seed         | integer | no       | current time millis | The seed is used in random Json object generation. Min 0. Max 1 million.                                                                                |
 |                   | message interval    | integer | no       | 0                   | The time interval between messages in millisecond. Min 0 ms. Max 60000 ms (1 minute).                                                                   |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 

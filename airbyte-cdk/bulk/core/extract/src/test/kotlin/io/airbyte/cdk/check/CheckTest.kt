@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.check
 
 import io.airbyte.cdk.Operation
@@ -24,7 +24,11 @@ class CheckTest {
     @Property(name = "airbyte.connector.config.database", value = "testdb")
     @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
     fun testConfigBadPort() {
-        assertFailed("port: Minimum is '0', found '-1'. \\(code: 1015\\)".toRegex())
+        // we don't validate the config against the jsonschema, so even though -1
+        // isn't within the declared bounds (0<=it<=65536),
+        // we should still succeed.
+        // (the connector is responsible for catching this sort of thing)
+        assertSucceeded()
     }
 
     @Test

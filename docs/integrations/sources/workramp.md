@@ -33,6 +33,10 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 - **Workramp API key**. See the [Workramp docs](https://developers.workramp.com/reference/basic-auth) for information on how to obtain an API key.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,21 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                       |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.2.24 | 2026-06-02 | [79079](https://github.com/airbytehq/airbyte/pull/79079) | Update dependencies |
+| 0.2.23 | 2025-05-24 | [60767](https://github.com/airbytehq/airbyte/pull/60767) | Update dependencies |
+| 0.2.22 | 2025-05-10 | [59982](https://github.com/airbytehq/airbyte/pull/59982) | Update dependencies |
+| 0.2.21 | 2025-05-04 | [59530](https://github.com/airbytehq/airbyte/pull/59530) | Update dependencies |
+| 0.2.20 | 2025-04-26 | [58926](https://github.com/airbytehq/airbyte/pull/58926) | Update dependencies |
+| 0.2.19 | 2025-04-19 | [58022](https://github.com/airbytehq/airbyte/pull/58022) | Update dependencies |
+| 0.2.18 | 2025-04-05 | [57397](https://github.com/airbytehq/airbyte/pull/57397) | Update dependencies |
+| 0.2.17 | 2025-03-29 | [56885](https://github.com/airbytehq/airbyte/pull/56885) | Update dependencies |
+| 0.2.16 | 2025-03-22 | [56314](https://github.com/airbytehq/airbyte/pull/56314) | Update dependencies |
+| 0.2.15 | 2025-03-08 | [55586](https://github.com/airbytehq/airbyte/pull/55586) | Update dependencies |
+| 0.2.14 | 2025-03-01 | [55155](https://github.com/airbytehq/airbyte/pull/55155) | Update dependencies |
+| 0.2.13 | 2025-02-22 | [54491](https://github.com/airbytehq/airbyte/pull/54491) | Update dependencies |
+| 0.2.12 | 2025-02-15 | [54090](https://github.com/airbytehq/airbyte/pull/54090) | Update dependencies |
+| 0.2.11 | 2025-02-08 | [53549](https://github.com/airbytehq/airbyte/pull/53549) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [53099](https://github.com/airbytehq/airbyte/pull/53099) | Update dependencies |
 | 0.2.9 | 2025-01-25 | [52392](https://github.com/airbytehq/airbyte/pull/52392) | Update dependencies |
 | 0.2.8 | 2025-01-18 | [52024](https://github.com/airbytehq/airbyte/pull/52024) | Update dependencies |
 | 0.2.7 | 2025-01-11 | [51388](https://github.com/airbytehq/airbyte/pull/51388) | Update dependencies |

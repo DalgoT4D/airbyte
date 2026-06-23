@@ -7,21 +7,39 @@ data:
       - api.airtable.com
       - airtable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.2@sha256:19eb795baa82bad71c097a7388313c1fd9f36978f543a8c7a245bbedb0c9a153
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.5.0-rc.1
+  dockerImageTag: 4.6.29
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://airtable.com/developers/web/api/changelog
+      type: api_release_history
+    - title: Community blog
+      url: https://community.airtable.com/development-apis-11
+    - title: OAuth refference
+      url: https://airtable.com/developers/web/api/oauth-reference#authorization-request
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 1536Mi
+          memory_request: 1536Mi
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 3072Mi
+          memory_request: 3072Mi
   githubIssueLabel: source-airtable
   icon: airtable.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 5400
   name: Airtable
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-airtable
   registryOverrides:
     cloud:
@@ -35,10 +53,10 @@ data:
         message: This release introduces changes to columns with formula to parse values directly from `array` to `string` or `number` (where it is possible). Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2023-10-23"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

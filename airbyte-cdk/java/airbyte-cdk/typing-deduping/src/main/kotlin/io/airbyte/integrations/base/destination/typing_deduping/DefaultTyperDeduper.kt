@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
@@ -121,7 +121,6 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     override fun prepareFinalTables() {
         check(!::overwriteStreamsWithTmpTable.isInitialized) { "Tables were already prepared." }
         overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet()
-        LOGGER.info { "Preparing tables" }
 
         val prepareTablesFutureResult =
             CompletableFutures.allOf(
@@ -234,7 +233,6 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     streamsWithSuccessfulSetup.add(
                         Pair.of(stream.id.originalNamespace, stream.id.originalName)
                     )
-
                     return@supplyAsync
                 } catch (e: Exception) {
                     LOGGER.error(e) {

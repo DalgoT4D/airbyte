@@ -106,6 +106,10 @@ The Guardian API source connector supports the following [sync modes](https://do
 
 The key that you are assigned is rate-limited and as such any applications that depend on making large numbers of requests on a polling basis are likely to exceed their daily quota and thus be prevented from making further requests until the next period begins.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -113,6 +117,21 @@ The key that you are assigned is rate-limited and as such any applications that 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.26 | 2025-05-25 | [60501](https://github.com/airbytehq/airbyte/pull/60501) | Update dependencies |
+| 0.2.25 | 2025-05-10 | [60109](https://github.com/airbytehq/airbyte/pull/60109) | Update dependencies |
+| 0.2.24 | 2025-05-04 | [59627](https://github.com/airbytehq/airbyte/pull/59627) | Update dependencies |
+| 0.2.23 | 2025-04-27 | [58436](https://github.com/airbytehq/airbyte/pull/58436) | Update dependencies |
+| 0.2.22 | 2025-04-22 | [58596](https://github.com/airbytehq/airbyte/pull/58596) | Manifest cleanup |
+| 0.2.21 | 2025-04-12 | [57938](https://github.com/airbytehq/airbyte/pull/57938) | Update dependencies |
+| 0.2.20 | 2025-04-05 | [57416](https://github.com/airbytehq/airbyte/pull/57416) | Update dependencies |
+| 0.2.19 | 2025-03-29 | [56904](https://github.com/airbytehq/airbyte/pull/56904) | Update dependencies |
+| 0.2.18 | 2025-03-22 | [56262](https://github.com/airbytehq/airbyte/pull/56262) | Update dependencies |
+| 0.2.17 | 2025-03-08 | [55644](https://github.com/airbytehq/airbyte/pull/55644) | Update dependencies |
+| 0.2.16 | 2025-03-01 | [55113](https://github.com/airbytehq/airbyte/pull/55113) | Update dependencies |
+| 0.2.15 | 2025-02-22 | [54515](https://github.com/airbytehq/airbyte/pull/54515) | Update dependencies |
+| 0.2.14 | 2025-02-15 | [54044](https://github.com/airbytehq/airbyte/pull/54044) | Update dependencies |
+| 0.2.13 | 2025-02-08 | [53584](https://github.com/airbytehq/airbyte/pull/53584) | Update dependencies |
+| 0.2.12 | 2025-02-01 | [53036](https://github.com/airbytehq/airbyte/pull/53036) | Update dependencies |
 | 0.2.11 | 2025-01-25 | [52381](https://github.com/airbytehq/airbyte/pull/52381) | Update dependencies |
 | 0.2.10 | 2025-01-18 | [51417](https://github.com/airbytehq/airbyte/pull/51417) | Update dependencies |
 | 0.2.9 | 2025-01-13 | [50855](https://github.com/airbytehq/airbyte/pull/50855) | Update to latest CDK and fix custom pagination strategy |
